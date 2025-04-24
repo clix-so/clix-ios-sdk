@@ -1,0 +1,17 @@
+--exclude Pods, Package.swift, Apps/*/Pods
+
+--binarygrouping none 
+--decimalgrouping none 
+--hexgrouping none 
+--ifdef no-indent 
+--octalgrouping none 
+--patternlet inline 
+--self init-only 
+--semicolons never
+--wraparguments before-first
+--commas inline
+--header strip
+
+--disable unusedArguments
+
+--enable isEmpty

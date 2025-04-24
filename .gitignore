@@ -1,0 +1,6 @@
+.swiftpm
+.DS_Store
+.idea
+.env
+.build
+.index-build
