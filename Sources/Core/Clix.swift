@@ -30,10 +30,8 @@ public class Clix {
   ///   - apiKey: API key
   ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.io")
   ///   - config: Clix SDK configuration
-  public func initialize(apiKey: String, endpoint: String, config: ClixConfig?)
-    async throws
-  {
-    logger.setLogLevel(config!.loggingLevel)
+  public func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
+    logger.setLogLevel(config?.loggingLevel ?? .info)
 
     // Initialize token manager
     try await tokenManager.initialize()

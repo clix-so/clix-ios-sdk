@@ -12,9 +12,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
 
     if let bestAttemptContent = bestAttemptContent {
-      if let mediaUrl = request.content.userInfo["media_url"] as? String,
-        let url = URL(string: mediaUrl)
-      {
+      if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
         Task {
           if let attachment = try? await downloadAndAttachMedia(
             url: url,
@@ -30,14 +28,9 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     }
   }
 
-  private func downloadAndAttachMedia(url: URL, type: String) async throws
-    -> UNNotificationAttachment
-  {
+  private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
     try await withCheckedThrowingContinuation { continuation in
-      let task = URLSession.shared.downloadTask(with: url) {
-        temporaryFileLocation,
-        response,
-        error in
+      let task = URLSession.shared.downloadTask(with: url) { temporaryFileLocation, response, error in
         if let error = error {
           continuation.resume(throwing: error)
           return
