@@ -25,7 +25,8 @@ let package = Package(
         ),
         .testTarget(
             name: "ClixTests",
-            dependencies: ["Clix"]
+            dependencies: ["Clix"],
+            path: "Tests"
         ),
     ]
 )
