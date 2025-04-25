@@ -8,7 +8,7 @@ Clix iOS SDK is a powerful toolkit for managing push notifications and tracking 
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/your-username/clix-ios-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.0.0")
 ]
 ```
 
