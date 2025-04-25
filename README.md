@@ -28,14 +28,14 @@ import Clix
 // Initialize the SDK
 let config = ClixConfig(
     apiKey: "YOUR_API_KEY",
-    endpoint: "https://api.clix.io", // Optional: defaults to https://api.clix.io
+    endpoint: "https://api.clix.so", // Optional: defaults to https://api.clix.so
     loggingLevel: .debug // Optional: set logging level
 )
 
 Task {
     try await Clix.shared.initialize(
         apiKey: "YOUR_API_KEY",
-        endpoint: "https://api.clix.io",
+        endpoint: "https://api.clix.so",
         withConfig: config
     )
 }
