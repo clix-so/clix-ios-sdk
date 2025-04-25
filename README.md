@@ -1,9 +1,8 @@
 # Clix iOS SDK
 
-Clix iOS SDK는 iOS 애플리케이션에서 푸시 알림을 관리하고 사용자 이벤트를
-추적하는 데 사용되는 SDK입니다.
+Clix iOS SDK is a powerful toolkit for managing push notifications and tracking user events in iOS applications. It provides a simple and intuitive interface for handling user engagement and analytics.
 
-## 설치 방법
+## Installation
 
 ### Swift Package Manager
 
@@ -19,88 +18,123 @@ dependencies: [
 pod 'Clix'
 ```
 
-## 사용 방법
+## Usage
 
-### 초기화
+### Initialization
 
 ```swift
 import Clix
 
-// SDK 초기화
-let config = ClixConfig(apiKey: "YOUR_API_KEY")
+// Initialize the SDK
+let config = ClixConfig(
+    apiKey: "YOUR_API_KEY",
+    endpoint: "https://api.clix.io", // Optional: defaults to https://api.clix.io
+    loggingLevel: .debug // Optional: set logging level
+)
+
 Task {
-    try await Clix.shared.initialize(config: config)
+    try await Clix.shared.initialize(
+        apiKey: "YOUR_API_KEY",
+        endpoint: "https://api.clix.io",
+        withConfig: config
+    )
 }
 ```
 
-### 사용자 ID 설정
+### User Management
 
 ```swift
-// 사용자 ID 설정
+// Set User ID
 Task {
     try await Clix.shared.setUserId("user123")
 }
 
-// 사용자 ID 제거
+// Remove User ID
 Task {
     try await Clix.shared.removeUserId()
 }
-```
 
-### 사용자 속성 설정
-
-```swift
-// 사용자 속성 설정
+// Set User Attributes
 Task {
     try await Clix.shared.setAttribute("name", value: "John Doe")
 }
 ```
 
-### 이벤트 추적
+### Event Tracking
 
 ```swift
-// 이벤트 추적
+// Track Events
 Task {
-    try await Clix.shared.trackEvent("button_clicked", properties: ["button_id": "login_button"])
+    try await Clix.shared.trackEvent("button_clicked", properties: [
+        "button_id": "login_button",
+        "screen": "login"
+    ])
 }
 ```
 
-### 푸시 알림 처리
+### Push Notification Integration
+
+Add these methods to your `AppDelegate` or relevant SwiftUI lifecycle handlers:
 
 ```swift
-// AppDelegate에서 푸시 알림 처리
+// Handle device token registration
 func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     Task {
         try? await Clix.shared.handleDeviceToken(deviceToken)
     }
 }
 
-// 푸시 알림 수신 처리
+// Handle registration failures
+func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    Clix.shared.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
+}
+
+// Handle incoming notifications
 func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
     Clix.shared.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler)
 }
 
-// 푸시 알림 응답 처리
+// Handle notification responses
 func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
     Clix.shared.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
 }
 ```
 
-## 로깅
+### Device Token Management
 
 ```swift
-// 로깅 레벨 설정
+// Get current device token
+let currentToken = Clix.getCurrentToken()
+
+// Get previous device tokens
+let previousTokens = Clix.getPreviousTokens()
+```
+
+### Logging
+
+```swift
+// Set logging level
 Clix.setLogLevel(.debug)
 ```
 
-## 리셋
+### Reset
 
 ```swift
-// SDK 리셋
+// Reset SDK state
 Clix.shared.reset()
 ```
 
-## 라이선스
+## Features
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE)
-파일을 참조하세요.
+- Easy integration with Swift Package Manager and CocoaPods
+- Comprehensive push notification handling
+- User identification and attribute management
+- Event tracking with custom properties
+- Device token management
+- Configurable logging levels
+- Async/await support for modern Swift development
+- Automatic permission handling for notifications
+
+## License
+
+This project is distributed under the MIT License. See the [LICENSE](LICENSE) file for more details.
