@@ -1,3 +1,4 @@
+import Foundation
 import UserNotifications
 
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
@@ -12,6 +13,31 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
 
     if let bestAttemptContent = bestAttemptContent {
+      // Parse the notification payload and update the content
+      guard let userInfo = bestAttemptContent.userInfo as? [String: Any],
+        let clixInfo = userInfo["clix"] as? [String: Any]
+      else {
+        // No Clix-specific data, return original content
+        contentHandler(bestAttemptContent)
+        return
+      }
+      
+      if let title = clixInfo["title"] as? String {
+        bestAttemptContent.title = title
+      }
+      
+      if let body = clixInfo["body"] as? String {
+        bestAttemptContent.body = body
+      }
+      
+      if let badge = clixInfo["badge"] as? NSNumber {
+        bestAttemptContent.badge = badge
+      }
+      
+      if let sound = clixInfo["sound"] as? String {
+        bestAttemptContent.sound = UNNotificationSound(named: UNNotificationSoundName(sound))
+      }
+      
       if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
         Task {
           if let attachment = try? await downloadAndAttachMedia(
@@ -79,5 +105,22 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     if let contentHandler = contentHandler, let bestAttemptContent = bestAttemptContent {
       contentHandler(bestAttemptContent)
     }
+  }
+}
+
+// Helper functions for notification processing
+extension ClixNotificationServiceExtension {
+  private func decryptContent(encrypted: String, withKey key: String) -> String? {
+    // Implement decryption if needed
+    // This is a placeholder for actual decryption logic
+    nil
+  }
+  
+  private func logError(_ error: Error) {
+    NSLog("[ClixNotificationService] [ERROR] %@", error.localizedDescription)
+  }
+  
+  private func logInfo(_ message: String) {
+    NSLog("[ClixNotificationService] [INFO] %@", message)
   }
 }

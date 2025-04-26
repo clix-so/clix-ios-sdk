@@ -1,10 +1,10 @@
 import Foundation
 import UserNotifications
 
-class ClixNotificationService {
-  private let networkService: ClixNetworkService
+class NotificationService {
+  private let networkService: NetworkService
 
-  init(networkService: ClixNetworkService = ClixNetworkService.shared) {
+  init(networkService: NetworkService = NetworkService.shared) {
     self.networkService = networkService
   }
 
@@ -24,6 +24,24 @@ class ClixNotificationService {
     )
   }
 
+  /// Sets notification preferences
+  /// - Parameters:
+  ///   - enabled: Whether notifications are enabled
+  ///   - categories: Notification categories to register for
+  func setNotificationPreferences(enabled: Bool, categories: [String]? = nil) async throws {
+    let center = UNUserNotificationCenter.current()
+    if enabled {
+      let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+      let granted = try await center.requestAuthorization(options: authOptions)
+      if !granted {
+        throw ClixError.invalidResponse
+      }
+    }
+    
+    // TODO: Register categories if needed
+  }
+
+  /// Resets notification state
   func reset() {
     UserDefaults.standard.removeObject(forKey: "clix_notification_settings")
     UserDefaults.standard.removeObject(forKey: "clix_last_notification")

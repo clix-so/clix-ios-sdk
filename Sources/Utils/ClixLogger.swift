@@ -1,6 +1,6 @@
 import Foundation
 
-enum ClixLogCategory {
+enum LogCategory {
   case general
   case pushNotification
   case user
@@ -18,7 +18,7 @@ class ClixLogger {
     logLevel = level
   }
 
-  func log(level: ClixLogLevel, category: ClixLogCategory, message: String, error: Error? = nil) {
+  func log(level: ClixLogLevel, category: LogCategory, message: String, error: Error? = nil) {
     guard level.rawValue >= logLevel.rawValue else { return }
 
     let timestamp = ISO8601DateFormatter().string(from: Date())

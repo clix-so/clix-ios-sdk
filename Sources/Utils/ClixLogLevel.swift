@@ -1,11 +1,11 @@
 import Foundation
 
 public enum ClixLogLevel: Int {
-  case none = -1
-  case debug = 0
-  case info = 1
+  case none = 0
+  case error = 1
   case warning = 2
-  case error = 3
+  case info = 3
+  case debug = 4
 }
 
 extension ClixLogLevel: Comparable {

@@ -5,21 +5,20 @@ import UserNotifications
 /// Main class of Clix SDK
 public class Clix {
   /// Singleton instance of Clix SDK
-  public static let shared = Clix()
+  private static let shared = Clix()
 
   // MARK: - Properties
 
   private var config: ClixConfig?
-  private var userId: String?
 
   // MARK: - Services
 
   private lazy var logger = ClixLogger()
-  private lazy var tokenService = ClixTokenService()
-  private lazy var userService = ClixUserService()
-  private lazy var eventService = ClixEventService()
-  private lazy var networkService = ClixNetworkService()
-  private lazy var notificationService = ClixNotificationService()
+  private lazy var tokenService = TokenService()
+  private lazy var userService = UserService()
+  private lazy var eventService = EventService()
+  private lazy var networkService = NetworkService()
+  private lazy var notificationService = NotificationService()
 
   private init() {}
 
@@ -30,14 +29,14 @@ public class Clix {
   ///   - apiKey: API key
   ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.io")
   ///   - config: Clix SDK configuration
-  public func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
-    logger.setLogLevel(config?.loggingLevel ?? .info)
+  public static func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
+    shared.logger.setLogLevel(config?.logLevel ?? .info)
 
     // Configure network service
-    networkService.configure(apiKey: apiKey, endpoint: endpoint)
+    shared.networkService.configure(apiKey: apiKey, endpoint: endpoint)
 
     // Initialize token service
-    try await tokenService.initialize()
+    try await shared.tokenService.initialize()
 
     // Request notification permission
     let granted = try await UNUserNotificationCenter.current()
@@ -52,45 +51,63 @@ public class Clix {
   /// Sets the user ID
   /// - Parameters:
   ///   - userId: User ID to set
-  public func setUserId(_ userId: String) async throws {
-    self.userId = userId
-    if let token = tokenService.getCurrentToken() {
-      try await userService.registerDevice(token: token, userId: userId)
+  public static func setUserId(_ userId: String) async throws {
+    shared.userService.setUserId(userId)
+    if let token = shared.tokenService.getCurrentToken() {
+      try await shared.userService.registerDevice(token: token, userId: userId)
     }
   }
 
   /// Removes the user ID
-  public func removeUserId() async throws {
-    userId = nil
-    if let token = tokenService.getCurrentToken() {
-      try await userService.registerDevice(token: token, userId: nil)
+  public static func removeUserId() async throws {
+    shared.userService.removeUserId()
+    if let token = shared.tokenService.getCurrentToken() {
+      try await shared.userService.registerDevice(token: token, userId: nil)
     }
+  }
+
+  /// Gets the current user
+  /// - Returns: Current ClixUser
+  public static func getCurrentUser() -> ClixUser {
+    shared.userService.getCurrentUser()
   }
 
   /// Sets a user attribute
   /// - Parameters:
   ///   - key: Attribute key
   ///   - value: Attribute value
-  public func setAttribute(_ key: String, value: Any) async throws {
-    try await userService.setAttribute(key, value: value)
+  public static func setAttribute(_ key: String, value: Any?) async throws {
+    try await shared.userService.setAttribute(key, value: value)
+  }
+  
+  /// Sets multiple user attributes at once
+  /// - Parameter userAttributes: Dictionary of attribute keys and values
+  public static func setAttributes(_ userAttributes: [String: Any?]) async throws {
+    try await shared.userService.setAttributes(userAttributes)
+  }
+  
+  /// Removes a user attribute
+  /// - Parameter key: Attribute key to remove
+  public static func removeAttribute(_ key: String) async throws {
+    try await shared.userService.removeAttribute(key)
   }
 
   /// Tracks an event
   /// - Parameters:
   ///   - name: Event name
   ///   - properties: Event properties
-  public func trackEvent(_ name: String, properties: [String: Any]? = nil) async throws {
-    try await eventService.trackEvent(name: name, properties: properties, userId: userId)
+  public static func trackEvent(_ name: String, properties: [String: Any]? = nil) async throws {
+    let userId = shared.userService.getCurrentUser().userId
+    try await shared.eventService.trackEvent(name: name, properties: properties, userId: userId)
   }
 
   /// Resets the Clix SDK to its initial state
-  public func reset() {
-    config = nil
-    userId = nil
-    tokenService.reset()
-    userService.reset()
-    notificationService.reset()
-    eventService.reset()
+  public static func reset() {
+    shared.config = nil
+    shared.tokenService.reset()
+    shared.userService.reset()
+    shared.notificationService.reset()
+    shared.eventService.reset()
   }
 
   // MARK: - Internal Methods
@@ -98,30 +115,29 @@ public class Clix {
   /// Handles the device token
   /// - Parameters:
   ///   - token: Device token data
-  func handleDeviceToken(_ token: Data) async throws {
-    let tokenString = tokenService.convertTokenToString(token)
-    tokenService.setCurrentToken(tokenString)
-    try await userService.registerDevice(token: tokenString, userId: userId)
+  static func handleDeviceToken(_ token: Data) async throws {
+    let tokenString = shared.tokenService.convertTokenToString(token)
+    shared.tokenService.setCurrentToken(tokenString)
+    let userId = shared.userService.getCurrentUser().userId
+    try await shared.userService.registerDevice(token: tokenString, userId: userId)
   }
 
   /// Handles push notification reception
   /// - Parameters:
   ///   - userInfo: Push notification information
-  func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
+  static func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
     try await trackEvent("push_received", properties: ["payload": userInfo])
   }
 
   /// Handles push notification response
   /// - Parameters:
   ///   - response: Push notification response
-  func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
+  static func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
     try await trackEvent(
       "push_opened",
       properties: ["payload": response.notification.request.content.userInfo]
     )
   }
-
-  // MARK: - Public Methods
 
   /// Sets the logging level
   /// - Parameter level: Logging level to set
@@ -147,7 +163,7 @@ public class Clix {
   /// - Parameters:
   ///   - application: UIApplication instance
   ///   - deviceToken: Device token data
-  public func application(
+  public static func application(
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
@@ -160,11 +176,11 @@ public class Clix {
   /// - Parameters:
   ///   - application: UIApplication instance
   ///   - error: Error that occurred
-  public func application(
+  public static func application(
     _ application: UIApplication,
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
-    logger.log(
+    shared.logger.log(
       level: .error,
       category: .pushNotification,
       message: "Failed to register for remote notifications",
@@ -185,7 +201,7 @@ public class Clix {
   ///   - center: UNUserNotificationCenter instance
   ///   - notification: Notification to be displayed
   ///   - completionHandler: Handler to set notification display options
-  public func userNotificationCenter(
+  public static func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) ->
@@ -199,7 +215,7 @@ public class Clix {
   ///   - center: UNUserNotificationCenter instance
   ///   - response: User response
   ///   - completionHandler: Handler called after processing is complete
-  public func userNotificationCenter(
+  public static func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void

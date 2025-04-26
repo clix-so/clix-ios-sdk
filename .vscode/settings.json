@@ -1,9 +1,9 @@
 {
-    "editor.formatOnSave": true,
-    "editor.renderWhitespace": "all",
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "always"
-    },
-    "files.autoSave": "afterDelay",
-    "files.insertFinalNewline": true
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "all",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always"
+  },
+  "files.autoSave": "afterDelay",
+  "files.insertFinalNewline": true
 }

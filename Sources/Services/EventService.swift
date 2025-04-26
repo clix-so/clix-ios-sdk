@@ -1,9 +1,9 @@
 import Foundation
 
-class ClixEventService {
-  private let networkService: ClixNetworkService
+class EventService {
+  private let networkService: NetworkService
 
-  init(networkService: ClixNetworkService = ClixNetworkService.shared) {
+  init(networkService: NetworkService = NetworkService.shared) {
     self.networkService = networkService
   }
 

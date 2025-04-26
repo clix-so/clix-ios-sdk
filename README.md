@@ -29,7 +29,7 @@ import Clix
 let config = ClixConfig(
     apiKey: "YOUR_API_KEY",
     endpoint: "https://api.clix.so", // Optional: defaults to https://api.clix.so
-    loggingLevel: .debug // Optional: set logging level
+    logLevel: .debug // Optional: set logging level
 )
 
 Task {

@@ -1,6 +1,6 @@
 import Foundation
 
-class ClixTokenService {
+class TokenService {
   private var currentToken: String?
   private var previousTokens: [String] = []
 
@@ -31,8 +31,9 @@ class ClixTokenService {
     UserDefaults.standard.set(token, forKey: "clix_current_token")
   }
 
-  func convertTokenToString(_ token: Data) -> String {
-    token.map { String(format: "%02.2hhx", $0) }.joined()
+  func convertTokenToString(_ deviceToken: Data) -> String {
+    let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+    return tokenParts.joined()
   }
 
   func reset() {

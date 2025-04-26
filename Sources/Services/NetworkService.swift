@@ -1,7 +1,7 @@
 import Foundation
 
-class ClixNetworkService {
-  static let shared = ClixNetworkService()
+class NetworkService {
+  static let shared = NetworkService()
 
   private let session: URLSession
   private var apiKey: String?
@@ -94,8 +94,9 @@ class ClixNetworkService {
       throw ClixError.notInitialized
     }
 
-    let urlComponents = URLComponents(string: "\(endpoint)/v1/attributes")
-    guard let url = urlComponents?.url else {
+    guard let urlComponents = URLComponents(string: "\(endpoint)/v1/user-attributes"),
+      let url = urlComponents.url
+    else {
       throw ClixError.invalidURL
     }
 
@@ -109,16 +110,16 @@ class ClixNetworkService {
       "value": value,
     ]
 
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
     let (_, response) = try await session.data(for: request)
 
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw ClixError.invalidResponse
+      throw ClixError.networkError
     }
 
     if !(200...299).contains(httpResponse.statusCode) {
-      throw ClixError.serverError(statusCode: httpResponse.statusCode)
+      throw ClixError.networkError
     }
   }
 }
