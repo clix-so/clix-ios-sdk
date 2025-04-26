@@ -1,14 +1,14 @@
 import Foundation
 
-class ClixEventManager {
-  private let networkManager: ClixNetworkManager
+class ClixEventService {
+  private let networkService: ClixNetworkService
 
-  init(networkManager: ClixNetworkManager = ClixNetworkManager.shared) {
-    self.networkManager = networkManager
+  init(networkService: ClixNetworkService = ClixNetworkService.shared) {
+    self.networkService = networkService
   }
 
   func trackEvent(name: String, properties: [String: Any]?, userId: String?) async throws {
-    try await networkManager.trackEvent(name: name, properties: properties, userId: userId)
+    try await networkService.trackEvent(name: name, properties: properties, userId: userId)
   }
 
   func reset() {

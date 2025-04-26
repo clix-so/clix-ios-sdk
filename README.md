@@ -4,7 +4,7 @@ Clix iOS SDK is a powerful toolkit for managing push notifications and tracking 
 
 ## Installation
 
-### Swift Package Manager
+### Swift Package Service
 
 ```swift
 dependencies: [
@@ -126,7 +126,7 @@ Clix.shared.reset()
 
 ## Features
 
-- Easy integration with Swift Package Manager and CocoaPods
+- Easy integration with Swift Package Service and CocoaPods
 - Comprehensive push notification handling
 - User identification and attribute management
 - Event tracking with custom properties

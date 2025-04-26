@@ -1,6 +1,6 @@
 import Foundation
 
-class ClixTokenManager {
+class ClixTokenService {
   private var currentToken: String?
   private var previousTokens: [String] = []
 

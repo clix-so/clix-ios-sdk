@@ -1,15 +1,15 @@
 import Foundation
 import UserNotifications
 
-class ClixNotificationManager {
-  private let networkManager: ClixNetworkManager
+class ClixNotificationService {
+  private let networkService: ClixNetworkService
 
-  init(networkManager: ClixNetworkManager = ClixNetworkManager.shared) {
-    self.networkManager = networkManager
+  init(networkService: ClixNetworkService = ClixNetworkService.shared) {
+    self.networkService = networkService
   }
 
   func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
-    try await networkManager.trackEvent(
+    try await networkService.trackEvent(
       name: "push_received",
       properties: ["payload": userInfo],
       userId: nil
@@ -17,7 +17,7 @@ class ClixNotificationManager {
   }
 
   func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    try await networkManager.trackEvent(
+    try await networkService.trackEvent(
       name: "push_opened",
       properties: ["payload": response.notification.request.content.userInfo],
       userId: nil

@@ -1,10 +1,11 @@
 import Foundation
 
-class ClixNetworkManager {
-  static let shared = ClixNetworkManager()
+class ClixNetworkService {
+  static let shared = ClixNetworkService()
 
   private let session: URLSession
-  private var config: ClixConfig?
+  private var apiKey: String?
+  private var endpoint: String?
 
   init() {
     let config = URLSessionConfiguration.default
@@ -13,16 +14,17 @@ class ClixNetworkManager {
     self.session = URLSession(configuration: config)
   }
 
-  func configure(with config: ClixConfig) {
-    self.config = config
+  func configure(apiKey: String, endpoint: String) {
+    self.apiKey = apiKey
+    self.endpoint = endpoint
   }
 
   func registerDevice(token: String, userId: String?) async throws {
-    guard let config = config else {
+    guard let endpoint = endpoint, let apiKey = apiKey else {
       throw ClixError.notInitialized
     }
 
-    guard let urlComponents = URLComponents(string: "\(config.endpoint)/v1/devices"),
+    guard let urlComponents = URLComponents(string: "\(endpoint)/v1/devices"),
       let url = urlComponents.url
     else {
       throw ClixError.invalidURL
@@ -31,7 +33,7 @@ class ClixNetworkManager {
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
+    request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 
     let body: [String: Any] = [
       "token": token,
@@ -53,11 +55,11 @@ class ClixNetworkManager {
   }
 
   func trackEvent(name: String, properties: [String: Any]?, userId: String?) async throws {
-    guard let config = config else {
+    guard let endpoint = endpoint, let apiKey = apiKey else {
       throw ClixError.notInitialized
     }
 
-    guard let urlComponents = URLComponents(string: "\(config.endpoint)/v1/events"),
+    guard let urlComponents = URLComponents(string: "\(endpoint)/v1/events"),
       let url = urlComponents.url
     else {
       throw ClixError.invalidURL
@@ -66,7 +68,7 @@ class ClixNetworkManager {
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
+    request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 
     let body: [String: Any] = [
       "name": name,
@@ -88,11 +90,11 @@ class ClixNetworkManager {
   }
 
   func setAttribute(key: String, value: Any) async throws {
-    guard let config = config else {
+    guard let endpoint = endpoint, let apiKey = apiKey else {
       throw ClixError.notInitialized
     }
 
-    let urlComponents = URLComponents(string: "\(config.endpoint)/v1/attributes")
+    let urlComponents = URLComponents(string: "\(endpoint)/v1/attributes")
     guard let url = urlComponents?.url else {
       throw ClixError.invalidURL
     }
@@ -100,7 +102,7 @@ class ClixNetworkManager {
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
+    request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
 
     let body: [String: Any] = [
       "key": key,

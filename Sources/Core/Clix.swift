@@ -12,14 +12,14 @@ public class Clix {
   private var config: ClixConfig?
   private var userId: String?
 
-  // MARK: - Managers
+  // MARK: - Services
 
   private lazy var logger = ClixLogger()
-  private lazy var tokenManager = ClixTokenManager()
-  private lazy var userManager = ClixUserManager()
-  private lazy var eventManager = ClixEventManager()
-  private lazy var networkManager = ClixNetworkManager()
-  private lazy var notificationManager = ClixNotificationManager()
+  private lazy var tokenService = ClixTokenService()
+  private lazy var userService = ClixUserService()
+  private lazy var eventService = ClixEventService()
+  private lazy var networkService = ClixNetworkService()
+  private lazy var notificationService = ClixNotificationService()
 
   private init() {}
 
@@ -33,8 +33,11 @@ public class Clix {
   public func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
     logger.setLogLevel(config?.loggingLevel ?? .info)
 
-    // Initialize token manager
-    try await tokenManager.initialize()
+    // Configure network service
+    networkService.configure(apiKey: apiKey, endpoint: endpoint)
+
+    // Initialize token service
+    try await tokenService.initialize()
 
     // Request notification permission
     let granted = try await UNUserNotificationCenter.current()
@@ -51,16 +54,16 @@ public class Clix {
   ///   - userId: User ID to set
   public func setUserId(_ userId: String) async throws {
     self.userId = userId
-    if let token = tokenManager.getCurrentToken() {
-      try await userManager.registerDevice(token: token, userId: userId)
+    if let token = tokenService.getCurrentToken() {
+      try await userService.registerDevice(token: token, userId: userId)
     }
   }
 
   /// Removes the user ID
   public func removeUserId() async throws {
     userId = nil
-    if let token = tokenManager.getCurrentToken() {
-      try await userManager.registerDevice(token: token, userId: nil)
+    if let token = tokenService.getCurrentToken() {
+      try await userService.registerDevice(token: token, userId: nil)
     }
   }
 
@@ -69,7 +72,7 @@ public class Clix {
   ///   - key: Attribute key
   ///   - value: Attribute value
   public func setAttribute(_ key: String, value: Any) async throws {
-    try await userManager.setAttribute(key, value: value)
+    try await userService.setAttribute(key, value: value)
   }
 
   /// Tracks an event
@@ -77,17 +80,17 @@ public class Clix {
   ///   - name: Event name
   ///   - properties: Event properties
   public func trackEvent(_ name: String, properties: [String: Any]? = nil) async throws {
-    try await eventManager.trackEvent(name: name, properties: properties, userId: userId)
+    try await eventService.trackEvent(name: name, properties: properties, userId: userId)
   }
 
   /// Resets the Clix SDK to its initial state
   public func reset() {
     config = nil
     userId = nil
-    tokenManager.reset()
-    userManager.reset()
-    notificationManager.reset()
-    eventManager.reset()
+    tokenService.reset()
+    userService.reset()
+    notificationService.reset()
+    eventService.reset()
   }
 
   // MARK: - Internal Methods
@@ -96,9 +99,9 @@ public class Clix {
   /// - Parameters:
   ///   - token: Device token data
   func handleDeviceToken(_ token: Data) async throws {
-    let tokenString = tokenManager.convertTokenToString(token)
-    tokenManager.setCurrentToken(tokenString)
-    try await userManager.registerDevice(token: tokenString, userId: userId)
+    let tokenString = tokenService.convertTokenToString(token)
+    tokenService.setCurrentToken(tokenString)
+    try await userService.registerDevice(token: tokenString, userId: userId)
   }
 
   /// Handles push notification reception
@@ -129,13 +132,13 @@ public class Clix {
   /// Returns the current device token
   /// - Returns: Current device token string
   public static func getCurrentToken() -> String? {
-    shared.tokenManager.getCurrentToken()
+    shared.tokenService.getCurrentToken()
   }
 
   /// Returns the list of previous device tokens
   /// - Returns: Array of previous device token strings
   public static func getPreviousTokens() -> [String] {
-    shared.tokenManager.getPreviousTokens()
+    shared.tokenService.getPreviousTokens()
   }
 
   // MARK: - UIApplicationDelegate Methods
