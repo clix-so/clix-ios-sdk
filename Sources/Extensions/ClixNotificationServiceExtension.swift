@@ -1,9 +1,6 @@
 import Foundation
 import UserNotifications
 
-// Assume HTTPClient and its Errors are available globally or via import
-// import Utils // Or wherever HTTPClient is located if needed
-
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?
   private var bestAttemptContent: UNMutableNotificationContent?
@@ -44,7 +41,6 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
       if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
         Task {
           do {
-            // NetworkService를 통해 미디어 다운로드
             let attachment = try await downloadAndAttachMedia(
               url: url,
               type: request.content.userInfo["media_type"] as? String ?? "image"
@@ -52,7 +48,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
             bestAttemptContent.attachments = [attachment]
             contentHandler(bestAttemptContent)
           } catch {
-            logError(error)  // NetworkService에서 반환된 ClixError 로깅
+            logError(error)
             contentHandler(bestAttemptContent)
           }
         }
@@ -83,7 +79,6 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   }
 }
 
-// Helper functions for notification processing
 extension ClixNotificationServiceExtension {
   private func decryptContent(encrypted: String, withKey key: String) -> String? {
     // Implement decryption if needed
@@ -92,10 +87,19 @@ extension ClixNotificationServiceExtension {
   }
 
   private func logError(_ error: Error) {
-    NSLog("[ClixNotificationService] [ERROR] %@", error.localizedDescription)
+    ClixLogger.shared.log(
+      level: .error,
+      category: .pushNotification,
+      message: error.localizedDescription,
+      error: error
+    )
   }
 
   private func logInfo(_ message: String) {
-    NSLog("[ClixNotificationService] [INFO] %@", message)
+    ClixLogger.shared.log(
+      level: .info,
+      category: .pushNotification,
+      message: message
+    )
   }
 }

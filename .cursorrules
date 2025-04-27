@@ -5,6 +5,7 @@ your descriptions must be short, precise, and complete.
 do not remove or omit any comments but strip header comments from your code.
 always fully implement requested functionality without leaving TODOs or placeholders.
 all outputs must be fully working, production-usable Swift code.
+all code, comments, document outputs must be written in English.
 
 Swift Compatibility Requirements:
 - Minimum Swift version: **Swift 5.5** or higher.
