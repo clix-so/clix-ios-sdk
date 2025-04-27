@@ -59,11 +59,8 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   }
 
   private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
-    // NetworkService의 downloadMedia 메서드 사용
-    // NetworkService.shared 가 public 이므로 접근 가능
     let downloadedFileURL = try await NetworkService.shared.downloadMedia(url: url)
 
-    // Attach the downloaded file
     let attachment = try UNNotificationAttachment(
       identifier: UUID().uuidString,
       url: downloadedFileURL,

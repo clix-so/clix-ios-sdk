@@ -1,17 +1,13 @@
 import Foundation
 
-// internal (default) access level
 class HTTPClient {
-  // shared 인스턴스를 private으로 변경
   private static let shared = HTTPClient()
   private let session: URLSession
 
-  // internal (default) access level
   init(session: URLSession = .shared) {
     self.session = session
   }
 
-  // internal (default) access level
   func request<T: Decodable>(_ req: HTTPRequest, responseType: T.Type) async throws -> HTTPResponse<T> {
     var urlComponents = URLComponents(url: req.url, resolvingAgainstBaseURL: false)
     if let query = req.query {
@@ -51,7 +47,6 @@ class HTTPClient {
     }
   }
 
-  // Sugar methods (internal)
   func get<T: Decodable>(
     url: URL,
     headers: [String: String]? = nil,
@@ -95,7 +90,6 @@ class HTTPClient {
     return try await request(req, responseType: responseType)
   }
 
-  /// Downloads a file from the given URL to a temporary location. (internal)
   func download(url: URL) async throws -> URL {
     try await withCheckedThrowingContinuation { continuation in
       let task = session.downloadTask(with: url) { tempLocalURL, response, error in
@@ -152,10 +146,3 @@ class HTTPClient {
     }
   }
 }
-
-// 아래 중복 정의된 타입들을 모두 삭제합니다.
-// struct HTTPRequest { ... }
-// struct HTTPResponse<T> { ... }
-// enum HTTPMethod: String { ... }
-// enum HTTPError: Error { ... }
-// AnyCodable 정의 주석도 삭제합니다.
