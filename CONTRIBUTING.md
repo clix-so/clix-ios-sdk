@@ -45,12 +45,30 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-## Use a Consistent Coding Style
+## Code Style & Linting
 
-* Use Swift style guide
-* 4 spaces for indentation rather than tabs
-* 120 character line length
-* Run `swiftlint` before submitting
+This project uses SwiftFormat and SwiftLint to enforce code style and maintain code quality. Please ensure your contributions adhere to these standards before submitting a pull request.
+
+**Prerequisites:**
+
+Make sure you have SwiftFormat and SwiftLint installed. You can install them using Homebrew:
+
+```bash
+brew install swift-format swiftlint
+```
+
+**Running the Tools:**
+
+We provide a `Makefile` to simplify running these tools. Use the following commands from the project root directory:
+
+- `make format`: Automatically formats all Swift code in the project using the rules defined in `.swift-format`.
+- `make lint`: Lints the codebase using SwiftLint based on the rules in `.swiftlint.yml`. Reports warnings or errors.
+- `make lint-fix`: Attempts to automatically fix linting issues found by SwiftLint.
+- `make all`: Runs both `format` and `lint` targets sequentially.
+
+**Before Submitting:**
+
+Please run `make format` and `make lint-fix` first, then review any remaining issues reported by `make lint`. Resolve all issues before creating a pull request to ensure a smooth review process.
 
 ## License
 

@@ -37,7 +37,7 @@ class NotificationService {
         throw ClixError.invalidResponse
       }
     }
-    
+
     // TODO: Register categories if needed
   }
 

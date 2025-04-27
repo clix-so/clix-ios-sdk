@@ -52,4 +52,9 @@ cyclomatic_complexity:
   warning: 15
   error: 25
 
+excluded:
+  - .build
+  - .swiftpm
+  - Sources/Utils/AnyCodable
+
 reporter: "xcode" 

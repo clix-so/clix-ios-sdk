@@ -79,13 +79,13 @@ public class Clix {
   public static func setAttribute(_ key: String, value: Any?) async throws {
     try await shared.userService.setAttribute(key, value: value)
   }
-  
+
   /// Sets multiple user attributes at once
   /// - Parameter userAttributes: Dictionary of attribute keys and values
   public static func setAttributes(_ userAttributes: [String: Any?]) async throws {
     try await shared.userService.setAttributes(userAttributes)
   }
-  
+
   /// Removes a user attribute
   /// - Parameter key: Attribute key to remove
   public static func removeAttribute(_ key: String) async throws {

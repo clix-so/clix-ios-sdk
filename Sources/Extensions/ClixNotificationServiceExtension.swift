@@ -21,23 +21,23 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
         contentHandler(bestAttemptContent)
         return
       }
-      
+
       if let title = clixInfo["title"] as? String {
         bestAttemptContent.title = title
       }
-      
+
       if let body = clixInfo["body"] as? String {
         bestAttemptContent.body = body
       }
-      
+
       if let badge = clixInfo["badge"] as? NSNumber {
         bestAttemptContent.badge = badge
       }
-      
+
       if let sound = clixInfo["sound"] as? String {
         bestAttemptContent.sound = UNNotificationSound(named: UNNotificationSoundName(sound))
       }
-      
+
       if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
         Task {
           if let attachment = try? await downloadAndAttachMedia(
@@ -115,11 +115,11 @@ extension ClixNotificationServiceExtension {
     // This is a placeholder for actual decryption logic
     nil
   }
-  
+
   private func logError(_ error: Error) {
     NSLog("[ClixNotificationService] [ERROR] %@", error.localizedDescription)
   }
-  
+
   private func logInfo(_ message: String) {
     NSLog("[ClixNotificationService] [INFO] %@", message)
   }
