@@ -1,38 +1,39 @@
 import Foundation
 
-public enum ClixError: Error {
+public enum ClixError: Error, LocalizedError {
   case notInitialized
-  case networkError
-  case invalidToken
-  case invalidUserId
-  case invalidAttribute
-  case invalidEvent
   case invalidURL
+  case invalidConfiguration(String)
+  case networkError(Error?)
+  case encodingError
+  case decodingError(Error)
+  case unknownError(Error?)
   case invalidResponse
-  case serverError(statusCode: Int)
-}
 
-extension ClixError: LocalizedError {
   public var errorDescription: String? {
     switch self {
     case .notInitialized:
-      return "Clix is not initialized. Please call Clix.initialize() first."
-    case .networkError:
-      return "Network error. Please check your internet connection."
-    case .invalidToken:
-      return "Invalid device token."
-    case .invalidUserId:
-      return "Invalid user ID. Please call Clix.setUserId() first."
-    case .invalidAttribute:
-      return "Invalid attribute. Please check the attribute format."
-    case .invalidEvent:
-      return "Invalid event. Please check the event format."
+      return "Clix SDK is not initialized. Call Clix.configure() first."
     case .invalidURL:
-      return "Invalid URL. Please check the URL format."
+      return "The provided URL is invalid."
+    case .invalidConfiguration(let reason):
+      return "Invalid SDK configuration: \(reason)"
+    case .networkError(let underlyingError):
+      guard let error = underlyingError else {
+        return "An unspecified network error occurred."
+      }
+      return "Network request failed: \(error.localizedDescription)"
+    case .encodingError:
+      return "Failed to encode request body."
+    case .decodingError(let underlyingError):
+      return "Failed to decode response body: \(underlyingError.localizedDescription)"
+    case .unknownError(let underlyingError):
+      guard let error = underlyingError else {
+        return "An unknown error occurred."
+      }
+      return "An unknown error occurred: \(error.localizedDescription)"
     case .invalidResponse:
-      return "Invalid response from server."
-    case .serverError(let statusCode):
-      return "Server error with status code: \(statusCode)"
+      return "The response was invalid or permission was denied."
     }
   }
 }

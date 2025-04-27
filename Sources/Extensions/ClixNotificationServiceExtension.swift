@@ -1,6 +1,9 @@
 import Foundation
 import UserNotifications
 
+// Assume HTTPClient and its Errors are available globally or via import
+// import Utils // Or wherever HTTPClient is located if needed
+
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?
   private var bestAttemptContent: UNMutableNotificationContent?
@@ -40,13 +43,18 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
 
       if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
         Task {
-          if let attachment = try? await downloadAndAttachMedia(
-            url: url,
-            type: request.content.userInfo["media_type"] as? String ?? "image"
-          ) {
+          do {
+            // NetworkService를 통해 미디어 다운로드
+            let attachment = try await downloadAndAttachMedia(
+              url: url,
+              type: request.content.userInfo["media_type"] as? String ?? "image"
+            )
             bestAttemptContent.attachments = [attachment]
+            contentHandler(bestAttemptContent)
+          } catch {
+            logError(error)  // NetworkService에서 반환된 ClixError 로깅
+            contentHandler(bestAttemptContent)
           }
-          contentHandler(bestAttemptContent)
         }
       } else {
         contentHandler(bestAttemptContent)
@@ -55,50 +63,17 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   }
 
   private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
-    try await withCheckedThrowingContinuation { continuation in
-      let task = URLSession.shared.downloadTask(with: url) { temporaryFileLocation, response, error in
-        if let error = error {
-          continuation.resume(throwing: error)
-          return
-        }
+    // NetworkService의 downloadMedia 메서드 사용
+    // NetworkService.shared 가 public 이므로 접근 가능
+    let downloadedFileURL = try await NetworkService.shared.downloadMedia(url: url)
 
-        guard let temporaryFileLocation = temporaryFileLocation,
-          let response = response as? HTTPURLResponse,
-          (200...299).contains(response.statusCode)
-        else {
-          continuation.resume(
-            throwing: NSError(
-              domain: "ClixNotificationService",
-              code: -1,
-              userInfo: [NSLocalizedDescriptionKey: "Invalid response"]
-            )
-          )
-          return
-        }
-
-        let fileManager = FileManager.default
-        let temporaryDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
-        let uniqueFilename = "\(UUID().uuidString).\(type)"
-        let destinationURL = temporaryDirectory.appendingPathComponent(uniqueFilename)
-
-        do {
-          if fileManager.fileExists(atPath: destinationURL.path) {
-            try fileManager.removeItem(at: destinationURL)
-          }
-          try fileManager.moveItem(at: temporaryFileLocation, to: destinationURL)
-
-          let attachment = try UNNotificationAttachment(
-            identifier: UUID().uuidString,
-            url: destinationURL,
-            options: nil
-          )
-          continuation.resume(returning: attachment)
-        } catch {
-          continuation.resume(throwing: error)
-        }
-      }
-      task.resume()
-    }
+    // Attach the downloaded file
+    let attachment = try UNNotificationAttachment(
+      identifier: UUID().uuidString,
+      url: downloadedFileURL,
+      options: nil  // Optionally add [UNNotificationAttachmentOptionsTypeHintKey: type]
+    )
+    return attachment
   }
 
   override public func serviceExtensionTimeWillExpire() {

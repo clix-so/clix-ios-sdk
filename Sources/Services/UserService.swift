@@ -47,7 +47,7 @@ class UserService {
     saveUserToStorage()
 
     // Send to server
-    try await networkService.setAttribute(key: key, value: value ?? NSNull())
+    try await networkService.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
   }
 
   /// Sets multiple user attributes at once and persists the changes
@@ -67,7 +67,7 @@ class UserService {
 
     // Then update each attribute on the server
     for (key, value) in userAttributes {
-      try await networkService.setAttribute(key: key, value: value ?? NSNull())
+      try await networkService.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
     }
   }
 
@@ -78,7 +78,7 @@ class UserService {
     saveUserToStorage()
 
     // Also update server
-    try await networkService.setAttribute(key: key, value: NSNull())
+    try await networkService.setAttribute(key: key, value: NSNull(), userId: currentUser.userId)
   }
 
   /// Get a user attribute
@@ -98,9 +98,7 @@ class UserService {
     }
 
     for (key, attributeValue) in userAttributes {
-      if let value = attributeValue.value {
-        result[key] = value
-      }
+      result[key] = attributeValue.value
     }
 
     return result
