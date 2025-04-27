@@ -143,8 +143,6 @@ class AppDelegate: ClixAppDelegate {
 - You can override: `pushNotificationDeliveredInForeground`, `pushNotificationTapped`, `pushNotificationDeliveredSilently`.
 - Always call super to retain default SDK behavior.
 
-> For more advanced patterns and examples, see the [Knock iOS SDK documentation](https://docs.knock.app/sdks/ios/push-notifications).
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
