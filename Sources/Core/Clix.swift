@@ -17,7 +17,6 @@ public class Clix {
   lazy var tokenService = TokenService()
   lazy var userService = UserService()
   lazy var eventService = EventService()
-  lazy var networkService = NetworkService()
   lazy var notificationService = NotificationService()
 
   private init() {}
@@ -32,8 +31,9 @@ public class Clix {
   public static func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
     shared.logger.setLogLevel(config?.logLevel ?? .info)
 
-    // Configure network service
-    shared.networkService.configure(apiKey: apiKey, endpoint: endpoint)
+    // Configure services
+    UserAPIService.shared.configure(apiKey: apiKey, endpoint: endpoint)
+    EventAPIService.shared.configure(apiKey: apiKey, endpoint: endpoint)
 
     // Initialize token service
     try await shared.tokenService.initialize()

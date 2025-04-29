@@ -2,14 +2,14 @@ import Foundation
 import UserNotifications
 
 class NotificationService {
-  private let networkService: NetworkService
+  private let eventAPI: EventAPIService
 
-  init(networkService: NetworkService = NetworkService.shared) {
-    self.networkService = networkService
+  init(eventAPI: EventAPIService = EventAPIService.shared) {
+    self.eventAPI = eventAPI
   }
 
   func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
-    try await networkService.trackEvent(
+    try await eventAPI.trackEvent(
       name: "push_received",
       properties: ["payload": userInfo],
       userId: nil
@@ -17,7 +17,7 @@ class NotificationService {
   }
 
   func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    try await networkService.trackEvent(
+    try await eventAPI.trackEvent(
       name: "push_opened",
       properties: ["payload": response.notification.request.content.userInfo],
       userId: nil

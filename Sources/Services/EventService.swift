@@ -1,14 +1,14 @@
 import Foundation
 
 class EventService {
-  private let networkService: NetworkService
+  private let eventAPI: EventAPIService
 
-  init(networkService: NetworkService = NetworkService.shared) {
-    self.networkService = networkService
+  init(eventAPI: EventAPIService = EventAPIService.shared) {
+    self.eventAPI = eventAPI
   }
 
   func trackEvent(name: String, properties: [String: Any]?, userId: String?) async throws {
-    try await networkService.trackEvent(name: name, properties: properties, userId: userId)
+    try await eventAPI.trackEvent(name: name, properties: properties, userId: userId)
   }
 
   func reset() {

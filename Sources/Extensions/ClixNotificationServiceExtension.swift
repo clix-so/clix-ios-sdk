@@ -4,6 +4,7 @@ import UserNotifications
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?
   private var bestAttemptContent: UNMutableNotificationContent?
+  private let baseAPI = BaseAPIService()
 
   override public func didReceive(
     _ request: UNNotificationRequest,
@@ -59,7 +60,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   }
 
   private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
-    let downloadedFileURL = try await NetworkService.shared.downloadMedia(url: url)
+    let downloadedFileURL = try await baseAPI.httpClient.download(url: url)
 
     let attachment = try UNNotificationAttachment(
       identifier: UUID().uuidString,

@@ -1,13 +1,13 @@
 import Foundation
 
 class UserService {
-  private let networkService: NetworkService
+  private let userAPI: UserAPIService
   private var currentUser: ClixUser
 
   static let userDefaultsKey = "clix_user_data"
 
-  init(networkService: NetworkService = NetworkService.shared) {
-    self.networkService = networkService
+  init(userAPI: UserAPIService = UserAPIService.shared) {
+    self.userAPI = userAPI
     self.currentUser = UserService.loadUserFromStorage() ?? ClixUser()
   }
 
@@ -47,7 +47,7 @@ class UserService {
     saveUserToStorage()
 
     // Send to server
-    try await networkService.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
+    try await userAPI.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
   }
 
   /// Sets multiple user attributes at once and persists the changes
@@ -67,7 +67,7 @@ class UserService {
 
     // Then update each attribute on the server
     for (key, value) in userAttributes {
-      try await networkService.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
+      try await userAPI.setAttribute(key: key, value: value ?? NSNull(), userId: currentUser.userId)
     }
   }
 
@@ -78,7 +78,7 @@ class UserService {
     saveUserToStorage()
 
     // Also update server
-    try await networkService.setAttribute(key: key, value: NSNull(), userId: currentUser.userId)
+    try await userAPI.setAttribute(key: key, value: NSNull(), userId: currentUser.userId)
   }
 
   /// Get a user attribute
@@ -109,7 +109,7 @@ class UserService {
   ///   - token: Device token
   ///   - userId: User ID
   func registerDevice(token: String, userId: String?) async throws {
-    try await networkService.registerDevice(token: token, userId: userId)
+    try await userAPI.registerDevice(token: token, userId: userId)
   }
 
   // MARK: - Storage
