@@ -1,15 +1,19 @@
 import Foundation
 import UserNotifications
-
+import UIKit
 class NotificationService {
-  private let eventAPI: EventAPIService
+  private let eventAPIService: EventAPIService
+  private let storageService: StorageService
+  private let settingsKey = "clix_notification_settings"
+  private let lastNotificationKey = "clix_last_notification"
 
-  init(eventAPI: EventAPIService = EventAPIService.shared) {
-    self.eventAPI = eventAPI
+  init(eventAPI: EventAPIService = EventAPIService(), storageService: StorageService = StorageService()) {
+    self.eventAPIService = eventAPI
+    self.storageService = storageService
   }
 
   func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
-    try await eventAPI.trackEvent(
+    try await eventAPIService.trackEvent(
       name: "push_received",
       properties: ["payload": userInfo],
       userId: nil
@@ -17,7 +21,7 @@ class NotificationService {
   }
 
   func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    try await eventAPI.trackEvent(
+    try await eventAPIService.trackEvent(
       name: "push_opened",
       properties: ["payload": response.notification.request.content.userInfo],
       userId: nil
@@ -39,6 +43,16 @@ class NotificationService {
     }
 
     // TODO: Register categories if needed
+  }
+
+  func requestNotificationPermission() async throws {
+    let granted = try await UNUserNotificationCenter.current()
+      .requestAuthorization(options: [.alert, .sound, .badge])
+    if granted {
+      await MainActor.run {
+        UIApplication.shared.registerForRemoteNotifications()
+      }
+    }
   }
 
   /// Resets notification state

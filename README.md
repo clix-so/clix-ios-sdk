@@ -60,12 +60,12 @@ await Clix.initialize(
 
 ```swift
 await Clix.setUserId("user123")
-await Clix.setAttribute("name", value: "John Doe")
-await Clix.setAttributes([
+await Clix.setProperty("name", value: "John Doe")
+await Clix.setProperties([
     "age": 25,
     "premium": true
 ])
-await Clix.removeAttribute("name")
+await Clix.removeProperty("name")
 await Clix.removeUserId()
 ```
 

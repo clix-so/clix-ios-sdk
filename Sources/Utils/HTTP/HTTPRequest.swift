@@ -2,22 +2,22 @@ import Foundation
 
 struct HTTPRequest {
   var url: URL
-  var method: HTTPMethod
+  var method: HTTPMethod = .get
+  var params: [String: Any]?
   var headers: [String: String]?
-  var query: [String: String]?
-  var body: Data?
+  var data: Encodable?
 
   init(
     url: URL,
-    method: HTTPMethod,
+    method: HTTPMethod = .get,
+    params: [String: Any]? = nil,
     headers: [String: String]? = nil,
-    query: [String: String]? = nil,
-    body: Data? = nil
+    data: Encodable? = nil
   ) {
     self.url = url
     self.method = method
+    self.params = params
     self.headers = headers
-    self.query = query
-    self.body = body
+    self.data = data
   }
 }

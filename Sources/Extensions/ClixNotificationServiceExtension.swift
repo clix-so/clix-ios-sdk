@@ -4,7 +4,7 @@ import UserNotifications
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?
   private var bestAttemptContent: UNMutableNotificationContent?
-  private let baseAPI = BaseAPIService()
+  private let baseAPI = APIService()
 
   override public func didReceive(
     _ request: UNNotificationRequest,
@@ -85,7 +85,7 @@ extension ClixNotificationServiceExtension {
   }
 
   private func logError(_ error: Error) {
-    ClixLogger.shared.log(
+    ClixLogger.log(
       level: .error,
       category: .pushNotification,
       message: error.localizedDescription,
@@ -94,7 +94,7 @@ extension ClixNotificationServiceExtension {
   }
 
   private func logInfo(_ message: String) {
-    ClixLogger.shared.log(
+    ClixLogger.log(
       level: .info,
       category: .pushNotification,
       message: message

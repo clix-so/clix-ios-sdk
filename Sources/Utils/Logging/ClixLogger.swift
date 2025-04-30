@@ -9,16 +9,15 @@ enum LogCategory {
 }
 
 class ClixLogger {
-  static let shared = ClixLogger()
-  private var logLevel: ClixLogLevel = .info
+  private static var logLevel: ClixLogLevel = .info
 
   init() {}
 
-  func setLogLevel(_ level: ClixLogLevel) {
+  static func setLogLevel(_ level: ClixLogLevel) {
     logLevel = level
   }
 
-  func log(level: ClixLogLevel, category: LogCategory, message: String, error: Error? = nil) {
+  static func log(level: ClixLogLevel, category: LogCategory, message: String, error: Error? = nil) {
     guard level.rawValue >= logLevel.rawValue else { return }
 
     let timestamp = ISO8601DateFormatter().string(from: Date())

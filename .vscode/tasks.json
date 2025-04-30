@@ -2,14 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "xcodebuild",
+      "label": "swiftbuild",
       "type": "shell",
-      "command": "xcodebuild -scheme Clix -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' build",
+      "command": "make build",
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "problemMatcher": "$swiftc"
-    }
+    },
   ]
 }

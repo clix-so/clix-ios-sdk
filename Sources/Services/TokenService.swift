@@ -1,34 +1,52 @@
 import Foundation
 
 class TokenService {
-  private var currentToken: String?
-  private var previousTokens: [String] = []
+  private let storageService: StorageService
+  private let currentTokenKey = "clix_current_token"
+  private let previousTokensKey = "clix_previous_tokens"
 
-  func initialize() async throws {
-    if let savedToken = UserDefaults.standard.string(forKey: "clix_current_token") {
-      currentToken = savedToken
-    }
-    if let savedTokens = UserDefaults.standard.stringArray(forKey: "clix_previous_tokens") {
-      previousTokens = savedTokens
-    }
+  init(storageService: StorageService = StorageService()) {
+    self.storageService = storageService
   }
 
+  /// Get the current token
+  /// - Returns: Current token if exists, nil otherwise
   func getCurrentToken() -> String? {
-    currentToken
+    try? storageService.load(String.self, forKey: currentTokenKey)
   }
 
+  /// Get previous tokens
+  /// - Returns: Array of previous tokens
   func getPreviousTokens() -> [String] {
-    previousTokens
+    (try? storageService.load([String].self, forKey: previousTokensKey)) ?? []
   }
 
-  func setCurrentToken(_ token: String) {
-    if let currentToken = currentToken {
+  /// Save a new token
+  /// - Parameter token: Token to save
+  func saveToken(_ token: String) {
+    var previousTokens = getPreviousTokens()
+
+    // Add current token to previous tokens if it exists
+    if let currentToken = getCurrentToken() {
       previousTokens.append(currentToken)
-      UserDefaults.standard.set(previousTokens, forKey: "clix_previous_tokens")
     }
 
-    currentToken = token
-    UserDefaults.standard.set(token, forKey: "clix_current_token")
+    // Keep only last 5 tokens
+    if previousTokens.count > 5 {
+      previousTokens = Array(previousTokens.suffix(5))
+    }
+
+    // Save previous tokens
+    try? storageService.save(previousTokens, forKey: previousTokensKey)
+
+    // Save new token
+    try? storageService.save(token, forKey: currentTokenKey)
+  }
+
+  /// Clear all tokens
+  func clearTokens() {
+    storageService.remove(forKey: currentTokenKey)
+    storageService.remove(forKey: previousTokensKey)
   }
 
   func convertTokenToString(_ deviceToken: Data) -> String {
@@ -37,9 +55,6 @@ class TokenService {
   }
 
   func reset() {
-    currentToken = nil
-    previousTokens = []
-    UserDefaults.standard.removeObject(forKey: "clix_current_token")
-    UserDefaults.standard.removeObject(forKey: "clix_previous_tokens")
+    clearTokens()
   }
 }

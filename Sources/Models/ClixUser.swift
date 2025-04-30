@@ -1,34 +1,25 @@
 import Foundation
+import UIKit
 
-/// A model representing a Clix user with their userAttributes
-public struct ClixUser: Codable {
-  /// The unique Clix identifier for the user
-  public var clixId: String?
+/// A model representing a Clix user with their userProperties
+struct ClixUser: Codable {
+  /// The unique identifier for the Clix visitor
+  let visitorId: String
 
-  /// The unique identifier for the user
-  public var userId: String?
-
-  /// The userAttributes associated with the user
-  public var userAttributes: [String: AnyCodable]?
+  /// The unique identifier for the Project user
+  var userId: String?
 
   /// Creates a new ClixUser instance
   /// - Parameters:
-  ///   - userId: The unique identifier for the user
-  ///   - clixId: The unique Clix identifier for the user
-  ///   - userAttributes: The userAttributes associated with the user
-  public init(userId: String? = nil, clixId: String? = nil, userAttributes: [String: AnyCodable]? = nil) {
+  ///   - userId: The unique identifier for the Project user
+  init(userId: String? = nil) {
+    self.visitorId = ClixUser.generateVisitorId()
     self.userId = userId
-    self.clixId = clixId
-    self.userAttributes = userAttributes ?? [:]
   }
 
-  /// Type to represent any attribute value
-  public enum AttributeValue {
-    /// Helper method to convert Any? to AnyCodable
-    /// - Parameter value: The value to convert
-    /// - Returns: AnyCodable representation of the value
-    public static func from(_ value: Any?) -> AnyCodable {
-      AnyCodable(value)
-    }
+  private static func generateVisitorId() -> String {
+    let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+    let visitorId = UUID(uuidString: deviceId)?.uuidString ?? UUID().uuidString
+    return visitorId
   }
 }

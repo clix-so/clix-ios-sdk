@@ -33,9 +33,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     requestAndRegisterForPushNotifications()
 
     // Check if app was launched from a notification tap
-    if let launchOptions = launchOptions,
-      let userInfo = launchOptions[.remoteNotification] as? [String: AnyObject] {
-      Clix.shared.logger.log(
+    if let launchOptions = launchOptions, let userInfo = launchOptions[.remoteNotification] as? [String: AnyObject] {
+      ClixLogger.log(
         level: .debug,
         category: .pushNotification,
         message: "App launched from push notification"
@@ -56,7 +55,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
-    Clix.shared.logger.log(
+    ClixLogger.log(
       level: .error,
       category: .pushNotification,
       message: "Failed to register for remote notifications",
@@ -98,7 +97,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
-    Clix.shared.logger.log(
+    ClixLogger.log(
       level: .debug,
       category: .pushNotification,
       message: "Push notification delivered in foreground"
@@ -117,7 +116,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
-    Clix.shared.logger.log(
+    ClixLogger.log(
       level: .debug,
       category: .pushNotification,
       message: "Push notification tapped"
@@ -139,7 +138,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     didReceiveRemoteNotification userInfo: [AnyHashable: Any],
     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
-    Clix.shared.logger.log(
+    ClixLogger.log(
       level: .debug,
       category: .pushNotification,
       message: "Push notification delivered silently"
@@ -159,7 +158,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       }
 
       if let error = error {
-        Clix.shared.logger.log(
+        ClixLogger.log(
           level: .error,
           category: .pushNotification,
           message: "Failed to request notification authorization",
@@ -233,9 +232,9 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// - Parameter token: Device token data
   open func handleDeviceToken(_ token: Data) async throws {
     let tokenString = Clix.shared.tokenService.convertTokenToString(token)
-    Clix.shared.tokenService.setCurrentToken(tokenString)
+    Clix.shared.tokenService.saveToken(tokenString)
     let userId = Clix.shared.userService.getCurrentUser().userId
-    try await Clix.shared.userService.registerDevice(token: tokenString, userId: userId)
+    try await Clix.shared.deviceService.registerDevice(token: tokenString, userId: userId)
   }
 
   /// Handles push notification reception

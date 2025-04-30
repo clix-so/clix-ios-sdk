@@ -4,22 +4,17 @@ import UserNotifications
 
 /// Main class of Clix SDK
 public class Clix {
-  /// Singleton instance of Clix SDK
-  static let shared = Clix()
-
   // MARK: - Properties
 
-  private var config: ClixConfig?
+  var config: ClixConfig
 
   // MARK: - Services
 
-  lazy var logger = ClixLogger()
-  lazy var tokenService = TokenService()
-  lazy var userService = UserService()
-  lazy var eventService = EventService()
-  lazy var notificationService = NotificationService()
-
-  private init() {}
+  var userService: UserService
+  var deviceService: DeviceService
+  var eventService: EventService
+  var tokenService: TokenService
+  var notificationService: NotificationService
 
   // MARK: - Public Methods
 
@@ -28,85 +23,79 @@ public class Clix {
   ///   - apiKey: API key
   ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.io")
   ///   - config: Clix SDK configuration
-  public static func initialize(apiKey: String, endpoint: String, config: ClixConfig?) async throws {
-    shared.logger.setLogLevel(config?.logLevel ?? .info)
+  public init(config: ClixConfig) async throws {
+    ClixLogger.setLogLevel(config.logLevel)
 
     // Configure services
-    UserAPIService.shared.configure(apiKey: apiKey, endpoint: endpoint)
-    EventAPIService.shared.configure(apiKey: apiKey, endpoint: endpoint)
+    self.config = config
+    self.userService = UserService()
+    self.deviceService = DeviceService()
+    self.eventService = EventService()
+    self.tokenService = TokenService()
+    self.notificationService = NotificationService()
+  }
+}
 
-    // Initialize token service
-    try await shared.tokenService.initialize()
+public extension Clix {
+  private static var shared: Clix?
 
-    // Request notification permission
-    let granted = try await UNUserNotificationCenter.current()
-      .requestAuthorization(options: [.alert, .sound, .badge])
-    if granted {
-      await MainActor.run {
-        UIApplication.shared.registerForRemoteNotifications()
-      }
+  internal static func getShared() throws -> Clix {
+    guard let shared = shared else {
+      throw ClixError.notInitialized
     }
+    return shared
   }
 
   /// Sets the user ID
   /// - Parameters:
   ///   - userId: User ID to set
-  public static func setUserId(_ userId: String) async throws {
-    shared.userService.setUserId(userId)
-    if let token = shared.tokenService.getCurrentToken() {
-      try await shared.userService.registerDevice(token: token, userId: userId)
+  static func setUserId(_ userId: String) async throws {
+    try getShared().userService.setUserId(userId)
+    if let token = try getShared().tokenService.getCurrentToken() {
+      try await getShared().deviceService.registerDevice(token: token, userId: userId)
     }
   }
 
   /// Removes the user ID
-  public static func removeUserId() async throws {
-    shared.userService.removeUserId()
-    if let token = shared.tokenService.getCurrentToken() {
-      try await shared.userService.registerDevice(token: token, userId: nil)
+  static func removeUserId() async throws {
+    try getShared().userService.removeUserId()
+    if let token = try getShared().tokenService.getCurrentToken() {
+      try await getShared().deviceService.registerDevice(token: token, userId: nil)
     }
   }
 
-  /// Sets a user attribute
+  /// Sets a user property
   /// - Parameters:
-  ///   - key: Attribute key
-  ///   - value: Attribute value
-  public static func setAttribute(_ key: String, value: AnyCodable?) async throws {
-    try await shared.userService.setAttribute(key, value: value)
+  ///   - key: Property key
+  ///   - value: Property value
+  static func setUserProperty(_ key: String, value: AnyCodable?) async throws {
+    try await getShared().userService.setProperty(key, value: value)
   }
 
-  /// Sets multiple user attributes at once
-  /// - Parameter userAttributes: Dictionary of attribute keys and values
-  public static func setAttributes(_ userAttributes: [String: AnyCodable?]) async throws {
-    try await shared.userService.setAttributes(userAttributes)
+  /// Sets multiple user properties at once
+  /// - Parameter userProperties: Dictionary of property keys and values
+  static func setUserProperties(_ userProperties: [String: AnyCodable?]) async throws {
+    try await getShared().userService.setProperties(userProperties)
   }
 
-  /// Removes a user attribute
-  /// - Parameter key: Attribute key to remove
-  public static func removeAttribute(_ key: String) async throws {
-    try await shared.userService.removeAttribute(key)
+  /// Removes a user property
+  /// - Parameter key: Property key to remove
+  static func removeUserProperty(_ key: String) async throws {
+    try await getShared().userService.removeProperty(key)
   }
 
   /// Tracks an event
   /// - Parameters:
   ///   - name: Event name
   ///   - properties: Event properties
-  public static func trackEvent(_ name: String, properties: [String: AnyCodable]? = nil) async throws {
-    let userId = shared.userService.getCurrentUser().userId
-    try await shared.eventService.trackEvent(name: name, properties: properties, userId: userId)
+  static func trackEvent(_ name: String, properties: [String: AnyCodable]? = nil) async throws {
+    let userId = try getShared().userService.getCurrentUser().userId
+    try await getShared().eventService.trackEvent(name: name, properties: properties)
   }
 
   /// Sets the logging level
   /// - Parameter level: Logging level to set
-  public static func setLogLevel(_ level: ClixLogLevel) {
-    shared.logger.setLogLevel(level)
-  }
-
-  /// Resets the Clix SDK to its initial state
-  public static func reset() {
-    shared.config = nil
-    shared.tokenService.reset()
-    shared.userService.reset()
-    shared.notificationService.reset()
-    shared.eventService.reset()
+  static func setLogLevel(_ level: ClixLogLevel) {
+    ClixLogger.setLogLevel(level)
   }
 }
