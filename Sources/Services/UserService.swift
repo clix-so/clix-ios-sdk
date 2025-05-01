@@ -1,24 +1,48 @@
 import Foundation
 
-class UserService {
+actor UserService {
   private let visitorApiService = VisitorAPIService()
   private let tokenService = TokenService()
-  private var currentUser = ClixUser()
+  private let storageService = StorageService()
+  private let clixUserKey = "clix_user"
+  private var currentUser: ClixUser?
 
-  func getCurrentUser() -> ClixUser {
-    currentUser
+  private func generateVisitorId() -> String {
+    UUID(uuidString: DeviceUtil.getDeviceId())?.uuidString ?? UUID().uuidString
+  }
+
+  /// Get current user, creating a new one if it doesn't exist
+  /// - Returns: Current ClixUser instance
+  func getCurrentUser() async -> ClixUser {
+    if let user = currentUser {
+      return user
+    }
+
+    if let storedUser: ClixUser = await storageService.get(forKey: clixUserKey) {
+      currentUser = storedUser
+      return storedUser
+    }
+
+    let newUser = ClixUser(visitorId: generateVisitorId())
+    currentUser = newUser
+    await storageService.set(newUser, forKey: clixUserKey)
+    return newUser
   }
 
   func setUserId(_ userId: String) async throws {
-    currentUser.userId = userId
+    let user = await getCurrentUser()
+    user.setUserId(userId)
+    await storageService.set(user, forKey: clixUserKey)
     try await visitorApiService.setUserId(userId)
   }
 
   func removeUserId() async throws {
-    if let userId = currentUser.userId {
+    let user = await getCurrentUser()
+    if let userId = user.userId {
       try await visitorApiService.removeUserId(userId)
     }
-    currentUser.userId = nil
+    user.setUserId(nil)
+    await storageService.set(user, forKey: clixUserKey)
   }
 
   func setProperties(_ properties: [String: Any]) async throws {

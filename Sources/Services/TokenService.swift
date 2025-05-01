@@ -1,6 +1,6 @@
 import Foundation
 
-class TokenService {
+actor TokenService {
   private let storageService: StorageService
   private let currentTokenKey = "clix_current_token"
   private let previousTokensKey = "clix_previous_tokens"
@@ -11,23 +11,23 @@ class TokenService {
 
   /// Get the current token
   /// - Returns: Current token if exists, nil otherwise
-  func getCurrentToken() -> String? {
-    try? storageService.load(String.self, forKey: currentTokenKey)
+  func getCurrentToken() async -> String? {
+    await storageService.get(forKey: currentTokenKey)
   }
 
   /// Get previous tokens
   /// - Returns: Array of previous tokens
-  func getPreviousTokens() -> [String] {
-    (try? storageService.load([String].self, forKey: previousTokensKey)) ?? []
+  func getPreviousTokens() async -> [String] {
+    await storageService.get(forKey: previousTokensKey) ?? []
   }
 
   /// Save a new token
   /// - Parameter token: Token to save
-  func saveToken(_ token: String) {
-    var previousTokens = getPreviousTokens()
+  func saveToken(_ token: String) async {
+    var previousTokens = await getPreviousTokens()
 
     // Add current token to previous tokens if it exists
-    if let currentToken = getCurrentToken() {
+    if let currentToken = await getCurrentToken() {
       previousTokens.append(currentToken)
     }
 
@@ -37,16 +37,16 @@ class TokenService {
     }
 
     // Save previous tokens
-    try? storageService.save(previousTokens, forKey: previousTokensKey)
+    await storageService.set(previousTokens, forKey: previousTokensKey)
 
     // Save new token
-    try? storageService.save(token, forKey: currentTokenKey)
+    await storageService.set(token, forKey: currentTokenKey)
   }
 
   /// Clear all tokens
-  func clearTokens() {
-    storageService.remove(forKey: currentTokenKey)
-    storageService.remove(forKey: previousTokensKey)
+  func clearTokens() async {
+    await storageService.remove(forKey: currentTokenKey)
+    await storageService.remove(forKey: previousTokensKey)
   }
 
   func convertTokenToString(_ deviceToken: Data) -> String {
@@ -54,7 +54,7 @@ class TokenService {
     return tokenParts.joined()
   }
 
-  func reset() {
-    clearTokens()
+  func reset() async {
+    await clearTokens()
   }
 }
