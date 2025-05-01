@@ -1,6 +1,6 @@
 import Foundation
 
-class EventService {
+actor EventService {
   private let apiService = EventAPIService()
 
   func trackEvent(name: String, properties: [String: Any?] = [:]) async throws {

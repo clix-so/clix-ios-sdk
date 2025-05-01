@@ -1,28 +1,24 @@
 import Foundation
 import UserNotifications
 import UIKit
-class NotificationService {
-  private let eventAPIService: EventAPIService
-  private let storageService: StorageService
+
+actor NotificationService {
+  private let eventAPIService = EventAPIService()
+  private let storageService = StorageService()
   private let settingsKey = "clix_notification_settings"
   private let lastNotificationKey = "clix_last_notification"
-
-  init(eventAPI: EventAPIService = EventAPIService(), storageService: StorageService = StorageService()) {
-    self.eventAPIService = eventAPI
-    self.storageService = storageService
-  }
 
   func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
     try await eventAPIService.trackEvent(
       name: "push_received",
-      properties: ["payload": payload],
+      properties: ["payload": payload]
     )
   }
 
   func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
     try await eventAPIService.trackEvent(
       name: "push_opened",
-      properties: ["payload": response.notification.request.content.userInfo],
+      properties: ["payload": response.notification.request.content.userInfo]
     )
   }
 
@@ -54,10 +50,13 @@ class NotificationService {
   }
 
   /// Resets notification state
-  func reset() {
-    UserDefaults.standard.removeObject(forKey: "clix_notification_settings")
-    UserDefaults.standard.removeObject(forKey: "clix_last_notification")
-    UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-    UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+  func reset() async {
+    await storageService.remove(forKey: settingsKey)
+    await storageService.remove(forKey: lastNotificationKey)
+
+    await MainActor.run {
+      UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+      UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    }
   }
 }
