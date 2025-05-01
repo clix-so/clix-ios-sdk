@@ -33,13 +33,13 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     requestAndRegisterForPushNotifications()
 
     // Check if app was launched from a notification tap
-    if let launchOptions = launchOptions, let userInfo = launchOptions[.remoteNotification] as? [String: AnyObject] {
+    if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [String: AnyObject] {
       ClixLogger.log(
         level: .debug,
         category: .pushNotification,
         message: "App launched from push notification"
       )
-      pushNotificationTapped(userInfo: userInfo)
+      pushNotificationTapped(payload: payload)
     }
 
     return true
@@ -62,12 +62,11 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       error: error
     )
     Task {
-      let properties: [String: AnyCodable] = [
-        "error": AnyCodable(error.localizedDescription)
-      ]
       try? await Clix.trackEvent(
         "push_registration_failed",
-        properties: properties
+        properties: [
+          "error": error.localizedDescription
+        ]
       )
     }
   }
@@ -121,7 +120,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       category: .pushNotification,
       message: "Push notification tapped"
     )
-    pushNotificationTapped(userInfo: response.notification.request.content.userInfo)
+    pushNotificationTapped(payload: response.notification.request.content.userInfo)
     Task {
       try? await handleNotificationResponse(response)
       completionHandler()
@@ -131,11 +130,11 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// Called when a silent push notification is received
   /// - Parameters:
   ///   - application: UIApplication instance
-  ///   - userInfo: Push notification information
+  ///   - payload: Push notification information
   ///   - completionHandler: Handler to deliver background fetch results
   open func application(
     _ application: UIApplication,
-    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    didReceiveRemoteNotification payload: [AnyHashable: Any],
     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
     ClixLogger.log(
@@ -143,7 +142,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       category: .pushNotification,
       message: "Push notification delivered silently"
     )
-    pushNotificationDeliveredSilently(userInfo: userInfo, completionHandler: completionHandler)
+    pushNotificationDeliveredSilently(payload: payload, completionHandler: completionHandler)
   }
 
   // MARK: - Helper Functions
@@ -169,10 +168,10 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   }
 
   /// Extracts the message ID from notification payload
-  /// - Parameter userInfo: Notification information
+  /// - Parameter payload: Notification information
   /// - Returns: Message ID or nil
-  open func getMessageId(userInfo: [AnyHashable: Any]) -> String? {
-    userInfo["clix_message_id"] as? String
+  open func getMessageId(payload: [AnyHashable: Any]) -> String? {
+    payload["message_id"] as? String
   }
 
   /// Handles push notification delivery in foreground
@@ -190,19 +189,16 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   }
 
   /// Handles push notification tap
-  /// - Parameter userInfo: Notification information
-  open func pushNotificationTapped(userInfo: [AnyHashable: Any]) {
-    if let messageId = getMessageId(userInfo: userInfo) {
+  /// - Parameter payload: Notification information
+  open func pushNotificationTapped(payload: [AnyHashable: Any]) {
+    if let messageId = getMessageId(payload: payload) {
       Task {
-        let userInfoDict = convertHashableAnyToAnyCodable(userInfo)
-        let properties: [String: AnyCodable] = [
-          "message_id": AnyCodable(messageId),
-          "payload": AnyCodable(userInfoDict),
-        ]
-
         try? await Clix.trackEvent(
           "push_interacted",
-          properties: properties
+          properties: [
+            "message_id": messageId,
+            "payload": payload,
+          ]
         )
       }
     }
@@ -210,15 +206,15 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
 
   /// Handles silent push notification delivery
   /// - Parameters:
-  ///   - userInfo: Notification information
+  ///   - payload: Notification information
   ///   - completionHandler: Handler to deliver background fetch results
   open func pushNotificationDeliveredSilently(
-    userInfo: [AnyHashable: Any],
+    payload: [AnyHashable: Any],
     completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
     Task {
       do {
-        try await handleNotificationReceived(userInfo)
+        try await handleNotificationReceived(payload)
         completionHandler(.newData)
       } catch {
         completionHandler(.failed)
@@ -231,48 +227,31 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// Handles the device token
   /// - Parameter token: Device token data
   open func handleDeviceToken(_ token: Data) async throws {
-    let tokenString = Clix.shared.tokenService.convertTokenToString(token)
-    Clix.shared.tokenService.saveToken(tokenString)
-    let userId = Clix.shared.userService.getCurrentUser().userId
-    try await Clix.shared.deviceService.registerDevice(token: tokenString, userId: userId)
+    let tokenString = await Clix.shared.tokenService.convertTokenToString(token)
+    await Clix.shared.tokenService.saveToken(tokenString)
+    try await Clix.shared.userService.registerDevice(token: tokenString)
   }
 
   /// Handles push notification reception
-  /// - Parameter userInfo: Push notification information
-  open func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
-    let userInfoDict = convertHashableAnyToAnyCodable(userInfo)
-    let properties: [String: AnyCodable] = [
-      "payload": AnyCodable(userInfoDict)
-    ]
-    try await Clix.trackEvent("push_received", properties: properties)
+  /// - Parameter payload: Push notification information
+  open func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
+    try await Clix.trackEvent(
+      "push_received",
+      properties: [
+        "payload": payload
+      ]
+    )
   }
 
   /// Handles push notification response
   /// - Parameter response: Push notification response
   open func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    let userInfo = response.notification.request.content.userInfo
-    let userInfoDict = convertHashableAnyToAnyCodable(userInfo)
-    let properties: [String: AnyCodable] = [
-      "payload": AnyCodable(userInfoDict)
-    ]
+    let payload = response.notification.request.content.userInfo
     try await Clix.trackEvent(
       "push_opened",
-      properties: properties
+      properties: [
+        "payload": payload
+      ]
     )
-  }
-
-  // MARK: - Helper Methods
-
-  /// Converts [AnyHashable: Any] to [String: Any] for AnyCodable compatibility
-  /// - Parameter dictionary: Dictionary to convert
-  /// - Returns: Converted dictionary
-  private func convertHashableAnyToAnyCodable(_ dictionary: [AnyHashable: Any]) -> [String: Any] {
-    var result: [String: Any] = [:]
-    for (key, value) in dictionary {
-      if let stringKey = key as? String {
-        result[stringKey] = value
-      }
-    }
-    return result
   }
 }

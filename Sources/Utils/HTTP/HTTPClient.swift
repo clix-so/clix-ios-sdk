@@ -2,6 +2,8 @@
 import Foundation
 
 class HTTPClient {
+  static let shared = HTTPClient()
+
   private let session: URLSession
   private let jsonDecoder: JSONDecoder
   private let jsonEncoder: JSONEncoder

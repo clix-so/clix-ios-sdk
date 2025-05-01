@@ -12,11 +12,10 @@ class NotificationService {
     self.storageService = storageService
   }
 
-  func handleNotificationReceived(_ userInfo: [AnyHashable: Any]) async throws {
+  func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
     try await eventAPIService.trackEvent(
       name: "push_received",
-      properties: ["payload": userInfo],
-      userId: nil
+      properties: ["payload": payload],
     )
   }
 
@@ -24,7 +23,6 @@ class NotificationService {
     try await eventAPIService.trackEvent(
       name: "push_opened",
       properties: ["payload": response.notification.request.content.userInfo],
-      userId: nil
     )
   }
 

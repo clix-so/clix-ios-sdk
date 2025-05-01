@@ -15,7 +15,7 @@ public struct ClixConfig {
   ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.io")
   ///   - logLevel: Logging level (default: .info)
   public init(
-    apiKey: String,
+    apiKey: String = "",
     endpoint: String = "https://api.clix.io",
     logLevel: ClixLogLevel = .info
   ) {

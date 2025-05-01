@@ -4,7 +4,6 @@ import UserNotifications
 public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?
   private var bestAttemptContent: UNMutableNotificationContent?
-  private let baseAPI = APIService()
 
   override public func didReceive(
     _ request: UNNotificationRequest,
@@ -49,7 +48,12 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
             bestAttemptContent.attachments = [attachment]
             contentHandler(bestAttemptContent)
           } catch {
-            logError(error)
+            ClixLogger.log(
+              level: .error,
+              category: .pushNotification,
+              message: error.localizedDescription,
+              error: error
+            )
             contentHandler(bestAttemptContent)
           }
         }
@@ -60,8 +64,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   }
 
   private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
-    let downloadedFileURL = try await baseAPI.httpClient.download(url: url)
-
+    let downloadedFileURL = try await HTTPClient.shared.download(url)
     let attachment = try UNNotificationAttachment(
       identifier: UUID().uuidString,
       url: downloadedFileURL,
@@ -74,30 +77,5 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     if let contentHandler = contentHandler, let bestAttemptContent = bestAttemptContent {
       contentHandler(bestAttemptContent)
     }
-  }
-}
-
-extension ClixNotificationServiceExtension {
-  private func decryptContent(encrypted: String, withKey key: String) -> String? {
-    // Implement decryption if needed
-    // This is a placeholder for actual decryption logic
-    nil
-  }
-
-  private func logError(_ error: Error) {
-    ClixLogger.log(
-      level: .error,
-      category: .pushNotification,
-      message: error.localizedDescription,
-      error: error
-    )
-  }
-
-  private func logInfo(_ message: String) {
-    ClixLogger.log(
-      level: .info,
-      category: .pushNotification,
-      message: message
-    )
   }
 }

@@ -2,81 +2,86 @@
 import Foundation
 
 class ClixAPIClient {
-  private let httpClient: HTTPClient
-  private let apiKey: String
-  private let appBundleId: String
-  private let baseURL: URL
+  private let httpClient = HTTPClient.shared
+  private let appBundleId: String = Bundle.main.bundleIdentifier ?? ""
 
-  init() throws {
-    self.httpClient = HTTPClient()
-    self.apiKey = try Clix.getShared().config.apiKey
-    self.appBundleId = Bundle.main.bundleIdentifier ?? ""
-    guard let baseURL = URL(string: try Clix.getShared().config.endpoint) else {
-      throw ClixError.invalidURL
-    }
-    self.baseURL = baseURL
+  private func getDefaultHeaders() async throws -> [String: String] {
+    [
+      "X-API-Key": await Clix.shared.config.apiKey,
+      "X-App-Bundle-ID": appBundleId,
+      "User-Agent": "clix-ios-sdk@\(Clix.version)",
+    ]
   }
 
-  private func getDefaultHeaders() throws -> [String: String] {
-    [
-      "X-API-Key": apiKey,
-      "X-App-Bundle-ID": appBundleId,
-    ]
+  private func buildURL(path: String) async throws -> URL {
+    guard let baseURL = URL(string: await Clix.shared.config.endpoint) else {
+      throw ClixError.invalidURL
+    }
+    return baseURL.appendingPathComponent(path)
   }
 
   func get<Res: Decodable>(
     path: String,
     params: [String: Any]? = nil
-  ) async throws -> HTTPResponse<Res> {
-    let url = baseURL.appendingPathComponent(path)
-    return try await httpClient.get(url, params: params, headers: try getDefaultHeaders())
+  ) async throws -> Res {
+    let url = try await buildURL(path: path)
+    let headers = try await getDefaultHeaders()
+    let response: HTTPResponse<Res> = try await httpClient.get(url, params: params, headers: headers)
+    return response.data
   }
 
   func post<Res: Decodable>(
     path: String,
-    data: AnyCodable,
+    data: Any,
     params: [String: Any]? = nil
-  ) async throws -> HTTPResponse<Res> {
-    let url = baseURL.appendingPathComponent(path)
-    return try await httpClient.post(
+  ) async throws -> Res {
+    let url = try await buildURL(path: path)
+    let headers = try await getDefaultHeaders()
+    let response: HTTPResponse<Res> = try await httpClient.post(
       url,
-      data: data,
+      data: AnyCodable(data),
       params: params,
-      headers: try getDefaultHeaders()
+      headers: headers
     )
+    return response.data
   }
 
   func put<Res: Decodable>(
     path: String,
-    data: AnyCodable,
+    data: Any,
     params: [String: Any]? = nil
-  ) async throws -> HTTPResponse<Res> {
-    let url = baseURL.appendingPathComponent(path)
-    return try await httpClient.put(
+  ) async throws -> Res {
+    let url = try await buildURL(path: path)
+    let headers = try await getDefaultHeaders()
+    let response: HTTPResponse<Res> = try await httpClient.put(
       url,
-      data: data,
+      data: AnyCodable(data),
       params: params,
-      headers: try getDefaultHeaders()
+      headers: headers
     )
+    return response.data
   }
 
   func delete<Res: Decodable>(
     path: String,
     params: [String: Any]? = nil
-  ) async throws -> HTTPResponse<Res> {
-    let url = baseURL.appendingPathComponent(path)
-    return try await httpClient.delete(
+  ) async throws -> Res {
+    let url = try await buildURL(path: path)
+    let headers = try await getDefaultHeaders()
+    let response: HTTPResponse<Res> = try await httpClient.delete(
       url,
       params: params,
-      headers: try getDefaultHeaders()
+      headers: headers
     )
+    return response.data
   }
 
   func download(
     path: String,
     params: [String: Any]? = nil
   ) async throws -> URL {
-    let url = baseURL.appendingPathComponent(path)
-    return try await httpClient.download(url, params: params, headers: try getDefaultHeaders())
+    let url = try await buildURL(path: path)
+    let headers = try await getDefaultHeaders()
+    return try await httpClient.download(url, params: params, headers: headers)
   }
 }

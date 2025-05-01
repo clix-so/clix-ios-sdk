@@ -1,25 +1,11 @@
 import Foundation
 
 class EventAPIService: ClixAPIClient {
-  func trackEvent(name: String, properties: [String: Any]?, userId: String?) async throws {
+  func trackEvent(name: String, properties: [String: Any?] = [:]) async throws {
+    let visitorId = await Clix.shared.userService.getCurrentUser().visitorId
+    var eventProperties = properties
+    eventProperties["visitorId"] = visitorId
     let path = "/v1/events"
-    do {
-      let url = try makeURL(path: path)
-      let headers = try makeHeaders()
-
-      struct RequestBody: Encodable {
-        let name: String
-        let properties: AnyCodable?
-        let userId: String?
-      }
-      let encodableProperties = properties.map { AnyCodable($0) }
-      let body = RequestBody(name: name, properties: encodableProperties, userId: userId)
-      let bodyData = try encodeBody(body)
-
-      struct EmptyResponse: Decodable {}
-      _ = try await httpClient.post(url: url, headers: headers, body: bodyData, responseType: EmptyResponse.self)
-    } catch {
-      throw handleRequestError(error)
-    }
+    let _: AnyCodable = try await post(path: path, data: eventProperties)
   }
 }

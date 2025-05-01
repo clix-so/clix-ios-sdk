@@ -18,8 +18,6 @@ struct ClixUser: Codable {
   }
 
   private static func generateVisitorId() -> String {
-    let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
-    let visitorId = UUID(uuidString: deviceId)?.uuidString ?? UUID().uuidString
-    return visitorId
+    UUID(uuidString: DeviceUtil.getDeviceId())?.uuidString ?? UUID().uuidString
   }
 }

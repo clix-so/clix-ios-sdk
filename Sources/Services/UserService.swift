@@ -1,44 +1,36 @@
 import Foundation
 
 class UserService {
-  private let visitorApiService: VisitorAPIService
-  private var currentUser: ClixUser
-
-  init(visitorApiService: VisitorAPIService = VisitorAPIService()) {
-    self.visitorApiService = visitorApiService
-    self.currentUser = ClixUser()
-  }
+  private let visitorApiService = VisitorAPIService()
+  private let tokenService = TokenService()
+  private var currentUser = ClixUser()
 
   func getCurrentUser() -> ClixUser {
     currentUser
   }
 
-  func setUserId(_ userId: String) {
+  func setUserId(_ userId: String) async throws {
     currentUser.userId = userId
+    try await visitorApiService.setUserId(userId)
   }
 
-  func removeUserId() {
+  func removeUserId() async throws {
+    if let userId = currentUser.userId {
+      try await visitorApiService.removeUserId(userId)
+    }
     currentUser.userId = nil
   }
 
-  func setProperty(_ key: String, value: AnyCodable) async throws {
-    try await apiService.setProperty(userId: currentUser.userId, key: key, value: value)
+  func setProperties(_ properties: [String: Any]) async throws {
+    try await visitorApiService.setProperties(properties)
   }
 
-  func setProperties(_ userProperties: [String: AnyCodable]) async throws {
-    for (key, value) in userProperties {
-      try await apiService.setProperty(userId: currentUser.userId, key: key, value: value)
-    }
+  func removeProperties(_ keys: [String]) async throws {
+    let properties: [String: Any?] = Dictionary(uniqueKeysWithValues: keys.map { ($0, nil) })
+    try await visitorApiService.setProperties(properties)
   }
 
-  /// Remove a user property
-  /// - Parameter key: Property key to remove
-  func removeProperty(_ key: String) async throws {
-    try await apiService.setProperty(key: key, value: NSNull(), userId: currentUser.userId)
-  }
-
-  /// Resets all user data
-  func reset() {
-    currentUser = ClixUser()
+  func registerDevice(token: String) async throws {
+    try await visitorApiService.registerDevice(token: token)
   }
 }
