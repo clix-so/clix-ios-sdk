@@ -2,6 +2,13 @@ import Foundation
 import UserNotifications
 import UIKit
 
+/// Notification settings model
+private struct NotificationSettings: Codable {
+  var enabled: Bool
+  var categories: [String]?
+  var lastUpdated: Date
+}
+
 actor NotificationService {
   private let eventAPIService = EventAPIService()
   private let storageService = StorageService()
@@ -36,7 +43,21 @@ actor NotificationService {
       }
     }
 
+    // Save notification settings
+    let settings = NotificationSettings(
+      enabled: enabled,
+      categories: categories,
+      lastUpdated: Date()
+    )
+    await storageService.set(settings, forKey: settingsKey)
+
     // TODO: Register categories if needed
+  }
+
+  /// Get current notification settings
+  /// - Returns: Current notification settings if exists
+  fileprivate func getNotificationSettings() async -> NotificationSettings? {
+    await storageService.get(forKey: settingsKey)
   }
 
   func requestNotificationPermission() async throws {
@@ -47,6 +68,14 @@ actor NotificationService {
         UIApplication.shared.registerForRemoteNotifications()
       }
     }
+
+    // Save the permission status
+    let settings = NotificationSettings(
+      enabled: granted,
+      categories: nil,
+      lastUpdated: Date()
+    )
+    await storageService.set(settings, forKey: settingsKey)
   }
 
   /// Resets notification state
