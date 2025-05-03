@@ -4,7 +4,7 @@ import Foundation
 public struct ClixConfig {
   /// Clix API key
   public let apiKey: String
-  /// Clix API endpoint URL (default: "https://api.clix.io")
+  /// Clix API endpoint URL (default: "https://api.clix.so")
   public let endpoint: String
   /// Logging level setting
   public let logLevel: ClixLogLevel
@@ -12,11 +12,11 @@ public struct ClixConfig {
   /// Initialize ClixConfig
   /// - Parameters:
   ///   - apiKey: API key
-  ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.io")
+  ///   - endpoint: Clix API endpoint URL (default: "https://api.clix.so")
   ///   - logLevel: Logging level (default: .info)
   public init(
     apiKey: String = "",
-    endpoint: String = "https://api.clix.io",
+    endpoint: String = "https://api.clix.so",
     logLevel: ClixLogLevel = .info
   ) {
     self.apiKey = apiKey

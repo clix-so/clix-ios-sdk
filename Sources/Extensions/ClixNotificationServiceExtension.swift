@@ -50,7 +50,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
           } catch {
             ClixLogger.log(
               level: .error,
-              category: .pushNotification,
+              category: .notification,
               message: error.localizedDescription,
               error: error
             )

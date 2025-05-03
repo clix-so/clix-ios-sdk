@@ -1,13 +1,5 @@
 import Foundation
 
-enum LogCategory {
-  case general
-  case pushNotification
-  case user
-  case network
-  case event
-}
-
 class ClixLogger {
   private static var logLevel: ClixLogLevel = .info
 
@@ -17,7 +9,7 @@ class ClixLogger {
     logLevel = level
   }
 
-  static func log(level: ClixLogLevel, category: LogCategory, message: String, error: Error? = nil) {
+  static func log(level: ClixLogLevel, category: ClixLogCategory, message: String, error: Error? = nil) {
     guard level.rawValue >= logLevel.rawValue else { return }
 
     let timestamp = ISO8601DateFormatter().string(from: Date())
@@ -32,8 +24,8 @@ class ClixLogger {
         print("DEBUG: \(logMessage)")
       case .info:
         print("INFO: \(logMessage)")
-      case .warning:
-        print("WARNING: \(logMessage)")
+      case .warn:
+        print("WARN: \(logMessage)")
       case .error:
         print("ERROR: \(logMessage)")
       case .none:

@@ -30,16 +30,16 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     UNUserNotificationCenter.current().delegate = self
 
     // Request permissions and automatically register for notifications
-    requestAndRegisterForPushNotifications()
+    requestAndRegisterFornotifications()
 
     // Check if app was launched from a notification tap
     if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [String: AnyObject] {
       ClixLogger.log(
         level: .debug,
-        category: .pushNotification,
+        category: .notification,
         message: "App launched from push notification"
       )
-      pushNotificationTapped(payload: payload)
+      notificationTapped(payload: payload)
     }
 
     return true
@@ -57,7 +57,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     ClixLogger.log(
       level: .error,
-      category: .pushNotification,
+      category: .notification,
       message: "Failed to register for remote notifications",
       error: error
     )
@@ -98,10 +98,10 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     ClixLogger.log(
       level: .debug,
-      category: .pushNotification,
+      category: .notification,
       message: "Push notification delivered in foreground"
     )
-    let presentationOptions = pushNotificationDeliveredInForeground(notification: notification)
+    let presentationOptions = notificationDeliveredInForeground(notification: notification)
     completionHandler(presentationOptions)
   }
 
@@ -117,10 +117,10 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     ClixLogger.log(
       level: .debug,
-      category: .pushNotification,
+      category: .notification,
       message: "Push notification tapped"
     )
-    pushNotificationTapped(payload: response.notification.request.content.userInfo)
+    notificationTapped(payload: response.notification.request.content.userInfo)
     Task {
       try? await handleNotificationResponse(response)
       completionHandler()
@@ -139,16 +139,16 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     ClixLogger.log(
       level: .debug,
-      category: .pushNotification,
+      category: .notification,
       message: "Push notification delivered silently"
     )
-    pushNotificationDeliveredSilently(payload: payload, completionHandler: completionHandler)
+    notificationDeliveredSilently(payload: payload, completionHandler: completionHandler)
   }
 
   // MARK: - Helper Functions
 
   /// Requests push notification permissions and registers for notifications
-  open func requestAndRegisterForPushNotifications() {
+  open func requestAndRegisterFornotifications() {
     UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
       if granted {
         DispatchQueue.main.async {
@@ -159,7 +159,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       if let error = error {
         ClixLogger.log(
           level: .error,
-          category: .pushNotification,
+          category: .notification,
           message: "Failed to request notification authorization",
           error: error
         )
@@ -177,7 +177,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// Handles push notification delivery in foreground
   /// - Parameter notification: Delivered notification
   /// - Returns: Notification presentation options
-  open func pushNotificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
+  open func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
     Task {
       try? await handleNotificationReceived(notification.request.content.userInfo)
     }
@@ -190,7 +190,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
 
   /// Handles push notification tap
   /// - Parameter payload: Notification information
-  open func pushNotificationTapped(payload: [AnyHashable: Any]) {
+  open func notificationTapped(payload: [AnyHashable: Any]) {
     if let messageId = getMessageId(payload: payload) {
       Task {
         try? await Clix.trackEvent(
@@ -208,7 +208,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// - Parameters:
   ///   - payload: Notification information
   ///   - completionHandler: Handler to deliver background fetch results
-  open func pushNotificationDeliveredSilently(
+  open func notificationDeliveredSilently(
     payload: [AnyHashable: Any],
     completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {

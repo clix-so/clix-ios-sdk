@@ -56,7 +56,7 @@ await Clix.initialize(
 )
 ```
 
-### User Management₩
+### User Management
 
 ```swift
 await Clix.setUserId("user123")
@@ -91,7 +91,7 @@ Clix.setLogLevel(.debug)
 // Available log levels:
 // - .none: Disable logging
 // - .error: Log errors only
-// - .warning: Log warnings and errors
+// - .warn: Log warnings and errors
 // - .info: Log info, warnings, and errors
 // - .debug: Log all
 ```
