@@ -56,5 +56,5 @@ excluded:
   - .build
   - .swiftpm
   - Sources/Utils/AnyCodable
-
+  - Samples/BasicApp/.build
 reporter: "xcode" 
