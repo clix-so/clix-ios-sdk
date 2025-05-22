@@ -20,17 +20,15 @@ actor NotificationService {
   }
 
   func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
-    try await eventAPIService.trackEvent(
-      name: "push_received",
-      properties: ["payload": payload]
-    )
+    guard let deviceId = await Clix.shared.getEnvironment()?.deviceId else { return }
+    let properties: [String: AnyCodable] = ["payload": AnyCodable(payload)]
+    try await eventAPIService.trackEvent(deviceId: deviceId, name: "push_received", properties: properties)
   }
 
   func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    try await eventAPIService.trackEvent(
-      name: "push_opened",
-      properties: ["payload": response.notification.request.content.userInfo]
-    )
+    guard let deviceId = await Clix.shared.getEnvironment()?.deviceId else { return }
+    let properties: [String: AnyCodable] = ["payload": AnyCodable(response.notification.request.content.userInfo)]
+    try await eventAPIService.trackEvent(deviceId: deviceId, name: "push_opened", properties: properties)
   }
 
   /// Sets notification preferences

@@ -12,10 +12,12 @@ actor StorageService: @unchecked Sendable {
   /// - Parameters:
   ///   - value: Value to save
   ///   - key: Key to save value under
-  func set<T>(_ value: T?, forKey key: String) {
+  func set<T: Codable>(_ value: T?, forKey key: String) {
     if let value = value {
-      let wrapped = AnyEncodable(value)
-      userDefaults.set(wrapped, forKey: key)
+      let encoder = JSONEncoder()
+      if let encoded = try? encoder.encode(value) {
+        userDefaults.set(encoded, forKey: key)
+      }
     } else {
       userDefaults.removeObject(forKey: key)
     }
@@ -25,11 +27,12 @@ actor StorageService: @unchecked Sendable {
   /// - Parameters:
   ///   - key: Key to get value for
   /// - Returns: Value if found and can be converted to specified type, nil otherwise
-  func get<T>(forKey key: String) -> T? {
-    guard let wrapped = userDefaults.object(forKey: key) as? AnyDecodable else {
+  func get<T: Codable>(forKey key: String) -> T? {
+    guard let data = userDefaults.data(forKey: key) else {
       return nil
     }
-    return wrapped.value as? T
+    let decoder = JSONDecoder()
+    return try? decoder.decode(T.self, from: data)
   }
 
   /// Remove value from storage

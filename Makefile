@@ -1,7 +1,7 @@
 # Makefile for Swift code formatting and linting
 
 # Define phony targets to avoid conflicts with files named format or lint
-.PHONY: build format lint lint-fix all
+.PHONY: build clean format lint lint-fix all
 
 # Target to build the Swift package for iOS devices
 build:
@@ -12,6 +12,12 @@ build:
 	-Xswiftc /var/db/xcode_select_link/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk \
 	-Xcc -isysroot \
 	-Xcc /var/db/xcode_select_link/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
+
+# Clean build artifacts and caches
+clean:
+	@echo "Cleaning build artifacts and caches..."
+	@rm -rf .build .index-build ~/Library/Developer/Xcode/DerivedData
+
 
 # Target to format Swift code using swift-format
 format:

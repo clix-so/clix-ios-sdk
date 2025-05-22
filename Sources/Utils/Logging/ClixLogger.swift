@@ -8,7 +8,7 @@ class ClixLogger {
   }
 
   static func log(level: ClixLogLevel, message: String, error: Error? = nil) {
-    if level.rawValue < logLevel.rawValue {
+    if level < logLevel {
       return
     }
 

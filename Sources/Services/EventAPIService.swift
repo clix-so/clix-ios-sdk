@@ -1,11 +1,15 @@
 import Foundation
 
+struct EventRequestBody: Codable {
+  let deviceId: String
+  let name: String
+  let properties: [String: AnyCodable]?
+}
+
 class EventAPIService: ClixAPIClient {
-  func trackEvent(name: String, properties: [String: Any?] = [:]) async throws {
-    let visitorId = await Clix.shared.userService.getCurrentUser().visitorId
-    var eventProperties = properties
-    eventProperties["visitorId"] = visitorId
-    let path = "/v1/events"
-    let _: AnyCodable = try await post(path: path, data: eventProperties)
+  func trackEvent(deviceId: String, name: String, properties: [String: AnyCodable]? = nil) async throws {
+    let event = EventRequestBody(deviceId: deviceId, name: name, properties: properties)
+    let path = "/events"
+    let _: [EventRequestBody] = try await post(path: path, data: [event])
   }
 }

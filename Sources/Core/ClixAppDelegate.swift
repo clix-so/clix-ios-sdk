@@ -203,7 +203,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   open func handleDeviceToken(_ token: Data) async throws {
     let tokenString = await Clix.shared.tokenService.convertTokenToString(token)
     await Clix.shared.tokenService.saveToken(tokenString)
-    try await Clix.shared.userService.registerDevice(token: tokenString)
+    try await Clix.shared.deviceService.upsertToken(tokenString)
   }
 
   /// Handles push notification reception
