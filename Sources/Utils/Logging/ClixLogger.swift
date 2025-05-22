@@ -7,14 +7,13 @@ class ClixLogger {
     logLevel = level
   }
 
-  static func log(level: ClixLogLevel, category: ClixLogCategory, message: String, error: Error? = nil) {
+  static func log(level: ClixLogLevel, message: String, error: Error? = nil) {
     if level.rawValue < logLevel.rawValue {
       return
     }
 
     let timestamp = ISO8601DateFormatter().string(from: Date())
-    let categoryString = String(describing: category)
-    var logMessage = "[\(timestamp)] [\(categoryString)] \(message)"
+    var logMessage = "[\(timestamp)] \(message)"
     if let error = error {
       logMessage += " - Error: \(error.localizedDescription)"
     }
@@ -31,5 +30,21 @@ class ClixLogger {
     case .none:
       break
     }
+  }
+
+  static func error(_ message: String, error: Error? = nil) {
+    log(level: .error, message: message, error: error)
+  }
+
+  static func warn(_ message: String, error: Error? = nil) {
+    log(level: .warn, message: message, error: error)
+  }
+
+  static func info(_ message: String, error: Error? = nil) {
+    log(level: .info, message: message, error: error)
+  }
+
+  static func debug(_ message: String, error: Error? = nil) {
+    log(level: .debug, message: message, error: error)
   }
 }

@@ -5,7 +5,7 @@ actor TokenService {
   private let currentTokenKey = "clix_current_token"
   private let previousTokensKey = "clix_previous_tokens"
 
-  init(storageService: StorageService = StorageService()) {
+  init(storageService: StorageService) {
     self.storageService = storageService
   }
 

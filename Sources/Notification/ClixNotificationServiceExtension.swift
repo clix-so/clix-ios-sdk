@@ -48,12 +48,7 @@ public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
             bestAttemptContent.attachments = [attachment]
             contentHandler(bestAttemptContent)
           } catch {
-            ClixLogger.log(
-              level: .error,
-              category: .notification,
-              message: error.localizedDescription,
-              error: error
-            )
+            ClixLogger.error(error.localizedDescription, error: error)
             contentHandler(bestAttemptContent)
           }
         }

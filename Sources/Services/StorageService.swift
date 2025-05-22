@@ -1,7 +1,7 @@
 import Foundation
 
 /// Service responsible for handling persistent storage operations
-actor StorageService {
+actor StorageService: @unchecked Sendable {
   private let userDefaults: UserDefaults
 
   init(userDefaults: UserDefaults = .standard) {

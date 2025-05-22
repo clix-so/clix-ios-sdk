@@ -7,12 +7,11 @@ public actor Clix {
   // MARK: - Properties
 
   var config = ClixConfig()
-
-  // MARK: - Services
-
-  internal lazy var userService = UserService()
+  private let storageService = StorageService()
+  internal lazy var tokenService = TokenService(storageService: storageService)
+  internal lazy var userService = UserService(storageService: storageService, tokenService: tokenService)
   internal lazy var eventService = EventService()
-  internal lazy var tokenService = TokenService()
+  internal lazy var notificationService = NotificationService(storageService: storageService)
 
   private func setConfig(_ config: ClixConfig) {
     self.config = config

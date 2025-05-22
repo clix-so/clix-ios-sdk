@@ -1,11 +1,21 @@
 import Foundation
 
 actor UserService {
-  private let visitorApiService = VisitorAPIService()
-  private let tokenService = TokenService()
-  private let storageService = StorageService()
+  private let visitorApiService: VisitorAPIService
+  private let tokenService: TokenService
+  private let storageService: StorageService
   private let clixUserKey = "clix_user"
   private var currentUser: ClixUser?
+
+  init(
+    storageService: StorageService,
+    tokenService: TokenService,
+    visitorApiService: VisitorAPIService = VisitorAPIService()
+  ) {
+    self.storageService = storageService
+    self.tokenService = tokenService
+    self.visitorApiService = visitorApiService
+  }
 
   private func generateVisitorId() -> String {
     UUID(uuidString: DeviceUtil.getDeviceId())?.uuidString ?? UUID().uuidString

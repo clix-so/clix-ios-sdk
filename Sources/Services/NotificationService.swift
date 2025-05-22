@@ -11,9 +11,13 @@ private struct NotificationSettings: Codable {
 
 actor NotificationService {
   private let eventAPIService = EventAPIService()
-  private let storageService = StorageService()
+  private let storageService: StorageService
   private let settingsKey = "clix_notification_settings"
   private let lastNotificationKey = "clix_last_notification"
+
+  init(storageService: StorageService) {
+    self.storageService = storageService
+  }
 
   func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
     try await eventAPIService.trackEvent(
@@ -56,7 +60,7 @@ actor NotificationService {
 
   /// Get current notification settings
   /// - Returns: Current notification settings if exists
-  fileprivate func getNotificationSettings() async -> NotificationSettings? {
+  private func getNotificationSettings() async -> NotificationSettings? {
     await storageService.get(forKey: settingsKey)
   }
 
