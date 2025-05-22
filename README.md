@@ -143,6 +143,23 @@ class AppDelegate: ClixAppDelegate {
 - You can override: `pushNotificationDeliveredInForeground`, `pushNotificationTapped`, `pushNotificationDeliveredSilently`.
 - Always call super to retain default SDK behavior.
 
+## Sample App
+
+A minimal sample app is provided in the `SampleApp` directory. You can open `SampleApp.xcodeproj` and run the app on a simulator or device. The sample demonstrates how to integrate Clix SDK with push notification and FCM support using the simplest AppDelegate setup:
+
+```swift
+import UIKit
+import Clix
+
+@main
+class AppDelegate: ClixAppDelegate {
+    // Optionally override methods for custom push handling
+}
+```
+
+- Push permission request, FCM/APNS token management, and event tracking are all handled automatically by inheriting from `ClixAppDelegate`.
+- Make sure to set up your Firebase configuration (GoogleService-Info.plist) as needed for FCM.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

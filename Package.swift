@@ -12,11 +12,15 @@ let package = Package(
       targets: ["Clix"]
     )
   ],
-  dependencies: [],
+  dependencies: [
+    .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.0.0")
+  ],
   targets: [
     .target(
       name: "Clix",
-      dependencies: [],
+      dependencies: [
+        .product(name: "FirebaseMessaging", package: "firebase-ios-sdk")
+      ],
       path: "Sources",
       swiftSettings: [
         .define("DEBUG", .when(configuration: .debug)),

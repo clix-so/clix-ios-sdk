@@ -110,4 +110,8 @@ public extension Clix {
   static func setDevice(_ device: ClixDevice) async {
     await shared.getEnvironment()?.setDevice(device)
   }
+
+  /// Indicates whether AppDelegate method swizzling is enabled for Firebase integration.
+  /// Default is `true`. Set to `false` to disable swizzling.
+  static var isSwizzlingEnabledForAppDelegate: Bool = true
 }

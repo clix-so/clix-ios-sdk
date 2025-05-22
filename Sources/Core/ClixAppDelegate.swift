@@ -1,6 +1,8 @@
 import Foundation
 import UIKit
 import UserNotifications
+import FirebaseCore
+import FirebaseMessaging
 
 /**
 This class is designed as an optional base class to streamline the integration of Clix into your application. By inheriting from ClixAppDelegate in your AppDelegate, you gain automatic handling of Push Notification registration and device token management, simplifying the initial setup process for Clix's functionalities.
@@ -15,7 +17,7 @@ Key Features:
 */
 
 @available(iOSApplicationExtension, unavailable)
-open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
   // MARK: - Launching
 
   /// Called when the application launches
@@ -27,6 +29,11 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // Configure Firebase if not already configured by Clix.setup() with swizzling option
+    if FirebaseApp.app() == nil && !Clix.isSwizzlingEnabledForAppDelegate {
+      FirebaseApp.configure()
+    }
+    Messaging.messaging().delegate = self
     UNUserNotificationCenter.current().delegate = self
 
     // Request permissions and automatically register for notifications
@@ -70,9 +77,19 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
-    Task {
-      try? await handleDeviceToken(deviceToken)
-    }
+    // 1. Set APNS token for Firebase Messaging
+    // This allows FCM to use this APNS token to send notifications via APNS.
+    Messaging.messaging().apnsToken = deviceToken
+    ClixLogger.debug("APNS token set for Firebase Messaging.")
+
+    // 2. Existing Clix logic for handling device token (now primarily for FCM token)
+    // The explicit registration of the APNS token to the Clix server might become secondary
+    // or unnecessary if the FCM token (derived/confirmed after setting APNS token)
+    // becomes the primary token for Clix push services.
+    // We will rely on the FCM token received via the MessagingDelegate for Clix server registration.
+    // Task {
+    //   try? await handleDeviceToken(deviceToken) // This originally handles APNS token
+    // }
   }
 
   // MARK: - Notifications
@@ -227,5 +244,26 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         "payload": payload
       ]
     )
+  }
+
+  // MARK: - FCM Token Management
+  public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+    guard let token = fcmToken else {
+      ClixLogger.warn("FCM registration token is nil.")
+      return
+    }
+    ClixLogger.debug("FCM registration token received: \\(token)")
+    Task {
+      // Register the FCM token with Clix server. This is the primary token for pushes.
+      try? await Clix.shared.deviceService.upsertToken(token, tokenType: "FCM")
+    }
+  }
+
+  // MARK: - FCM Foreground Message Handling (Optional)
+  open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+    ClixLogger.debug("FCM push notification received (foreground)")
+    Task {
+      try? await handleNotificationReceived(userInfo)
+    }
   }
 }

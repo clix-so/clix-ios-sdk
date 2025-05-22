@@ -45,7 +45,7 @@ actor DeviceService {
     try await deviceApiService.removeUserProperties(deviceId: deviceId, propertyNames: names)
   }
 
-  func upsertToken(_ token: String) async throws {
+  func upsertToken(_ token: String, tokenType: String = "APNS") async throws {
     guard let environment = await Clix.shared.getEnvironment() else { return }
     let device = await environment.getDevice()
     let updatedDevice = ClixDevice(
@@ -65,7 +65,7 @@ actor DeviceService {
       adId: device.adId,
       isPushPermissionGranted: true,
       pushToken: token,
-      pushTokenType: device.pushTokenType
+      pushTokenType: tokenType
     )
     await environment.setDevice(updatedDevice)
     try await deviceApiService.upsertDevice(device: updatedDevice)
