@@ -4,20 +4,26 @@ import Foundation
 class ClixAPIClient {
   private let httpClient = HTTPClient.shared
   private let appBundleId: String = Bundle.main.bundleIdentifier ?? ""
+  private let baseApiPath: String = "/api/v1"
 
   private func getDefaultHeaders() async throws -> [String: String] {
-    [
-      "X-API-Key": await Clix.shared.config.apiKey,
+    let config = await Clix.shared.config
+    var headers: [String: String] = [
+      "X-API-Key": config.apiKey,
       "X-App-Bundle-ID": appBundleId,
       "User-Agent": "clix-ios-sdk@\(Clix.version)",
     ]
+    config.extraHeaders.forEach { key, value in
+      headers[key] = value
+    }
+    return headers
   }
 
   private func buildURL(path: String) async throws -> URL {
     guard let baseURL = URL(string: await Clix.shared.config.endpoint) else {
       throw ClixError.invalidURL
     }
-    return baseURL.appendingPathComponent(path)
+    return baseURL.appendingPathComponent(baseApiPath + path)
   }
 
   func get<Res: Decodable>(
