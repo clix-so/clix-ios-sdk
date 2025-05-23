@@ -8,9 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		481BED572DDF9B7E00C3637B /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 481BED562DDF9B7E00C3637B /* Clix */; };
+		48341F802DE0389800E3AFDE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48341F7F2DE0389800E3AFDE /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		48341F7F2DE0389800E3AFDE /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		48F08EC52DDF90CC003D26D4 /* BasicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BasicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -39,6 +41,7 @@
 			children = (
 				48F08EC72DDF90CC003D26D4 /* Sources */,
 				48F08EC62DDF90CC003D26D4 /* Products */,
+				48341F7F2DE0389800E3AFDE /* LaunchScreen.storyboard */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,6 +121,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48341F802DE0389800E3AFDE /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
