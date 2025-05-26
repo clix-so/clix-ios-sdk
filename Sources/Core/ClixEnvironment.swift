@@ -21,6 +21,11 @@ actor ClixEnvironment {
     self.device = device
   }
 
+  /// Returns a string representation of the ClixEnvironment instance.
+  public func toString() -> String {
+    "ClixEnvironment(config: \(config), deviceId: \(deviceId), device: \(device))"
+  }
+
   @MainActor
   private static func createDevice(config: ClixConfig, deviceId: String) -> ClixDevice {
     let device = UIDevice.current

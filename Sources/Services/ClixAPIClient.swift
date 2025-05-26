@@ -32,8 +32,19 @@ class ClixAPIClient {
   ) async throws -> Res {
     let url = try await buildURL(path: path)
     let headers = try await getDefaultHeaders()
-    let response: HTTPResponse<Res> = try await httpClient.get(url, params: params, headers: headers)
-    return response.data
+    ClixLogger.debug("ClixAPIClient GET Request: URL: \(url), Params: \(params ?? [:]), Headers: \(headers)")
+    do {
+      let response: HTTPResponse<Res> = try await httpClient.get(url, params: params, headers: headers)
+      ClixLogger.debug(
+        "ClixAPIClient GET Response: URL: \(url), Status: \(response.statusCode), Data: \(response.data)"
+      )
+      return response.data
+    } catch {
+      ClixLogger.error(
+        "ClixAPIClient GET Error: URL: \(url), Params: \(params ?? [:]), Headers: \(headers), Error: \(error)"
+      )
+      throw error
+    }
   }
 
   func post<Res: Decodable>(
@@ -43,13 +54,26 @@ class ClixAPIClient {
   ) async throws -> Res {
     let url = try await buildURL(path: path)
     let headers = try await getDefaultHeaders()
-    let response: HTTPResponse<Res> = try await httpClient.post(
-      url,
-      data: AnyCodable(data),
-      params: params,
-      headers: headers
+    ClixLogger.debug(
+      "ClixAPIClient POST Request: URL: \(url), Data: \(data), Params: \(params ?? [:]), Headers: \(headers)"
     )
-    return response.data
+    do {
+      let response: HTTPResponse<Res> = try await httpClient.post(
+        url,
+        data: AnyCodable(data),
+        params: params,
+        headers: headers
+      )
+      ClixLogger.debug(
+        "ClixAPIClient POST Response: URL: \(url), Status: \(response.statusCode), Data: \(response.data)"
+      )
+      return response.data
+    } catch {
+      ClixLogger.error(
+        "ClixAPIClient POST Error: URL: \(url), Data: \(data), Params: \(params ?? [:]), Headers: \(headers), Error: \(error)"
+      )
+      throw error
+    }
   }
 
   func put<Res: Decodable>(
@@ -59,13 +83,26 @@ class ClixAPIClient {
   ) async throws -> Res {
     let url = try await buildURL(path: path)
     let headers = try await getDefaultHeaders()
-    let response: HTTPResponse<Res> = try await httpClient.put(
-      url,
-      data: AnyCodable(data),
-      params: params,
-      headers: headers
+    ClixLogger.debug(
+      "ClixAPIClient PUT Request: URL: \(url), Data: \(data), Params: \(params ?? [:]), Headers: \(headers)"
     )
-    return response.data
+    do {
+      let response: HTTPResponse<Res> = try await httpClient.put(
+        url,
+        data: AnyCodable(data),
+        params: params,
+        headers: headers
+      )
+      ClixLogger.debug(
+        "ClixAPIClient PUT Response: URL: \(url), Status: \(response.statusCode), Data: \(response.data)"
+      )
+      return response.data
+    } catch {
+      ClixLogger.error(
+        "ClixAPIClient PUT Error: URL: \(url), Data: \(data), Params: \(params ?? [:]), Headers: \(headers), Error: \(error)"
+      )
+      throw error
+    }
   }
 
   func delete<Res: Decodable>(
@@ -74,12 +111,23 @@ class ClixAPIClient {
   ) async throws -> Res {
     let url = try await buildURL(path: path)
     let headers = try await getDefaultHeaders()
-    let response: HTTPResponse<Res> = try await httpClient.delete(
-      url,
-      params: params,
-      headers: headers
-    )
-    return response.data
+    ClixLogger.debug("ClixAPIClient DELETE Request: URL: \(url), Params: \(params ?? [:]), Headers: \(headers)")
+    do {
+      let response: HTTPResponse<Res> = try await httpClient.delete(
+        url,
+        params: params,
+        headers: headers
+      )
+      ClixLogger.debug(
+        "ClixAPIClient DELETE Response: URL: \(url), Status: \(response.statusCode), Data: \(response.data)"
+      )
+      return response.data
+    } catch {
+      ClixLogger.error(
+        "ClixAPIClient DELETE Error: URL: \(url), Params: \(params ?? [:]), Headers: \(headers), Error: \(error)"
+      )
+      throw error
+    }
   }
 
   func download(
@@ -88,6 +136,16 @@ class ClixAPIClient {
   ) async throws -> URL {
     let url = try await buildURL(path: path)
     let headers = try await getDefaultHeaders()
-    return try await httpClient.download(url, params: params, headers: headers)
+    ClixLogger.debug("ClixAPIClient DOWNLOAD Request: URL: \(url), Params: \(params ?? [:]), Headers: \(headers)")
+    do {
+      let downloadedURL = try await httpClient.download(url, params: params, headers: headers)
+      ClixLogger.debug("ClixAPIClient DOWNLOAD Response: URL: \(url), Downloaded File URL: \(downloadedURL)")
+      return downloadedURL
+    } catch {
+      ClixLogger.error(
+        "ClixAPIClient DOWNLOAD Error: URL: \(url), Params: \(params ?? [:]), Headers: \(headers), Error: \(error)"
+      )
+      throw error
+    }
   }
 }

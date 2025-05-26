@@ -1,7 +1,7 @@
 import Foundation
 
 /// The log level for Clix.
-public enum ClixLogLevel: Int {
+public enum ClixLogLevel: Int, Encodable {
   /// No logs.
   case none = 0
   /// Error logs.

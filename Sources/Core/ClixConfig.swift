@@ -1,7 +1,7 @@
 import Foundation
 
 /// Structure that manages Clix SDK configuration
-public struct ClixConfig {
+public struct ClixConfig: Encodable {
   /// Clix API key
   public let apiKey: String
   /// Clix Project ID

@@ -29,10 +29,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    // Configure Firebase if not already configured by Clix.setup() with swizzling option
-    if FirebaseApp.app() == nil && !Clix.isSwizzlingEnabledForAppDelegate {
-      FirebaseApp.configure()
-    }
     Messaging.messaging().delegate = self
     UNUserNotificationCenter.current().delegate = self
 
@@ -252,7 +248,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       ClixLogger.warn("FCM registration token is nil.")
       return
     }
-    ClixLogger.debug("FCM registration token received: \\(token)")
+    ClixLogger.debug("FCM registration token received: \(token)")
     Task {
       // Register the FCM token with Clix server. This is the primary token for pushes.
       try? await Clix.shared.deviceService.upsertToken(token, tokenType: "FCM")

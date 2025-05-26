@@ -47,10 +47,11 @@ public extension Clix {
   static func initialize(config: ClixConfig) async throws {
     ClixLogger.setLogLevel(config.logLevel)
     let deviceId = await shared.getOrCreateDeviceId()
-    await shared.setEnvironment(await ClixEnvironment(config: config, deviceId: deviceId))
+    let environment = await ClixEnvironment(config: config, deviceId: deviceId)
+    await shared.setEnvironment(environment)
     await shared.setConfig(config)
+    ClixLogger.debug("Clix SDK initialized with environment: \(await environment.toString())")
   }
-
   /// Sets the user ID
   /// - Parameters:
   ///   - userId: User ID to set
@@ -110,8 +111,4 @@ public extension Clix {
   static func setDevice(_ device: ClixDevice) async {
     await shared.getEnvironment()?.setDevice(device)
   }
-
-  /// Indicates whether AppDelegate method swizzling is enabled for Firebase integration.
-  /// Default is `true`. Set to `false` to disable swizzling.
-  static var isSwizzlingEnabledForAppDelegate: Bool = true
 }
