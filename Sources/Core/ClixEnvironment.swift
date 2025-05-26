@@ -37,8 +37,8 @@ actor ClixEnvironment {
       id: deviceId,
       platform: "iOS",
       model: device.model,
-      manufacturer: "Apple",
-      osName: device.systemName,
+      // manufacturer: "Apple",
+      // osName: device.systemName,
       osVersion: device.systemVersion,
       localeRegion: locale.regionCode ?? "",
       localeLanguage: locale.languageCode ?? "",
@@ -48,7 +48,7 @@ actor ClixEnvironment {
       sdkType: "Native",
       sdkVersion: Clix.version,
       adId: nil,  // iOS에서 광고 ID는 별도 처리 필요
-      isPushPermissionGranted: false,  // 추후 업데이트 필요
+      // isPushPermissionGranted: false,  // 추후 업데이트 필요
       pushToken: "",
       pushTokenType: "APNS"
     )

@@ -14,7 +14,7 @@ class AppDelegate: ClixAppDelegate {
         try await Clix.initialize(
           config: ClixConfig(
             apiKey: "YOUR_API_KEY",
-            projectId: "78840003-2024-4116-a843-9438aefd3205",
+            projectId: "f860f169-5126-484d-afd3-9d0d82c7346d",
             endpoint: "https://external-api-dev.clix.so",
             logLevel: .debug,
             extraHeaders: [

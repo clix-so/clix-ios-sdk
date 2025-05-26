@@ -9,8 +9,9 @@ class ClixAPIClient {
   private func getDefaultHeaders() async throws -> [String: String] {
     let config = await Clix.shared.config
     var headers: [String: String] = [
-      "X-API-Key": config.apiKey,
-      "X-App-Bundle-ID": appBundleId,
+      "X-Clix-Project-ID": config.projectId,
+      "X-Clix-API-Key": config.apiKey,
+      "X-Clix-App-Identifier": appBundleId,
       "User-Agent": "clix-ios-sdk@\(Clix.version)",
     ]
     config.extraHeaders.forEach { key, value in

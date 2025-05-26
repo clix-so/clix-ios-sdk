@@ -60,6 +60,9 @@ class HTTPClient {
     guard let httpResponse = response as? HTTPURLResponse else {
       throw ClixError.networkError(NSError(domain: "HTTPClient", code: -1, userInfo: nil))
     }
+    ClixLogger.debug(
+      "HTTPClient Request Response: URL: \(finalURL), Status: \(httpResponse.statusCode), Data: \(data) \(String(data: data, encoding: .utf8) ?? "Could not convert data to string")"
+    )
     guard (200...299).contains(httpResponse.statusCode) else {
       throw ClixError.invalidResponse
     }
