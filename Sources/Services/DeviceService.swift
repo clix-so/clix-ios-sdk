@@ -52,8 +52,8 @@ actor DeviceService {
       id: device.id,
       platform: device.platform,
       model: device.model,
-      // manufacturer: device.manufacturer,
-      // osName: device.osName,
+      manufacturer: device.manufacturer,
+      osName: device.osName,
       osVersion: device.osVersion,
       localeRegion: device.localeRegion,
       localeLanguage: device.localeLanguage,
@@ -63,7 +63,7 @@ actor DeviceService {
       sdkType: device.sdkType,
       sdkVersion: device.sdkVersion,
       adId: device.adId,
-      // isPushPermissionGranted: true,
+      isPushPermissionGranted: true,
       pushToken: token,
       pushTokenType: tokenType
     )
