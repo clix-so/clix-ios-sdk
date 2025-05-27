@@ -70,48 +70,48 @@ struct ContentView: View {
             .background(AppTheme.buttonBackground)
             .cornerRadius(12)
           }
-            
+
           Spacer().frame(height: 32)
 
-            VStack(alignment: .leading, spacing: 8) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(NSLocalizedString("event_name", comment: ""))
-                        .font(.system(size: 14))
-                        .foregroundColor(AppTheme.text)
-                    TextField("", text: .constant(""))
-                        .padding()
-                        .background(AppTheme.surfaceVariant.opacity(0.5))
-                        .cornerRadius(12)
-                        .foregroundColor(AppTheme.text)
-                        .frame(height: 56)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(NSLocalizedString("event_params", comment: ""))
-                        .font(.system(size: 14))
-                        .foregroundColor(AppTheme.text)
-                    TextField("", text: .constant("{}"))
-                        .padding()
-                        .background(AppTheme.surfaceVariant.opacity(0.5))
-                        .cornerRadius(12)
-                        .foregroundColor(AppTheme.text)
-                        .frame(height: 56)
-                }
-                
-                Button(action: {
-                    alertMessage = "Event tracked!"
-                    showAlert = true
-                }) {
-                    Text(NSLocalizedString("track_event", comment: ""))
-                        .fontWeight(.bold)
-                        .foregroundColor(AppTheme.buttonText)
-                        .frame(maxHeight: .infinity)
-                }
-                .frame(height: 56)
-                .padding(.horizontal, 12)
-                .background(AppTheme.buttonBackground)
+          VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_name", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: .constant(""))
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
                 .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
             }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_params", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: .constant("{}"))
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            Button(action: {
+              alertMessage = "Event tracked!"
+              showAlert = true
+            }) {
+              Text(NSLocalizedString("track_event", comment: ""))
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.buttonText)
+                .frame(maxHeight: .infinity)
+            }
+            .frame(height: 56)
+            .padding(.horizontal, 12)
+            .background(AppTheme.buttonBackground)
+            .cornerRadius(12)
+          }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 32)
