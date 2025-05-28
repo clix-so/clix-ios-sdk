@@ -44,7 +44,7 @@ public extension Clix {
   /// Initialize the Clix SDK
   /// - Parameters:
   ///   - config: ClixConfig SDK configuration
-  static func initialize(config: ClixConfig) async throws {
+  static func initialize(config: ClixConfig) async {
     ClixLogger.setLogLevel(config.logLevel)
     let deviceId = await shared.getOrCreateDeviceId()
     let environment = await ClixEnvironment(config: config, deviceId: deviceId)
@@ -55,47 +55,75 @@ public extension Clix {
   /// Sets the user ID
   /// - Parameters:
   ///   - userId: User ID to set
-  static func setUserId(_ userId: String) async throws {
-    try await shared.deviceService.setProjectUserId(userId)
+  static func setUserId(_ userId: String) async {
+    do {
+      try await shared.deviceService.setProjectUserId(userId)
+    } catch {
+      ClixLogger.error("[Clix] Failed to set userId: \(error)")
+    }
   }
 
   /// Removes the user ID
-  static func removeUserId() async throws {
-    try await shared.deviceService.removeProjectUserId()
+  static func removeUserId() async {
+    do {
+      try await shared.deviceService.removeProjectUserId()
+    } catch {
+      ClixLogger.error("[Clix] Failed to remove userId: \(error)")
+    }
   }
 
   /// Sets a user property
   /// - Parameters:
   ///   - key: Property key
   ///   - value: Property value
-  static func setUserProperty(_ key: String, value: Any) async throws {
-    try await shared.deviceService.updateUserProperties([key: value])
+  static func setUserProperty(_ key: String, value: Any) async {
+    do {
+      try await shared.deviceService.updateUserProperties([key: value])
+    } catch {
+      ClixLogger.error("[Clix] Failed to set user property: \(error)")
+    }
   }
 
   /// Sets multiple user properties at once
   /// - Parameter userProperties: Dictionary of property keys and values
-  static func setUserProperties(_ userProperties: [String: Any]) async throws {
-    try await shared.deviceService.updateUserProperties(userProperties)
+  static func setUserProperties(_ userProperties: [String: Any]) async {
+    do {
+      try await shared.deviceService.updateUserProperties(userProperties)
+    } catch {
+      ClixLogger.error("[Clix] Failed to set user properties: \(error)")
+    }
   }
 
   /// Removes a user property
   /// - Parameter key: Property key to remove
-  static func removeUserProperty(_ key: String) async throws {
-    try await shared.deviceService.removeUserProperties([key])
+  static func removeUserProperty(_ key: String) async {
+    do {
+      try await shared.deviceService.removeUserProperties([key])
+    } catch {
+      ClixLogger.error("[Clix] Failed to remove user property: \(error)")
+    }
   }
 
   /// Removes multiple user properties
   /// - Parameter keys: Property keys to remove
-  static func removeUserProperties(_ keys: [String]) async throws {
-    try await shared.deviceService.removeUserProperties(keys)
+  static func removeUserProperties(_ keys: [String]) async {
+    do {
+      try await shared.deviceService.removeUserProperties(keys)
+    } catch {
+      ClixLogger.error("[Clix] Failed to remove user properties: \(error)")
+    }
   }
 
   /// Tracks an event
   /// - Parameters:
   ///   - name: Event name
   ///   - properties: Event properties
-  static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async throws {
-    try await shared.eventService.trackEvent(name: name, properties: properties)
+  static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async {
+    do {
+      try await shared.eventService.trackEvent(name: name, properties: properties)
+    } catch {
+      ClixLogger.error("[Clix] Failed to track event: \(error)")
+    }
   }
 
   /// Sets the logging level
