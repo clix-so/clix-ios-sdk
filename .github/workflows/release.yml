@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to be released"
+        required: true
+
+jobs:
+  release:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Changelog
+        id: read_changelog
+        if: ${{ !endsWith(github.event.inputs.version, 'SNAPSHOT') }}
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ github.event.inputs.version }}
+
+      - name: Create Release
+        if: steps.read_changelog.outputs.changes
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          body: ${{ steps.read_changelog.outputs.changes }}
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
