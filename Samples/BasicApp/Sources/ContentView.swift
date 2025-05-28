@@ -1,15 +1,20 @@
-import SwiftUI
 import Clix
+import SwiftUI
 
 struct ContentView: View {
-  @State private var userIdInput: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
-  @State private var eventNameInput: String = ""
-  @State private var eventParamsInput: String = "{}"
   let projectIdText: String = "N/A"
   let apiKeyText: String = "N/A"
   @State private var deviceIdText: String = "N/A"
   @State private var fcmTokenText: String = "N/A"
   @ObservedObject private var appState = AppState.shared
+
+  @State private var userIdInput: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
+
+  @State private var eventNameInput: String = ""
+  @State private var eventParamsInput: String = "{}"
+
+  @State private var userPropertyKeyInput: String = ""
+  @State private var userPropertyValueInput: String = ""
 
   @State private var showAlert: Bool = false
   @State private var alertMessage: String = ""
@@ -143,6 +148,55 @@ struct ContentView: View {
             .background(AppTheme.buttonBackground)
             .cornerRadius(12)
           }
+
+          Spacer().frame(height: 32)
+
+          VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("user_property_key", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $userPropertyKeyInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("user_property_value", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $userPropertyValueInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            Button(action: {
+              Task {
+                do {
+                  try await Clix.setUserProperty(userPropertyKeyInput, value: userPropertyValueInput)
+                  alertMessage = "User property \(userPropertyKeyInput):\(userPropertyValueInput) is set successfully"
+                } catch {
+                  alertMessage = "Failed to set user property: \(error.localizedDescription)"
+                }
+                showAlert = true
+              }
+            }) {
+              Text(NSLocalizedString("set_user_property", comment: ""))
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.buttonText)
+                .frame(maxHeight: .infinity)
+            }
+            .frame(height: 56)
+            .padding(.horizontal, 12)
+            .background(AppTheme.buttonBackground)
+            .cornerRadius(12)
+          }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 32)
@@ -162,7 +216,7 @@ struct ContentView: View {
           if let device = await Clix.getDevice() {
             deviceIdText = device.id
             fcmTokenText = device.pushToken
-              print(device.pushToken)
+            print(device.pushToken)
           } else {
             deviceIdText = "N/A"
           }
