@@ -1,76 +1,70 @@
-import Foundation
 import UserNotifications
 
-public class ClixNotificationServiceExtension: UNNotificationServiceExtension {
-  private var contentHandler: ((UNNotificationContent) -> Void)?
-  private var bestAttemptContent: UNMutableNotificationContent?
+/// A reusable notification service extension for displaying images in push notifications.
+/// Subclass or use directly in your Notification Service Extension target.
+open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
 
-  override public func didReceive(
+  open var contentHandler: ((UNNotificationContent) -> Void)?
+  open var bestAttemptContent: UNMutableNotificationContent?
+
+  open override func didReceive(
     _ request: UNNotificationRequest,
     withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
   ) {
     self.contentHandler = contentHandler
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
 
-    if let bestAttemptContent = bestAttemptContent {
-      // Parse the notification payload and update the content
-      guard let userInfo = bestAttemptContent.userInfo as? [String: Any],
-        let clixInfo = userInfo["clix"] as? [String: Any]
-      else {
-        // No Clix-specific data, return original content
-        contentHandler(bestAttemptContent)
-        return
-      }
+    guard let bestAttemptContent = bestAttemptContent else {
+      contentHandler(request.content)
+      return
+    }
 
-      if let title = clixInfo["title"] as? String {
-        bestAttemptContent.title = title
-      }
+    // Extract image URL from all supported payload formats
+    var imageURLString: String? = nil
+    if let directImage = bestAttemptContent.userInfo["image"] as? String {
+      imageURLString = directImage
+    } else if let fcmOptions = bestAttemptContent.userInfo["fcm_options"] as? [String: Any],
+      let fcmImage = fcmOptions["image"] as? String
+    {
+      imageURLString = fcmImage
+    } else if let fcmOptions = bestAttemptContent.userInfo["fcm_options"] as? NSDictionary,
+      let fcmImage = fcmOptions["image"] as? String
+    {
+      imageURLString = fcmImage
+    }
 
-      if let body = clixInfo["body"] as? String {
-        bestAttemptContent.body = body
-      }
-
-      if let badge = clixInfo["badge"] as? NSNumber {
-        bestAttemptContent.badge = badge
-      }
-
-      if let sound = clixInfo["sound"] as? String {
-        bestAttemptContent.sound = UNNotificationSound(named: UNNotificationSoundName(sound))
-      }
-
-      if let mediaUrl = request.content.userInfo["media_url"] as? String, let url = URL(string: mediaUrl) {
-        Task {
-          do {
-            let attachment = try await downloadAndAttachMedia(
-              url: url,
-              type: request.content.userInfo["media_type"] as? String ?? "image"
-            )
-            bestAttemptContent.attachments = [attachment]
-            contentHandler(bestAttemptContent)
-          } catch {
-            ClixLogger.error(error.localizedDescription, error: error)
-            contentHandler(bestAttemptContent)
-          }
+    if let imageURLString = imageURLString, let fileURL = URL(string: imageURLString) {
+      downloadImage(from: fileURL) { attachment in
+        if let attachment = attachment {
+          bestAttemptContent.attachments = [attachment]
         }
-      } else {
         contentHandler(bestAttemptContent)
       }
+    } else {
+      contentHandler(bestAttemptContent)
     }
   }
 
-  private func downloadAndAttachMedia(url: URL, type: String) async throws -> UNNotificationAttachment {
-    let downloadedFileURL = try await HTTPClient.shared.download(url)
-    let attachment = try UNNotificationAttachment(
-      identifier: UUID().uuidString,
-      url: downloadedFileURL,
-      options: nil  // Optionally add [UNNotificationAttachmentOptionsTypeHintKey: type]
-    )
-    return attachment
-  }
-
-  override public func serviceExtensionTimeWillExpire() {
+  open override func serviceExtensionTimeWillExpire() {
+    // Called just before the extension will be terminated by the system.
     if let contentHandler = contentHandler, let bestAttemptContent = bestAttemptContent {
       contentHandler(bestAttemptContent)
     }
+  }
+
+  /// Downloads an image and returns a UNNotificationAttachment if successful
+  open func downloadImage(from url: URL, completion: @escaping (UNNotificationAttachment?) -> Void) {
+    let task = URLSession.shared.downloadTask(with: url) { (downloadedUrl, response, error) in
+      guard let downloadedUrl = downloadedUrl else {
+        completion(nil)
+        return
+      }
+      let tmpDir = URL(fileURLWithPath: NSTemporaryDirectory())
+      let tmpFile = tmpDir.appendingPathComponent(url.lastPathComponent)
+      try? FileManager.default.moveItem(at: downloadedUrl, to: tmpFile)
+      let attachment = try? UNNotificationAttachment(identifier: "image", url: tmpFile, options: nil)
+      completion(attachment)
+    }
+    task.resume()
   }
 }

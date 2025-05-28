@@ -10,6 +10,7 @@
 		481BED572DDF9B7E00C3637B /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 481BED562DDF9B7E00C3637B /* Clix */; };
 		48341F802DE0389800E3AFDE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48341F7F2DE0389800E3AFDE /* LaunchScreen.storyboard */; };
 		88C976AF2DE72BA500D410F8 /* ClixNotificationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		88C976B82DE7426200D410F8 /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 88C976B72DE7426200D410F8 /* Clix */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88C976B82DE7426200D410F8 /* Clix in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +100,7 @@
 				88C976A92DE72BA500D410F8 /* ClixNotificationExtension */,
 				48F08EC62DDF90CC003D26D4 /* Products */,
 				48341F7F2DE0389800E3AFDE /* LaunchScreen.storyboard */,
+				88C976B62DE7426200D410F8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +111,13 @@
 				88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		88C976B62DE7426200D410F8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -155,6 +165,7 @@
 			);
 			name = ClixNotificationExtension;
 			packageProductDependencies = (
+				88C976B72DE7426200D410F8 /* Clix */,
 			);
 			productName = ClixNotificationExtension;
 			productReference = 88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */;
@@ -526,6 +537,11 @@
 /* Begin XCSwiftPackageProductDependency section */
 		481BED562DDF9B7E00C3637B /* Clix */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = Clix;
+		};
+		88C976B72DE7426200D410F8 /* Clix */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../../clix-ios-sdk" */;
 			productName = Clix;
 		};
 /* End XCSwiftPackageProductDependency section */
