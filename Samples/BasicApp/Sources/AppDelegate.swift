@@ -29,6 +29,7 @@ class AppDelegate: ClixAppDelegate {
           )
         )
         print("✅ Clix SDK initialized")
+        AppState.shared.isClixInitialized = true
         // --- save user_id from UserDefaults to Clix ---
         if let savedUserId = UserDefaults.standard.string(forKey: "user_id"), !savedUserId.isEmpty {
           try? await Clix.setUserId(savedUserId)

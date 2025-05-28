@@ -4,17 +4,13 @@ import PackageDescription
 let package = Package(
   name: "Clix",
   platforms: [
-    .iOS(.v14)
+    .iOS(.v13)
   ],
   products: [
     .library(
       name: "Clix",
       targets: ["Clix"]
-    ),
-    .executable(
-      name: "BasicApp",
-      targets: ["BasicApp"]
-    ),
+    )
   ],
   dependencies: [
     .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.0.0")
@@ -33,7 +29,9 @@ let package = Package(
     ),
     .executableTarget(
       name: "BasicApp",
-      dependencies: ["Clix"],
+      dependencies: [
+        "Clix"
+      ],
       path: "Samples/BasicApp/Sources"
     ),
     .testTarget(

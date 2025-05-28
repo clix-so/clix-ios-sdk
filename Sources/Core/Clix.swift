@@ -118,9 +118,14 @@ public extension Clix {
   /// - Parameters:
   ///   - name: Event name
   ///   - properties: Event properties
-  static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async {
+  ///   - messageId: Optional message ID to include in properties
+  static func trackEvent(_ name: String, properties: [String: Any?] = [:], messageId: String? = nil) async {
+    var eventProperties = properties
+    if let messageId = messageId {
+      eventProperties["message_id"] = messageId
+    }
     do {
-      try await shared.eventService.trackEvent(name: name, properties: properties)
+      try await shared.eventService.trackEvent(name: name, properties: eventProperties, messageId: messageId)
     } catch {
       ClixLogger.error("[Clix] Failed to track event: \(error)")
     }
@@ -141,6 +146,6 @@ public extension Clix {
   }
 
   static func getToken() async -> String? {
-      await getDevice()?.pushToken
+    await getDevice()?.pushToken
   }
 }

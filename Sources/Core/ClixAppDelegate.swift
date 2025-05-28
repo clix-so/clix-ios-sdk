@@ -57,7 +57,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     ClixLogger.error("Failed to register for remote notifications", error: error)
     Task {
       await Clix.trackEvent(
-        "push_registration_failed",
+        "PUSH_NOTIFICATION_REGISTRATION_FAILED",
         properties: [
           "error": error.localizedDescription
         ]
@@ -101,8 +101,59 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     ClixLogger.debug("Push notification delivered in foreground")
-    let presentationOptions = notificationDeliveredInForeground(notification: notification)
-    completionHandler(presentationOptions)
+    let userInfo = notification.request.content.userInfo
+
+    // Prevent infinite notification loop for custom image notifications
+    if userInfo["clix_image_handled"] as? Bool == true {
+      let presentationOptions = notificationDeliveredInForeground(notification: notification)
+      completionHandler(presentationOptions)
+      return
+    }
+
+    var imageURLString: String? = nil
+    // Extract image URL from various push payload formats
+    if let directImage = userInfo["image"] as? String {
+      imageURLString = directImage
+    } else if let fcmOptions = userInfo["fcm_options"] as? [String: Any], let fcmImage = fcmOptions["image"] as? String {
+      imageURLString = fcmImage
+    } else if let fcmOptions = userInfo["fcm_options"] as? NSDictionary, let fcmImage = fcmOptions["image"] as? String {
+      imageURLString = fcmImage
+    }
+
+    if let imageURLString = imageURLString, let url = URL(string: imageURLString) {
+      downloadImageAndShowNotification(content: notification.request.content, imageURL: url)
+      // Suppress the original notification: only show the custom image notification
+      completionHandler([])
+    } else {
+      let presentationOptions = notificationDeliveredInForeground(notification: notification)
+      completionHandler(presentationOptions)
+    }
+  }
+
+  private func downloadImageAndShowNotification(content: UNNotificationContent, imageURL: URL) {
+    let task = URLSession.shared.downloadTask(with: imageURL) { (downloadedUrl, response, error) in
+      guard let downloadedUrl = downloadedUrl else { return }
+      let tmpDir = URL(fileURLWithPath: NSTemporaryDirectory())
+      let tmpFile = tmpDir.appendingPathComponent(imageURL.lastPathComponent)
+      try? FileManager.default.moveItem(at: downloadedUrl, to: tmpFile)
+      if let attachment = try? UNNotificationAttachment(identifier: "image", url: tmpFile, options: nil) {
+        let newContent = content.mutableCopy() as! UNMutableNotificationContent
+        newContent.attachments = [attachment]
+        // Mark as handled to prevent recursion
+        var newUserInfo = newContent.userInfo
+        newUserInfo["clix_image_handled"] = true
+        newContent.userInfo = newUserInfo
+        // Use a stable identifier to avoid stacking duplicate notifications
+        let userInfo = content.userInfo
+        let identifier =
+          (userInfo["gcm.message_id"] as? String) ??
+          (userInfo["message_id"] as? String) ??
+          UUID().uuidString
+        let request = UNNotificationRequest(identifier: identifier, content: newContent, trigger: nil)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+      }
+    }
+    task.resume()
   }
 
   /// Handles user response to a push notification
@@ -181,11 +232,11 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     if let messageId = getMessageId(payload: payload) {
       Task {
         await Clix.trackEvent(
-          "push_interacted",
+          "PUSH_NOTIFICATION_TAPPED",
           properties: [
-            "message_id": messageId,
-            "payload": payload,
-          ]
+            "payload": payload
+          ],
+          messageId: messageId
         )
       }
     }
@@ -222,12 +273,15 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// Handles push notification reception
   /// - Parameter payload: Push notification information
   open func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
-    try await Clix.trackEvent(
-      "push_received",
-      properties: [
-        "payload": payload
-      ]
-    )
+    if let messageId = getMessageId(payload: payload) {
+      try await Clix.trackEvent(
+        "PUSH_NOTIFICATION_RECEIVED",
+        properties: [
+          "payload": payload
+        ],
+        messageId: messageId
+      )
+    }
   }
 
   /// Handles push notification response
@@ -235,7 +289,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   open func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
     let payload = response.notification.request.content.userInfo
     try await Clix.trackEvent(
-      "push_opened",
+      "PUSH_NOTIFICATION_TAPPED",
       properties: [
         "payload": payload
       ]
