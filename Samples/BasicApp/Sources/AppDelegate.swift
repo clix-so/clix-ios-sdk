@@ -14,7 +14,7 @@ class AppDelegate: ClixAppDelegate {
         try await Clix.initialize(
           config: ClixConfig(
             apiKey: "YOUR_API_KEY",
-            projectId: "ff4d8202-7871-4c7e-863d-9e585a2b90e5",
+            projectId: "5dbdd10e-6ea6-4ff7-836d-bd30a6d1a521",
             endpoint: "https://external-api-dev.clix.so",
             logLevel: .debug,
             extraHeaders: [
@@ -30,8 +30,6 @@ class AppDelegate: ClixAppDelegate {
         )
         print("✅ Clix SDK initialized")
 
-
-        
       } catch {
         print("❌ Clix SDK failed to initialize:", error)
       }

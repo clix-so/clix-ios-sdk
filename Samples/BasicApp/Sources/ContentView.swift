@@ -57,7 +57,7 @@ struct ContentView: View {
               if !userIdInput.isEmpty {
                 Task {
                   do {
-                      try await Clix.setUserId(userIdInput)
+                    try await Clix.setUserId(userIdInput)
                   } catch {
                     print("Error: \(error.localizedDescription)")
                   }
