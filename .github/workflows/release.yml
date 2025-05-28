@@ -27,7 +27,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.event.inputs.version }}
-          name: Release ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
           body: ${{ steps.read_changelog.outputs.changes }}
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
