@@ -53,9 +53,6 @@
                location = "group:Assets.xcassets">
             </FileRef>
             <FileRef
-               location = "group:GoogleService-Info.plist">
-            </FileRef>
-            <FileRef
                location = "group:Localizable.strings">
             </FileRef>
             <FileRef
@@ -69,6 +66,9 @@
             </FileRef>
             <FileRef
                location = "group:ContentView.swift">
+            </FileRef>
+            <FileRef
+               location = "group:GoogleService-Info.plist">
             </FileRef>
          </Group>
       </Group>

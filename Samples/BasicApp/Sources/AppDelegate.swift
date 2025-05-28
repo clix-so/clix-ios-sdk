@@ -29,6 +29,9 @@ class AppDelegate: ClixAppDelegate {
           )
         )
         print("✅ Clix SDK initialized")
+
+
+        
       } catch {
         print("❌ Clix SDK failed to initialize:", error)
       }
