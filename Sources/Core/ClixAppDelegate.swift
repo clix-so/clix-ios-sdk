@@ -114,7 +114,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     // Extract image URL from various push payload formats
     if let directImage = userInfo["image"] as? String {
       imageURLString = directImage
-    } else if let fcmOptions = userInfo["fcm_options"] as? [String: Any], let fcmImage = fcmOptions["image"] as? String {
+    } else if let fcmOptions = userInfo["fcm_options"] as? [String: Any], let fcmImage = fcmOptions["image"] as? String
+    {
       imageURLString = fcmImage
     } else if let fcmOptions = userInfo["fcm_options"] as? NSDictionary, let fcmImage = fcmOptions["image"] as? String {
       imageURLString = fcmImage
@@ -146,9 +147,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         // Use a stable identifier to avoid stacking duplicate notifications
         let userInfo = content.userInfo
         let identifier =
-          (userInfo["gcm.message_id"] as? String) ??
-          (userInfo["message_id"] as? String) ??
-          UUID().uuidString
+          (userInfo["gcm.message_id"] as? String) ?? (userInfo["message_id"] as? String) ?? UUID().uuidString
         let request = UNNotificationRequest(identifier: identifier, content: newContent, trigger: nil)
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
       }
@@ -288,11 +287,14 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// - Parameter response: Push notification response
   open func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
     let payload = response.notification.request.content.userInfo
+    let messageId = payload["gcm.message_id"] as? String
+
     try await Clix.trackEvent(
       "PUSH_NOTIFICATION_TAPPED",
       properties: [
         "payload": payload
-      ]
+      ],
+      messageId: messageId
     )
   }
 
