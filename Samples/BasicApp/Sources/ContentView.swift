@@ -7,8 +7,9 @@ struct ContentView: View {
   @State private var eventParamsInput: String = "{}"
   let projectIdText: String = "N/A"
   let apiKeyText: String = "N/A"
-  let deviceIdText: String = "N/A"
-  let fcmTokenText: String = "N/A"
+  @State private var deviceIdText: String = "N/A"
+  @State private var fcmTokenText: String = "N/A"
+  @ObservedObject private var appState = AppState.shared
 
   @State private var showAlert: Bool = false
   @State private var alertMessage: String = ""
@@ -114,21 +115,22 @@ struct ContentView: View {
               // eventParamsInput(String) -> Dictionary 변환 시도
               let params: [String: Any]
               if let data = eventParamsInput.data(using: .utf8),
-                 let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+              {
                 params = dict
               } else {
                 params = [:]
               }
               Task {
                 do {
-                    try await Clix.trackEvent(eventNameInput, properties: params)
+                  try await Clix.trackEvent(eventNameInput, properties: params)
                   alertMessage = "Event tracked!"
                 } catch {
                   alertMessage = "Failed to track event: \(error.localizedDescription)"
                 }
                 showAlert = true
               }
-            
+
               showAlert = true
             }) {
               Text(NSLocalizedString("track_event", comment: ""))
@@ -153,6 +155,19 @@ struct ContentView: View {
     .background(AppTheme.background.ignoresSafeArea())
     .alert(isPresented: $showAlert) {
       Alert(title: Text(alertMessage))
+    }
+    .onReceive(appState.$isClixInitialized) { initialized in
+      if initialized {
+        Task {
+          if let device = await Clix.getDevice() {
+            deviceIdText = device.id
+            fcmTokenText = device.pushToken
+              print(device.pushToken)
+          } else {
+            deviceIdText = "N/A"
+          }
+        }
+      }
     }
   }
 }

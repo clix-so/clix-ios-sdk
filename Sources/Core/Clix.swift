@@ -141,6 +141,6 @@ public extension Clix {
   }
 
   static func getToken() async -> String? {
-    await shared.tokenService.getCurrentToken()
+      await getDevice()?.pushToken
   }
 }
