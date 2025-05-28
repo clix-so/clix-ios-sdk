@@ -56,7 +56,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     ClixLogger.error("Failed to register for remote notifications", error: error)
     Task {
-      try? await Clix.trackEvent(
+      await Clix.trackEvent(
         "push_registration_failed",
         properties: [
           "error": error.localizedDescription
@@ -180,7 +180,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   open func notificationTapped(payload: [AnyHashable: Any]) {
     if let messageId = getMessageId(payload: payload) {
       Task {
-        try? await Clix.trackEvent(
+        await Clix.trackEvent(
           "push_interacted",
           properties: [
             "message_id": messageId,
