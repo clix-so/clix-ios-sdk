@@ -1,14 +1,15 @@
 import SwiftUI
+import Clix
 
 struct ContentView: View {
   @State private var userIdInput: String = ""
-  let projectIdText = "N/A"
-  let apiKeyText = "N/A"
-  let deviceIdText = "N/A"
-  let fcmTokenText = "N/A"
+  let projectIdText: String = "N/A"
+  let apiKeyText: String = "N/A"
+  let deviceIdText: String = "N/A"
+  let fcmTokenText: String = "N/A"
 
-  @State private var showAlert = false
-  @State private var alertMessage = ""
+  @State private var showAlert: Bool = false
+  @State private var alertMessage: String = ""
 
   var body: some View {
     ScrollView {
@@ -54,6 +55,13 @@ struct ContentView: View {
             Spacer().frame(width: 12)
             Button(action: {
               if !userIdInput.isEmpty {
+                Task {
+                  do {
+                      try await Clix.setUserId(userIdInput)
+                  } catch {
+                    print("Error: \(error.localizedDescription)")
+                  }
+                }
                 alertMessage = "User ID set!"
               } else {
                 alertMessage = "Please enter a User ID"

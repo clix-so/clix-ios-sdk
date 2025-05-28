@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "type": "swift",
+            "type": "lldb",
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:clix-ios-sdk}",
@@ -10,7 +10,7 @@
             "preLaunchTask": "swift: Build Debug BasicApp"
         },
         {
-            "type": "swift",
+            "type": "lldb",
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:clix-ios-sdk}",
