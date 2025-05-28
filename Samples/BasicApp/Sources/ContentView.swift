@@ -2,7 +2,9 @@ import SwiftUI
 import Clix
 
 struct ContentView: View {
-  @State private var userIdInput: String = ""
+  @State private var userIdInput: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
+  @State private var eventNameInput: String = ""
+  @State private var eventParamsInput: String = "{}"
   let projectIdText: String = "N/A"
   let apiKeyText: String = "N/A"
   let deviceIdText: String = "N/A"
@@ -55,6 +57,8 @@ struct ContentView: View {
             Spacer().frame(width: 12)
             Button(action: {
               if !userIdInput.isEmpty {
+                // Save user_id to UserDefaults
+                UserDefaults.standard.set(userIdInput, forKey: "user_id")
                 Task {
                   do {
                     try await Clix.setUserId(userIdInput)
@@ -86,7 +90,7 @@ struct ContentView: View {
               Text(NSLocalizedString("event_name", comment: ""))
                 .font(.system(size: 14))
                 .foregroundColor(AppTheme.text)
-              TextField("", text: .constant(""))
+              TextField("", text: $eventNameInput)
                 .padding()
                 .background(AppTheme.surfaceVariant.opacity(0.5))
                 .cornerRadius(12)
@@ -98,7 +102,7 @@ struct ContentView: View {
               Text(NSLocalizedString("event_params", comment: ""))
                 .font(.system(size: 14))
                 .foregroundColor(AppTheme.text)
-              TextField("", text: .constant("{}"))
+              TextField("", text: $eventParamsInput)
                 .padding()
                 .background(AppTheme.surfaceVariant.opacity(0.5))
                 .cornerRadius(12)
@@ -107,7 +111,24 @@ struct ContentView: View {
             }
 
             Button(action: {
-              alertMessage = "Event tracked!"
+              // eventParamsInput(String) -> Dictionary 변환 시도
+              let params: [String: Any]
+              if let data = eventParamsInput.data(using: .utf8),
+                 let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                params = dict
+              } else {
+                params = [:]
+              }
+              Task {
+                do {
+                    try await Clix.trackEvent(eventNameInput, properties: params)
+                  alertMessage = "Event tracked!"
+                } catch {
+                  alertMessage = "Failed to track event: \(error.localizedDescription)"
+                }
+                showAlert = true
+              }
+            
               showAlert = true
             }) {
               Text(NSLocalizedString("track_event", comment: ""))
