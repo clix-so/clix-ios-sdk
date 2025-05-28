@@ -15,7 +15,7 @@ class DeviceAPIService: ClixAPIClient {
 
   func setProjectUserId(deviceId: String, projectUserId: String) async throws {
     let path = "/devices/\(deviceId)/user/project-user-id"
-    let body = ["projectUserId": projectUserId]
+    let body = ["project_user_id": projectUserId]
     let _: EmptyResponse = try await post(path: path, data: body)
   }
 
