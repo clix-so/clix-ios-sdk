@@ -14,7 +14,7 @@ class AppDelegate: ClixAppDelegate {
         try await Clix.initialize(
           config: ClixConfig(
             apiKey: "",
-            projectId: "",
+            projectId: ""
           )
         )
         print("✅ Clix SDK initialized")
