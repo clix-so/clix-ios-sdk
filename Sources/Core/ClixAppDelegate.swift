@@ -222,6 +222,44 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     return [.list, .banner, .sound, .badge]
   }
 
+  /// Helper method to parse the Clix payload from push notification userInfo
+  /// - Parameter userInfo: The notification's userInfo dictionary
+  /// - Returns: Parsed Clix payload as [String: Any], or nil if parsing fails
+  private func parseClixPayload(from userInfo: [AnyHashable: Any]) -> [String: Any]? {
+    guard let clixValue = userInfo["clix"] else { return nil }
+    ClixLogger.debug("Clix notification data: \(clixValue)")
+    
+    // 1. Try parsing as a dictionary directly
+    if let clixData = clixValue as? [String: Any] {
+      return clixData
+    }
+    // 2. Try parsing as a JSON string
+    if let clixString = clixValue as? String {
+      do {
+        if let data = clixString.data(using: .utf8),
+           let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+          return clixData
+        }
+      } catch {
+        ClixLogger.error("Failed to parse clix JSON data", error: error)
+      }
+    }
+    return nil
+  }
+
+  /// Helper method to extract and open landing URL from push notification userInfo
+  /// - Parameter userInfo: The notification's userInfo dictionary
+  /// - Returns: True if landing URL was found and opened, false otherwise
+  private func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
+    guard let clixData = parseClixPayload(from: userInfo),
+          let landingURL = clixData["landing_url"] as? String,
+          let url = URL(string: landingURL) else { return false }
+    DispatchQueue.main.async {
+      UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    }
+    return true
+  }
+  
   /// Handles push notification tap
   /// - Parameter payload: Notification information
   open func notificationTapped(userInfo: [AnyHashable: Any]) {
@@ -231,40 +269,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
       let isolatedUserInfo = userInfo as NSDictionary as! [AnyHashable: Any]
       await Clix.shared.notificationService.handlePushTapped(userInfo: isolatedUserInfo)
 
-      // Handle the 'clix' key in userInfo which contains the landing_url
-      if let clixValue = isolatedUserInfo["clix"] {
-        ClixLogger.debug("Clix notification data: \(clixValue)")
-        
-        // Try to parse different formats of the clix data
-        
-        // 1. Try parsing as a dictionary directly
-        if let clixData = clixValue as? [String: Any], 
-           let landingURL = clixData["landing_url"] as? String,
-           let url = URL(string: landingURL) {
-          // Open the landing URL
-          DispatchQueue.main.async {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-          }
-          return
-        }
-        
-        // 2. Try parsing as a JSON string
-        if let clixString = clixValue as? String {
-          do {
-            if let data = clixString.data(using: .utf8),
-               let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let landingURL = clixData["landing_url"] as? String,
-               let url = URL(string: landingURL) {
-              // Open the landing URL
-              DispatchQueue.main.async {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-              }
-            }
-          } catch {
-            ClixLogger.error("Failed to parse clix JSON data", error: error)
-          }
-        }
-      }
+      // Try to open landing URL from the notification
+      _ = openLandingURLIfPresent(from: isolatedUserInfo)
     }
   }
 
@@ -313,6 +319,15 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
 
   open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
     ClixLogger.debug("FCM push notification received (foreground)")
-    Clix.shared.notificationService.handlePushReceived(userInfo: userInfo)
+    
+    // Use Task to ensure async processing in actor context
+    Task {
+      // Create a copy of the userInfo to ensure thread safety across actor boundaries
+      let isolatedUserInfo = userInfo as NSDictionary as! [AnyHashable: Any]
+      await Clix.shared.notificationService.handlePushReceived(userInfo: isolatedUserInfo)
+      
+      // Try to open landing URL from the notification
+      _ = openLandingURLIfPresent(from: isolatedUserInfo)
+    }
   }
 }
