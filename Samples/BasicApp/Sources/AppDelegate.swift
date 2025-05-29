@@ -13,7 +13,7 @@ class AppDelegate: ClixAppDelegate {
       do {
         try await Clix.initialize(
           config: ClixConfig(
-            apiKey: "YOUR_API_KEY",
+            apiKey: "clix_pk_A0wRnlwQT64tgL1BuMxZKlt_8_SvfA",
             projectId: "5dbdd10e-6ea6-4ff7-836d-bd30a6d1a521",
             endpoint: "https://external-api-dev.clix.so",
             logLevel: .debug,

@@ -38,7 +38,19 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         // Check if app was launched from a notification tap
         if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [String: AnyObject] {
           ClixLogger.debug("App launched from push notification")
-          notificationTapped(userInfo: payload)
+          
+          // Create a long-running task to ensure the notification event is fully processed
+          // This fixes the issue of push notification tap events not being sent to the server
+          // when the app is launched from a terminated state
+          Task {
+              // Add a small delay to ensure Clix is properly initialized
+              try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+              
+              // Handle the notification tap with proper async context
+              // Create a copy of the userInfo to ensure thread safety across actor boundaries
+              let userInfo = payload as NSDictionary as! [AnyHashable: Any]
+              await Clix.shared.notificationService.handlePushTapped(userInfo: userInfo)
+          }
         }
 
         return true
@@ -209,7 +221,12 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     /// Handles push notification tap
     /// - Parameter payload: Notification information
     open func notificationTapped(userInfo: [AnyHashable: Any]) {
-      Clix.shared.notificationService.handlePushTapped(userInfo: userInfo)
+      // Use Task to ensure async processing in actor context
+      Task {
+          // Create a copy of the userInfo to ensure thread safety across actor boundaries
+          let isolatedUserInfo = userInfo as NSDictionary as! [AnyHashable: Any]
+          await Clix.shared.notificationService.handlePushTapped(userInfo: isolatedUserInfo)
+      }
     }
 
     /// Handles silent push notification delivery
@@ -220,7 +237,13 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         payload: [AnyHashable: Any],
         completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-      Clix.shared.notificationService.handlePushReceived(userInfo: payload)
+      // Use Task to ensure async processing in actor context
+      Task {
+          // Create a copy of the payload to ensure thread safety across actor boundaries
+          let isolatedPayload = payload as NSDictionary as! [AnyHashable: Any]
+          await Clix.shared.notificationService.handlePushReceived(userInfo: isolatedPayload)
+          completionHandler(.newData)
+      }
     }
 
     // MARK: - Internal Methods
