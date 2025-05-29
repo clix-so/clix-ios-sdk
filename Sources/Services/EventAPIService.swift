@@ -13,7 +13,7 @@ class EventAPIService: ClixAPIClient {
     let event = EventRequestBody(
       device_id: deviceId,
       name: name,
-      event_property: ["custom_properties": AnyCodable(properties ?? [:]), "message_id": AnyCodable(messageId ?? "")]
+      event_property: ["custom_properties": AnyCodable(properties ?? [:]), "message_id": AnyCodable(messageId)]
     )
     let path = "/events"
     let body = ["events": [event]]

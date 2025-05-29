@@ -155,6 +155,9 @@
             location = "group:ClixDevice.swift">
          </FileRef>
          <FileRef
+            location = "group:ClixPushNotificationPayload.swift">
+         </FileRef>
+         <FileRef
             location = "group:ClixUserProperty.swift">
          </FileRef>
       </Group>

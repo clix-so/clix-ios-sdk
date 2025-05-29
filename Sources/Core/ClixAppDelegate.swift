@@ -37,8 +37,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
 
         // Check if app was launched from a notification tap
         if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [String: AnyObject] {
-            ClixLogger.debug("App launched from push notification")
-            notificationTapped(payload: payload)
+          ClixLogger.debug("App launched from push notification")
+          notificationTapped(userInfo: payload)
         }
 
         return true
@@ -55,14 +55,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
         ClixLogger.error("Failed to register for remote notifications", error: error)
-        Task {
-            await Clix.trackEvent(
-                "PUSH_NOTIFICATION_REGISTRATION_FAILED",
-                properties: [
-                    "error": error.localizedDescription
-                ]
-            )
-        }
     }
 
     /// Called when remote notification registration is successful
@@ -102,6 +94,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     ) {
         ClixLogger.debug("Push notification delivered in foreground")
         let userInfo = notification.request.content.userInfo
+      
+        Clix.shared.notificationService.handlePushReceived(userInfo: notification.request.content.userInfo)
 
         // Prevent infinite notification loop for custom image notifications
         if userInfo["clix_image_handled"] as? Bool == true {
@@ -119,6 +113,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         } else if let fcmOptions = userInfo["fcm_options"] as? NSDictionary, let fcmImage = fcmOptions["image_url"] as? String {
             imageURLString = fcmImage
         }
+        ClixLogger.debug("Push notification image URL: \(String(describing: imageURLString))")
 
         if let imageURLString = imageURLString, let url = URL(string: imageURLString) {
             downloadImageAndShowNotification(content: notification.request.content, imageURL: url)
@@ -165,12 +160,9 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        ClixLogger.debug("Push notification tapped")
-        notificationTapped(payload: response.notification.request.content.userInfo)
-        Task {
-            try? await handleNotificationResponse(response)
-            completionHandler()
-        }
+      ClixLogger.debug("Push notification tapped")
+      notificationTapped(userInfo: response.notification.request.content.userInfo)
+      completionHandler()
     }
 
     /// Called when a silent push notification is received
@@ -204,41 +196,20 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         }
     }
 
-    /// Extracts the message ID from notification payload
-    /// - Parameter payload: Notification information
-    /// - Returns: Message ID or nil
-    open func getMessageId(payload: [AnyHashable: Any]) -> String? {
-        payload["message_id"] as? String
-    }
-
     /// Handles push notification delivery in foreground
     /// - Parameter notification: Delivered notification
     /// - Returns: Notification presentation options
     open func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
-        Task {
-            try? await handleNotificationReceived(notification.request.content.userInfo)
-        }
-
-        guard #available(iOS 14.0, *) else {
-            return [.alert, .sound, .badge]
-        }
-        return [.list, .banner, .sound, .badge]
+      guard #available(iOS 14.0, *) else {
+          return [.alert, .sound, .badge]
+      }
+      return [.list, .banner, .sound, .badge]
     }
 
     /// Handles push notification tap
     /// - Parameter payload: Notification information
-    open func notificationTapped(payload: [AnyHashable: Any]) {
-        if let messageId = getMessageId(payload: payload) {
-            Task {
-                await Clix.trackEvent(
-                    "PUSH_NOTIFICATION_TAPPED",
-                    properties: [
-                        "payload": payload
-                    ],
-                    messageId: messageId
-                )
-            }
-        }
+    open func notificationTapped(userInfo: [AnyHashable: Any]) {
+      Clix.shared.notificationService.handlePushTapped(userInfo: userInfo)
     }
 
     /// Handles silent push notification delivery
@@ -249,14 +220,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         payload: [AnyHashable: Any],
         completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-        Task {
-            do {
-                try await handleNotificationReceived(payload)
-                completionHandler(.newData)
-            } catch {
-                completionHandler(.failed)
-            }
-        }
+      Clix.shared.notificationService.handlePushReceived(userInfo: payload)
     }
 
     // MARK: - Internal Methods
@@ -267,35 +231,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         let tokenString = await Clix.shared.tokenService.convertTokenToString(token)
         await Clix.shared.tokenService.saveToken(tokenString)
         try await Clix.shared.deviceService.upsertToken(tokenString)
-    }
-
-    /// Handles push notification reception
-    /// - Parameter payload: Push notification information
-    open func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
-        if let messageId = getMessageId(payload: payload) {
-            try await Clix.trackEvent(
-                "PUSH_NOTIFICATION_RECEIVED",
-                properties: [
-                    "payload": payload
-                ],
-                messageId: messageId
-            )
-        }
-    }
-
-    /// Handles push notification response
-    /// - Parameter response: Push notification response
-    open func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-        let payload = response.notification.request.content.userInfo
-        let messageId = payload["gcm.message_id"] as? String
-
-        try await Clix.trackEvent(
-            "PUSH_NOTIFICATION_TAPPED",
-            properties: [
-                "payload": payload
-            ],
-            messageId: messageId
-        )
     }
 
     // MARK: - FCM Token Management
@@ -315,9 +250,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     // MARK: - FCM Foreground Message Handling (Optional)
 
     open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
-        ClixLogger.debug("FCM push notification received (foreground)")
-        Task {
-            try? await handleNotificationReceived(userInfo)
-        }
+      ClixLogger.debug("FCM push notification received (foreground)")
+      Clix.shared.notificationService.handlePushReceived(userInfo: userInfo)
     }
 }
