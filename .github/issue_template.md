@@ -1,8 +1,8 @@
 <!--
  1. IF YOU DON'T FILL OUT THE FOLLOWING INFORMATION WE MAY CLOSE YOUR ISSUE WITHOUT INVESTIGATION
  2. SEARCH EXISTING ISSUES FOR AN ANSWER: https://github.com/clix-so/clix-ios-sdk/issues
- 3. See our Common Issues documentation: https://github.com/clix-so/clix-ios-sdk/blob/master/README.md
- 4. See our contributing guidelines: https://github.com/clix-so/clix-ios-sdk/blob/master/CONTRIBUTING.md
+ 3. See our Common Issues documentation: https://github.com/clix-so/clix-ios-sdk/blob/main/README.md
+ 4. See our contributing guidelines: https://github.com/clix-so/clix-ios-sdk/blob/main/CONTRIBUTING.md
 -->
 
 # 🐛 Bug Report
