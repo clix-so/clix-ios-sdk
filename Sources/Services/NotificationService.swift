@@ -10,7 +10,7 @@ private struct NotificationSettings: Codable {
 }
 
 actor NotificationService {
-  private let eventAPIService = EventAPIService()
+  private let eventService = EventService()
   private let storageService: StorageService
   private let settingsKey = "clix_notification_settings"
   private let lastNotificationKey = "clix_last_notification"
@@ -19,16 +19,50 @@ actor NotificationService {
     self.storageService = storageService
   }
 
-  func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
-    guard let deviceId = await Clix.shared.getEnvironment()?.deviceId else { return }
-    let properties: [String: AnyCodable] = ["payload": AnyCodable(payload)]
-    try await eventAPIService.trackEvent(deviceId: deviceId, name: "push_received", properties: properties)
+  func handlePushReceived(userInfo: [AnyHashable: Any]) {
+    Task {
+      if let messageId = getMessageId(userInfo: userInfo) {
+        do {
+          try await eventService.trackEvent(name: "PUSH_NOTIFICATION_RECEIVED", messageId: messageId)
+        } catch {
+          ClixLogger.error("Failed to track PUSH_NOTIFICATION_RECEIVED", error: error)
+        }
+      } else {
+        ClixLogger.warn("messageId not found in userInfo")
+      }
+    }
   }
 
-  func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    guard let deviceId = await Clix.shared.getEnvironment()?.deviceId else { return }
-    let properties: [String: AnyCodable] = ["payload": AnyCodable(response.notification.request.content.userInfo)]
-    try await eventAPIService.trackEvent(deviceId: deviceId, name: "push_opened", properties: properties)
+  func handlePushTapped(userInfo: [AnyHashable: Any]) {
+    Task {
+      if let messageId = getMessageId(userInfo: userInfo) {
+        do {
+          try await eventService.trackEvent(name: "PUSH_NOTIFICATION_TAPPED", messageId: messageId)
+        } catch {
+          ClixLogger.error("Failed to track PUSH_NOTIFICATION_TAPPED", error: error)
+        }
+      } else {
+        ClixLogger.warn("messageId not found in userInfo")
+      }
+    }
+  }
+    
+  private func getMessageId(userInfo: [AnyHashable: Any]) -> String? {
+    guard let clixJsonString = userInfo["clix"] as? String,
+        let data = clixJsonString.data(using: .utf8) else {
+      return nil
+    }
+
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+    do {
+      let payload = try decoder.decode(ClixPushNotificationPayload.self, from: data)
+      return payload.messageId
+    } catch {
+      ClixLogger.error("Failed to decode ClixPushNotificationPayload", error: error)
+      return nil
+    }
   }
 
   /// Sets notification preferences

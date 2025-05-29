@@ -4,13 +4,18 @@ struct EmptyResponse: Decodable {}
 
 class DeviceAPIService: ClixAPIClient {
   func upsertDevice(device: ClixDevice) async throws {
-    let path = "/devices/\(device.id)"
-    let _: EmptyResponse = try await post(path: path, data: device)
+    let path = "/devices"
+    let encoder = JSONEncoder()
+    encoder.keyEncodingStrategy = .convertToSnakeCase
+    let deviceData = try encoder.encode(device)
+    let deviceDict = try JSONSerialization.jsonObject(with: deviceData, options: []) as? [String: Any] ?? [:]
+    let body = ["devices": [deviceDict]]
+    let _: EmptyResponse = try await post(path: path, data: body)
   }
 
   func setProjectUserId(deviceId: String, projectUserId: String) async throws {
     let path = "/devices/\(deviceId)/user/project-user-id"
-    let body = ["projectUserId": projectUserId]
+    let body = ["project_user_id": projectUserId]
     let _: EmptyResponse = try await post(path: path, data: body)
   }
 

@@ -4,4 +4,11 @@
 "device_id" = "Device ID";
 "fcm_token" = "FCM Token";
 "user_id" = "User ID";
-"submit" = "Submit"; 
+"submit" = "Submit";
+"event_name" = "Event Name";
+"event_params" = "Event Params";
+"track_event" = "Track Event";
+"user_property" = "User Property";
+"key" = "User Property Key";
+"value" = "User Property Value";
+"set_user_property" = "Set User Property";

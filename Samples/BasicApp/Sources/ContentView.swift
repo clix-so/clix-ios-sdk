@@ -1,14 +1,23 @@
+import Clix
 import SwiftUI
 
 struct ContentView: View {
-  @State private var userIdInput: String = ""
-  let projectIdText = "N/A"
-  let apiKeyText = "N/A"
-  let deviceIdText = "N/A"
-  let fcmTokenText = "N/A"
+  let projectIdText: String = "N/A"
+  let apiKeyText: String = "N/A"
+  @State private var deviceIdText: String = "N/A"
+  @State private var fcmTokenText: String = "N/A"
+  @ObservedObject private var appState = AppState.shared
 
-  @State private var showAlert = false
-  @State private var alertMessage = ""
+  @State private var userIdInput: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
+
+  @State private var eventNameInput: String = ""
+  @State private var eventParamsInput: String = "{}"
+
+  @State private var userPropertyKeyInput: String = ""
+  @State private var userPropertyValueInput: String = ""
+
+  @State private var showAlert: Bool = false
+  @State private var alertMessage: String = ""
 
   var body: some View {
     ScrollView {
@@ -39,19 +48,30 @@ struct ContentView: View {
 
           Spacer().frame(height: 32)
 
-          HStack {
-            TextField(
-              NSLocalizedString("user_id", comment: ""),
-              text: $userIdInput
-            )
-            .padding()
-            .background(AppTheme.surfaceVariant.opacity(0.5))
-            .cornerRadius(12)
-            .foregroundColor(AppTheme.text)
-            .frame(height: 56)
+          HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("user_id", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $userIdInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
             Spacer().frame(width: 12)
             Button(action: {
               if !userIdInput.isEmpty {
+                // Save user_id to UserDefaults
+                UserDefaults.standard.set(userIdInput, forKey: "user_id")
+                Task {
+                  do {
+                    try await Clix.setUserId(userIdInput)
+                  } catch {
+                    print("Error: \(error.localizedDescription)")
+                  }
+                }
                 alertMessage = "User ID set!"
               } else {
                 alertMessage = "Please enter a User ID"
@@ -59,6 +79,115 @@ struct ContentView: View {
               showAlert = true
             }) {
               Text(NSLocalizedString("submit", comment: ""))
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.buttonText)
+                .frame(maxHeight: .infinity)
+            }
+            .frame(height: 56)
+            .padding(.horizontal, 12)
+            .background(AppTheme.buttonBackground)
+            .cornerRadius(12)
+          }
+
+          Spacer().frame(height: 32)
+
+          VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_name", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $eventNameInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_params", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $eventParamsInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            Button(action: {
+              // eventParamsInput(String) -> Dictionary 변환 시도
+              let params: [String: Any]
+              if let data = eventParamsInput.data(using: .utf8),
+                let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+              {
+                params = dict
+              } else {
+                params = [:]
+              }
+              Task {
+                do {
+                  try await Clix.trackEvent(eventNameInput, properties: params)
+                  alertMessage = "Event tracked!"
+                } catch {
+                  alertMessage = "Failed to track event: \(error.localizedDescription)"
+                }
+                showAlert = true
+              }
+
+              showAlert = true
+            }) {
+              Text(NSLocalizedString("track_event", comment: ""))
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.buttonText)
+                .frame(maxHeight: .infinity)
+            }
+            .frame(height: 56)
+            .padding(.horizontal, 12)
+            .background(AppTheme.buttonBackground)
+            .cornerRadius(12)
+          }
+
+          Spacer().frame(height: 32)
+
+          VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("user_property_key", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $userPropertyKeyInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("user_property_value", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $userPropertyValueInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            Button(action: {
+              Task {
+                do {
+                  try await Clix.setUserProperty(userPropertyKeyInput, value: userPropertyValueInput)
+                  alertMessage = "User property \(userPropertyKeyInput):\(userPropertyValueInput) is set successfully"
+                } catch {
+                  alertMessage = "Failed to set user property: \(error.localizedDescription)"
+                }
+                showAlert = true
+              }
+            }) {
+              Text(NSLocalizedString("set_user_property", comment: ""))
                 .fontWeight(.bold)
                 .foregroundColor(AppTheme.buttonText)
                 .frame(maxHeight: .infinity)
@@ -80,6 +209,19 @@ struct ContentView: View {
     .background(AppTheme.background.ignoresSafeArea())
     .alert(isPresented: $showAlert) {
       Alert(title: Text(alertMessage))
+    }
+    .onReceive(appState.$isClixInitialized) { initialized in
+      if initialized {
+        Task {
+          if let device = await Clix.getDevice() {
+            deviceIdText = device.id
+            fcmTokenText = device.pushToken
+            print(device.pushToken)
+          } else {
+            deviceIdText = "N/A"
+          }
+        }
+      }
     }
   }
 }

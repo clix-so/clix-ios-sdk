@@ -1,20 +1,20 @@
+import FirebaseCore
+import FirebaseMessaging
 import Foundation
 import UIKit
 import UserNotifications
-import FirebaseCore
-import FirebaseMessaging
 
 /**
-This class is designed as an optional base class to streamline the integration of Clix into your application. By inheriting from ClixAppDelegate in your AppDelegate, you gain automatic handling of Push Notification registration and device token management, simplifying the initial setup process for Clix's functionalities.
+ This class is designed as an optional base class to streamline the integration of Clix into your application. By inheriting from ClixAppDelegate in your AppDelegate, you gain automatic handling of Push Notification registration and device token management, simplifying the initial setup process for Clix's functionalities.
 
-This class also provides a set of open helper functions that facilitate the handling of different Push Notification events such as delivery in the foreground, taps, and silent notifications. These helper methods offer a straightforward approach to customizing your app's response to notifications.
+ This class also provides a set of open helper functions that facilitate the handling of different Push Notification events such as delivery in the foreground, taps, and silent notifications. These helper methods offer a straightforward approach to customizing your app's response to notifications.
 
-Key Features:
-- Automatic registration for remote notifications, ensuring your app is promptly set up to receive and handle Push Notifications.
-- Simplified device token management, with automatic storage of the device token for easier access and use.
-- Customizable notification handling through open helper functions, allowing for bespoke responses to notification events.
-- Automatic message status updates based on Push Notification interaction.
-*/
+ Key Features:
+ - Automatic registration for remote notifications, ensuring your app is promptly set up to receive and handle Push Notifications.
+ - Simplified device token management, with automatic storage of the device token for easier access and use.
+ - Customizable notification handling through open helper functions, allowing for bespoke responses to notification events.
+ - Automatic message status updates based on Push Notification interaction.
+ */
 
 @available(iOSApplicationExtension, unavailable)
 open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
@@ -38,7 +38,19 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     // Check if app was launched from a notification tap
     if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [String: AnyObject] {
       ClixLogger.debug("App launched from push notification")
-      notificationTapped(payload: payload)
+
+      // Create a long-running task to ensure the notification event is fully processed
+      // This fixes the issue of push notification tap events not being sent to the server
+      // when the app is launched from a terminated state
+      Task {
+        // Add a small delay to ensure Clix is properly initialized
+        try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
+
+        // Handle the notification tap with proper async context
+        // Create a copy of the userInfo to ensure thread safety across actor boundaries
+        let userInfo = payload as NSDictionary as! [AnyHashable: Any]
+        await Clix.shared.notificationService.handlePushTapped(userInfo: userInfo)
+      }
     }
 
     return true
@@ -55,14 +67,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
     ClixLogger.error("Failed to register for remote notifications", error: error)
-    Task {
-      try? await Clix.trackEvent(
-        "push_registration_failed",
-        properties: [
-          "error": error.localizedDescription
-        ]
-      )
-    }
   }
 
   /// Called when remote notification registration is successful
@@ -101,8 +105,65 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     ClixLogger.debug("Push notification delivered in foreground")
-    let presentationOptions = notificationDeliveredInForeground(notification: notification)
-    completionHandler(presentationOptions)
+    let userInfo = notification.request.content.userInfo
+
+    Clix.shared.notificationService.handlePushReceived(userInfo: notification.request.content.userInfo)
+
+    // Prevent infinite notification loop for custom image notifications
+    if userInfo["clix_image_handled"] as? Bool == true {
+      let presentationOptions = notificationDeliveredInForeground(notification: notification)
+      completionHandler(presentationOptions)
+      return
+    }
+
+    var imageURLString: String? = nil
+    // Extract image URL from various push payload formats
+    if let directImage = userInfo["image_url"] as? String {
+      imageURLString = directImage
+    } else if let fcmOptions = userInfo["fcm_options"] as? [String: Any],
+      let fcmImage = fcmOptions["image_url"] as? String
+    {
+      imageURLString = fcmImage
+    } else if let fcmOptions = userInfo["fcm_options"] as? NSDictionary,
+      let fcmImage = fcmOptions["image_url"] as? String
+    {
+      imageURLString = fcmImage
+    }
+    ClixLogger.debug("Push notification image URL: \(String(describing: imageURLString))")
+
+    if let imageURLString = imageURLString, let url = URL(string: imageURLString) {
+      downloadImageAndShowNotification(content: notification.request.content, imageURL: url)
+      // Suppress the original notification: only show the custom image notification
+      completionHandler([])
+    } else {
+      let presentationOptions = notificationDeliveredInForeground(notification: notification)
+      completionHandler(presentationOptions)
+    }
+  }
+
+  private func downloadImageAndShowNotification(content: UNNotificationContent, imageURL: URL) {
+    let task = URLSession.shared.downloadTask(with: imageURL) { downloadedUrl, _, _ in
+      guard let downloadedUrl = downloadedUrl else { return }
+      let tmpDir = URL(fileURLWithPath: NSTemporaryDirectory())
+      let tmpFile = tmpDir.appendingPathComponent(imageURL.lastPathComponent)
+
+      try? FileManager.default.moveItem(at: downloadedUrl, to: tmpFile)
+      if let attachment = try? UNNotificationAttachment(identifier: "image", url: tmpFile, options: nil) {
+        let newContent = content.mutableCopy() as! UNMutableNotificationContent
+        newContent.attachments = [attachment]
+        // Mark as handled to prevent recursion
+        var newUserInfo = newContent.userInfo
+        newUserInfo["clix_image_handled"] = true
+        newContent.userInfo = newUserInfo
+        // Use a stable identifier to avoid stacking duplicate notifications
+        let userInfo = content.userInfo
+        let identifier =
+          (userInfo["gcm.message_id"] as? String) ?? (userInfo["message_id"] as? String) ?? UUID().uuidString
+        let request = UNNotificationRequest(identifier: identifier, content: newContent, trigger: nil)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+      }
+    }
+    task.resume()
   }
 
   /// Handles user response to a push notification
@@ -116,11 +177,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
     ClixLogger.debug("Push notification tapped")
-    notificationTapped(payload: response.notification.request.content.userInfo)
-    Task {
-      try? await handleNotificationResponse(response)
-      completionHandler()
-    }
+    notificationTapped(userInfo: response.notification.request.content.userInfo)
+    completionHandler()
   }
 
   /// Called when a silent push notification is received
@@ -154,40 +212,65 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     }
   }
 
-  /// Extracts the message ID from notification payload
-  /// - Parameter payload: Notification information
-  /// - Returns: Message ID or nil
-  open func getMessageId(payload: [AnyHashable: Any]) -> String? {
-    payload["message_id"] as? String
-  }
-
   /// Handles push notification delivery in foreground
   /// - Parameter notification: Delivered notification
   /// - Returns: Notification presentation options
   open func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
-    Task {
-      try? await handleNotificationReceived(notification.request.content.userInfo)
-    }
-
     guard #available(iOS 14.0, *) else {
       return [.alert, .sound, .badge]
     }
     return [.list, .banner, .sound, .badge]
   }
 
+  /// Helper method to parse the Clix payload from push notification userInfo
+  /// - Parameter userInfo: The notification's userInfo dictionary
+  /// - Returns: Parsed Clix payload as [String: Any], or nil if parsing fails
+  private func parseClixPayload(from userInfo: [AnyHashable: Any]) -> [String: Any]? {
+    guard let clixValue = userInfo["clix"] else { return nil }
+    ClixLogger.debug("Clix notification data: \(clixValue)")
+    
+    // 1. Try parsing as a dictionary directly
+    if let clixData = clixValue as? [String: Any] {
+      return clixData
+    }
+    // 2. Try parsing as a JSON string
+    if let clixString = clixValue as? String {
+      do {
+        if let data = clixString.data(using: .utf8),
+           let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+          return clixData
+        }
+      } catch {
+        ClixLogger.error("Failed to parse clix JSON data", error: error)
+      }
+    }
+    return nil
+  }
+
+  /// Helper method to extract and open landing URL from push notification userInfo
+  /// - Parameter userInfo: The notification's userInfo dictionary
+  /// - Returns: True if landing URL was found and opened, false otherwise
+  private func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
+    guard let clixData = parseClixPayload(from: userInfo),
+          let landingURL = clixData["landing_url"] as? String,
+          let url = URL(string: landingURL) else { return false }
+    DispatchQueue.main.async {
+      UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    }
+    return true
+  }
+  
   /// Handles push notification tap
   /// - Parameter payload: Notification information
-  open func notificationTapped(payload: [AnyHashable: Any]) {
-    if let messageId = getMessageId(payload: payload) {
-      Task {
-        try? await Clix.trackEvent(
-          "push_interacted",
-          properties: [
-            "message_id": messageId,
-            "payload": payload,
-          ]
-        )
-      }
+  open func notificationTapped(userInfo: [AnyHashable: Any]) {
+    // Use Task to ensure async processing in actor context
+    Task {
+      // Create a copy of the userInfo to ensure thread safety across actor boundaries
+      let isolatedUserInfo = userInfo as NSDictionary as! [AnyHashable: Any]
+      await Clix.shared.notificationService.handlePushTapped(userInfo: isolatedUserInfo)
+
+      // Try to open landing URL from the notification
+      _ = openLandingURLIfPresent(from: isolatedUserInfo)
     }
   }
 
@@ -199,13 +282,12 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     payload: [AnyHashable: Any],
     completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
+    // Use Task to ensure async processing in actor context
     Task {
-      do {
-        try await handleNotificationReceived(payload)
-        completionHandler(.newData)
-      } catch {
-        completionHandler(.failed)
-      }
+      // Create a copy of the payload to ensure thread safety across actor boundaries
+      let isolatedPayload = payload as NSDictionary as! [AnyHashable: Any]
+      await Clix.shared.notificationService.handlePushReceived(userInfo: isolatedPayload)
+      completionHandler(.newData)
     }
   }
 
@@ -219,30 +301,8 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     try await Clix.shared.deviceService.upsertToken(tokenString)
   }
 
-  /// Handles push notification reception
-  /// - Parameter payload: Push notification information
-  open func handleNotificationReceived(_ payload: [AnyHashable: Any]) async throws {
-    try await Clix.trackEvent(
-      "push_received",
-      properties: [
-        "payload": payload
-      ]
-    )
-  }
-
-  /// Handles push notification response
-  /// - Parameter response: Push notification response
-  open func handleNotificationResponse(_ response: UNNotificationResponse) async throws {
-    let payload = response.notification.request.content.userInfo
-    try await Clix.trackEvent(
-      "push_opened",
-      properties: [
-        "payload": payload
-      ]
-    )
-  }
-
   // MARK: - FCM Token Management
+
   public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
     guard let token = fcmToken else {
       ClixLogger.warn("FCM registration token is nil.")
@@ -256,10 +316,18 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   }
 
   // MARK: - FCM Foreground Message Handling (Optional)
+
   open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
     ClixLogger.debug("FCM push notification received (foreground)")
+    
+    // Use Task to ensure async processing in actor context
     Task {
-      try? await handleNotificationReceived(userInfo)
+      // Create a copy of the userInfo to ensure thread safety across actor boundaries
+      let isolatedUserInfo = userInfo as NSDictionary as! [AnyHashable: Any]
+      await Clix.shared.notificationService.handlePushReceived(userInfo: isolatedUserInfo)
+      
+      // Try to open landing URL from the notification
+      _ = openLandingURLIfPresent(from: isolatedUserInfo)
     }
   }
 }

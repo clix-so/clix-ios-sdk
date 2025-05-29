@@ -53,9 +53,6 @@
                location = "group:Assets.xcassets">
             </FileRef>
             <FileRef
-               location = "group:GoogleService-Info.plist">
-            </FileRef>
-            <FileRef
                location = "group:Localizable.strings">
             </FileRef>
             <FileRef
@@ -69,6 +66,9 @@
             </FileRef>
             <FileRef
                location = "group:ContentView.swift">
+            </FileRef>
+            <FileRef
+               location = "group:GoogleService-Info.plist">
             </FileRef>
          </Group>
       </Group>
@@ -95,6 +95,9 @@
       <Group
          location = "group:Notification"
          name = "Notification">
+         <FileRef
+            location = "group:ExtensionNotificationService.swift">
+         </FileRef>
          <FileRef
             location = "group:ClixNotificationServiceExtension.swift">
          </FileRef>
@@ -138,6 +141,9 @@
             location = "group:Logging"
             name = "Logging">
             <FileRef
+               location = "container:Sources/Utils/ClixUserDefault.swift">
+            </FileRef>
+            <FileRef
                location = "group:ClixLogger.swift">
             </FileRef>
             <FileRef
@@ -153,6 +159,9 @@
          name = "Models">
          <FileRef
             location = "group:ClixDevice.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ClixPushNotificationPayload.swift">
          </FileRef>
          <FileRef
             location = "group:ClixUserProperty.swift">
@@ -175,6 +184,9 @@
          </FileRef>
          <FileRef
             location = "group:DeviceService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ExtensionAPIClient.swift">
          </FileRef>
          <FileRef
             location = "group:NotificationService.swift">
