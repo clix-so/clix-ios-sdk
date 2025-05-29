@@ -1,12 +1,49 @@
 import UserNotifications
 import Foundation
 
+/// A reusable notification service extension for displaying images in push notifications and tracking notification events.
+/// Also sends push received events to the Clix server using shared UserDefaults configuration.
+
 /// A reusable notification service extension for displaying images in push notifications.
 /// Subclass or use directly in your Notification Service Extension target.
 open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
 
   open var contentHandler: ((UNNotificationContent) -> Void)?
   open var bestAttemptContent: UNMutableNotificationContent?
+
+  private let notificationService = ExtensionNotificationService()
+  
+  /// Project ID for the Clix service
+  private var projectId: String?
+  
+  /// Register the project ID for this extension
+  /// Call this method in your subclass's init method
+  /// - Parameter projectId: The Clix project ID
+  open func register(projectId: String) {
+    self.projectId = projectId
+    
+    // Generate app group ID based on project ID
+    let appGroupId = ClixUserDefault.getAppGroupId(projectId: projectId)
+    
+    // Configure UserDefaults with the app group ID
+    NSLog("[ClixNotificationServiceExtension] Registering with project ID: \(projectId), app group ID: \(appGroupId)")
+    ClixUserDefault.shared.configure(appGroupId: appGroupId)
+  }
+  
+  /// Gets the app group ID based on project ID from UserDefaults
+  /// - Returns: App group ID in the format "group.clix.{project_id}"
+  private func getAppGroupIdFromProjectId() -> String {
+    // Try to get project ID from UserDefaults first
+    let projectId = ClixUserDefault.shared.getProjectId()
+    
+    if !projectId.isEmpty {
+      return ClixUserDefault.getAppGroupId(projectId: projectId)
+    } else {
+      // Fallback to a generic app group ID if project ID is not available
+      NSLog("[ClixNotificationServiceExtension] WARNING: Project ID not found in UserDefaults, using fallback app group ID")
+      return "group.clix.fallback"
+    }
+  }
 
   open override func didReceive(
     _ request: UNNotificationRequest,
@@ -18,6 +55,21 @@ open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
     guard let bestAttemptContent = bestAttemptContent else {
       contentHandler(request.content)
       return
+    }
+    
+    // Check if project ID is registered
+    if projectId == nil {
+      NSLog("[ClixNotificationServiceExtension] WARNING: Project ID not registered. Call register(projectId:) before using this extension.")
+      
+      // Try to use the fallback method to get app group ID
+      let appGroupId = getAppGroupIdFromProjectId()
+      NSLog("[ClixNotificationServiceExtension] Using fallback app group ID: \(appGroupId)")
+      ClixUserDefault.shared.configure(appGroupId: appGroupId)
+    }
+
+    // Send push received event to Clix server
+    Task {
+      await notificationService.handlePushReceived(userInfo: bestAttemptContent.userInfo)
     }
 
     // Extract image URL from all supported payload formats

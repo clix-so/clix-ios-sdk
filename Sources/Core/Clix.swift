@@ -45,11 +45,21 @@ public extension Clix {
   /// - Parameters:
   ///   - config: ClixConfig SDK configuration
   static func initialize(config: ClixConfig) async {
+    // Generate app group ID based on project ID
+    let appGroupId = ClixUserDefault.getAppGroupId(projectId: config.projectId)
     ClixLogger.setLogLevel(config.logLevel)
     let deviceId = await shared.getOrCreateDeviceId()
     let environment = await ClixEnvironment(config: config, deviceId: deviceId)
     await shared.setEnvironment(environment)
     await shared.setConfig(config)
+    
+    // Configure UserDefaults with the app group ID
+    ClixUserDefault.shared.configure(appGroupId: appGroupId)
+    ClixLogger.debug("Configured UserDefaults with app group: \(appGroupId)")
+    
+    // Save config to UserDefaults for extension access
+    ClixUserDefault.shared.saveConfig(config)
+    
     ClixLogger.debug("Clix SDK initialized with environment: \(await environment.toString())")
   }
   /// Sets the user ID

@@ -96,6 +96,9 @@
          location = "group:Notification"
          name = "Notification">
          <FileRef
+            location = "group:ExtensionNotificationService.swift">
+         </FileRef>
+         <FileRef
             location = "group:ClixNotificationServiceExtension.swift">
          </FileRef>
       </Group>
@@ -138,6 +141,9 @@
             location = "group:Logging"
             name = "Logging">
             <FileRef
+               location = "container:Sources/Utils/ClixUserDefault.swift">
+            </FileRef>
+            <FileRef
                location = "group:ClixLogger.swift">
             </FileRef>
             <FileRef
@@ -178,6 +184,9 @@
          </FileRef>
          <FileRef
             location = "group:DeviceService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ExtensionAPIClient.swift">
          </FileRef>
          <FileRef
             location = "group:NotificationService.swift">
