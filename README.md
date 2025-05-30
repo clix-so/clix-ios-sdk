@@ -1,6 +1,7 @@
 # Clix iOS SDK
 
-Clix iOS SDK is a powerful tool for managing push notifications and user events in your iOS application. It provides a simple and intuitive interface for user engagement and analytics.
+Clix iOS SDK is a powerful tool for managing push notifications and user events in your iOS application. It provides a
+simple and intuitive interface for user engagement and analytics.
 
 ## Installation
 
@@ -20,7 +21,7 @@ pod 'Clix'
 
 ## Requirements
 
-- iOS 13.0 or later
+- iOS 14.0 or later
 - Swift 5.5 or later
 
 ## Usage
@@ -102,11 +103,12 @@ Clix SDK supports push notification integration via `ClixAppDelegate`.
 
 #### Using ClixAppDelegate
 
-This approach automates push notification registration, permission requests, device token management, and event tracking.
+This approach automates push notification registration, permission requests, device token management, and event
+tracking.
 
 1. **Enable Push Notifications in Xcode**
-   - In your project, go to **Signing & Capabilities**.
-   - Add **Push Notifications** and **Background Modes** (check Remote notifications).
+    - In your project, go to **Signing & Capabilities**.
+    - Add **Push Notifications** and **Background Modes** (check Remote notifications).
 2. **Inherit from ClixAppDelegate in your AppDelegate**
 
 ```swift
@@ -140,12 +142,15 @@ class AppDelegate: ClixAppDelegate {
 ```
 
 - Permission requests, device token registration, and event tracking are handled automatically.
-- You can override: `pushNotificationDeliveredInForeground`, `pushNotificationTapped`, `pushNotificationDeliveredSilently`.
+- You can override: `pushNotificationDeliveredInForeground`, `pushNotificationTapped`,
+  `pushNotificationDeliveredSilently`.
 - Always call super to retain default SDK behavior.
 
 ## Sample App
 
-A minimal sample app is provided in the `SampleApp` directory. You can open `SampleApp.xcodeproj` and run the app on a simulator or device. The sample demonstrates how to integrate Clix SDK with push notification and FCM support using the simplest AppDelegate setup:
+A minimal sample app is provided in the `SampleApp` directory. You can open `SampleApp.xcodeproj` and run the app on a
+simulator or device. The sample demonstrates how to integrate Clix SDK with push notification and FCM support using the
+simplest AppDelegate setup:
 
 ```swift
 import UIKit
@@ -157,7 +162,8 @@ class AppDelegate: ClixAppDelegate {
 }
 ```
 
-- Push permission request, FCM/APNS token management, and event tracking are all handled automatically by inheriting from `ClixAppDelegate`.
+- Push permission request, FCM/APNS token management, and event tracking are all handled automatically by inheriting
+  from `ClixAppDelegate`.
 - Make sure to set up your Firebase configuration (GoogleService-Info.plist) as needed for FCM.
 
 ## License
@@ -170,4 +176,5 @@ See the full release history and changes in the [CHANGELOG.md](CHANGELOG.md) fil
 
 ## Contributing
 
-We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull requests.
+We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull
+requests.
