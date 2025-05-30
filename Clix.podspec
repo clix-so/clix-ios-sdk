@@ -9,10 +9,14 @@ Clix iOS SDK provides push notification and analytics capabilities for iOS apps.
   spec.license          = { :type => 'MIT', :file => 'LICENSE' }
   spec.author           = { 'Clix' => 'support@clix.so' }
   spec.source           = { :git => 'https://github.com/clix-so/clix-ios-sdk.git', :tag => spec.version.to_s }
-  spec.ios.deployment_target = '13.0'
+  spec.ios.deployment_target = '14.0'
   spec.swift_version = '5.5'
   spec.source_files = 'Sources/**/*'
   spec.frameworks = 'UIKit', 'UserNotifications'
   spec.dependency 'FirebaseCore', '>= 10.0.0'
   spec.dependency 'FirebaseMessaging', '>= 10.0.0'
+  
+  spec.pod_target_xcconfig = { 
+    'OTHER_SWIFT_FLAGS' => '-enable-experimental-feature AccessLevelOnImport'
+  }
 end

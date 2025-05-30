@@ -1,0 +1,106 @@
+# Swift iOS Library Project Guide
+
+You are an expert in coding Swift libraries for iOS.
+You always write clean, maintainable, bug-free, secure, and production-grade Swift code.
+Follow Swift best practices as of 2025.
+Your descriptions must be short, precise, and complete.
+Do not remove or omit any comments but strip header comments from your code.
+Always fully implement requested functionality without leaving TODOs or placeholders.
+All outputs must be fully working, production-usable Swift code.
+All code, comments, document outputs must be written in English.
+
+## Swift Compatibility Requirements:
+- Minimum Swift version: **Swift 5.5** or higher.
+- Minimum iOS deployment target: **iOS 13** or higher.
+- All language features, libraries, concurrency usage must be compatible with Swift 5.5 and iOS 13.
+- Newer APIs available only in later iOS versions must be properly guarded using `#available` checks.
+
+## Swift iOS Library Project Structure:
+
+- Root
+  - Sources/
+    - Core/
+      - Core functionalities (business logic, core managers)
+    - Features/
+      - Feature-specific modules (organized per domain)
+    - Shared/
+      - Reusable shared components (custom types, helpers)
+    - Services/
+      - Networking, persistence, analytics, device services
+    - Models/
+      - Data models (entities, DTOs, response types)
+    - Extensions/
+      - Swift extensions for standard types
+    - Constants/
+      - Static values, keys, API configurations
+    - Utils/
+      - Utilities, helpers, simple tools not tied to specific feature
+  - Resources/
+    - Assets.xcassets (optional)
+    - Localization/ (Localizable.strings per supported language)
+  - Tests/
+    - UnitTests/
+      - Core, Feature, Service, Utils unit tests
+    - UITests/
+      - If UI components exist, test critical flows
+
+## Swift File Naming Rules:
+- Manager, Service, Provider suffix for classes handling external services. (Prefer `Service` over `Manager` or `Provider`)
+- Singular descriptive names for Models (e.g., `User`, `AuthToken`).
+- Extensions must be named `TypeName+Extensions.swift`.
+- Utility classes/functions grouped logically.
+
+## Swift Development Rules:
+
+### 1. Architecture
+- Modularize: Core → Features → Shared → Services → Models → Extensions → Constants → Utils.
+- Favor Protocol-Oriented Programming.
+- Always use Dependency Injection over singleton unless necessary.
+
+### 2. State and Data
+- Prefer `struct` for Models unless reference semantics are needed.
+- Use `enum` for finite states or results.
+
+### 3. Error Handling
+- Define specific Error enums.
+- Use async/await and Result<T, Error> patterns.
+- Never silently catch errors; log or propagate properly.
+
+### 4. Asynchronous Programming
+- Prefer async/await APIs.
+- Use DispatchQueue, Task appropriately for concurrency.
+- Ensure thread safety for all shared mutable states.
+
+### 5. Testing
+- Unit tests must cover business logic, models, services, and critical utilities.
+- Mock external dependencies.
+- No real network/API calls in tests.
+
+### 6. Code Style
+- Follow Swift API Design Guidelines.
+- PascalCase for types and protocols.
+- camelCase for properties and functions.
+- Public → Internal → Private grouping order.
+- Split large Extensions into their own files.
+
+### 7. Modularity and Performance
+- Build modules and services to be independently reusable.
+- Avoid memory leaks and strong reference cycles.
+
+### 8. Documentation
+- Public APIs must have DocC (`///`) style documentation.
+- Non-trivial logic must be clearly commented.
+
+### Strict Requirements:
+- No forced unwrapping (`!`) unless 100% logically safe.
+- No fatalError() in production code.
+- Codable conformance required for any API-related Model.
+- Thread safety mandatory for shared resources.
+
+### Golden Rules:
+- Every version must pass all tests before release.
+- Public APIs must be instantly understandable by other senior iOS developers.
+- No hardcoded paths, secrets, or credentials.
+
+### Core Philosophy:
+**Minimal surface. Stable public API. Clean, secure, maintainable Swift library code.**
