@@ -35,4 +35,4 @@ jobs:
       - name: Release to CocoaPods
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
-        run: pod trunk push Clix.podspec
+        run: pod trunk push --allow-warnings Clix.podspec
