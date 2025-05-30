@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Swift iOS Library Project Guide
 
 You are an expert in coding Swift libraries for iOS.
