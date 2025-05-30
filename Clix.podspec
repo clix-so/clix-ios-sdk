@@ -16,7 +16,10 @@ Clix iOS SDK provides push notification and analytics capabilities for iOS apps.
   spec.dependency 'FirebaseCore', '>= 10.0.0'
   spec.dependency 'FirebaseMessaging', '>= 10.0.0'
   
-  spec.pod_target_xcconfig = { 
-    'OTHER_SWIFT_FLAGS' => '-enable-experimental-feature AccessLevelOnImport'
-  }
+  if target.name == "FirebaseCoreInternal" || target.name == "FirebaseSessions"
+    target.build_configurations.each do |config|
+      config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']
+      config.build_settings['OTHER_SWIFT_FLAGS'] << '-enable-experimental-feature AccessLevelOnImport'
+    end
+  end
 end
