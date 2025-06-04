@@ -1,5 +1,7 @@
 import Foundation
 import UIKit
+import AdSupport
+import UserNotifications
 
 /// Manages environment and device information for Clix SDK
 actor ClixEnvironment {
@@ -27,12 +29,24 @@ actor ClixEnvironment {
   }
 
   @MainActor
-  private static func createDevice(config: ClixConfig, deviceId: String) -> ClixDevice {
+  private static func createDevice(config: ClixConfig, deviceId: String) async -> ClixDevice {
     let device = UIDevice.current
     let locale = Locale.current
     let timezone = TimeZone.current
     let appName = Bundle.main.bundleIdentifier ?? ""
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    
+    // Get advertising identifier (IDFA)
+    let adId = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+    
+    // Check push notification permission status
+    var isPushPermissionGranted = false
+    let notificationCenter = UNUserNotificationCenter.current()
+    let settings = await notificationCenter.notificationSettings()
+    if settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional {
+      isPushPermissionGranted = true
+    }
+    
     return ClixDevice(
       id: deviceId,
       platform: "iOS",
@@ -47,8 +61,8 @@ actor ClixEnvironment {
       appVersion: appVersion,
       sdkType: "Native",
       sdkVersion: Clix.version,
-      adId: nil,  // iOS에서 광고 ID는 별도 처리 필요
-      isPushPermissionGranted: false,  // 추후 업데이트 필요
+      adId: adId,  // 광고 ID 설정
+      isPushPermissionGranted: isPushPermissionGranted,  // 푸시 권한 상태 설정
       pushToken: "",
       pushTokenType: "FCM"
     )
