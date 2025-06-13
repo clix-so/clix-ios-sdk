@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "lineLength": 120,
+  "lineBreakBeforeEachArgument": true,
+  "rules": {
+    "AlwaysUseLiteralForEmptyCollectionInit": true,
+    "BeginDocumentationCommentWithOneLineSummary": true,
+    "NeverUseForceTry": true,
+    "NeverUseImplicitlyUnwrappedOptionals": true,
+    "NoLeadingUnderscores": true,
+    "UseEarlyExits": true,
+    "UseWhereClausesInForLoops": true,
+    "ValidateDocumentationComments": true
+  }
+}

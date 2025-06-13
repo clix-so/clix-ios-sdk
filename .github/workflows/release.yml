@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to be released"
+        required: true
+
+jobs:
+  release:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Version
+        run: |
+          CLIX_VERSION_CONTENT=$(grep 'internal static let current: String = ' Sources/Core/ClixVersion.swift | sed 's/.*= "\(.*\)".*/\1/')
+          INPUT_VERSION="${{ github.event.inputs.version }}"
+
+          if [ "$CLIX_VERSION_CONTENT" != "$INPUT_VERSION" ]; then
+            echo "Error: Version mismatch!"
+            echo "ClixVersion.swift contains: '$CLIX_VERSION_CONTENT'"
+            echo "Input version is: '$INPUT_VERSION'"
+            echo "Please update the ClixVersion.swift file to match the release version."
+            exit 1
+          fi
+
+          echo "Version validation passed: $INPUT_VERSION"
+
+      - name: Read Changelog
+        id: read_changelog
+        if: ${{ !endsWith(github.event.inputs.version, 'SNAPSHOT') }}
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ github.event.inputs.version }}
+
+      - name: Create Release
+        if: steps.read_changelog.outputs.changes
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          body: ${{ steps.read_changelog.outputs.changes }}
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release to CocoaPods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: pod trunk push --allow-warnings Clix.podspec

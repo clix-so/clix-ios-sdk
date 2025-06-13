@@ -1,0 +1,12 @@
+.DS_Store
+.build
+.env
+.idea
+.index-build
+.swiftpm
+.cursor
+.claude
+.junie
+xcuserdata
+Package.resolved
+GoogleService-Info.plist

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:CHANGELOG.md">
+   </FileRef>
+   <FileRef
+      location = "group:Clix.podspec">
+   </FileRef>
+   <FileRef
+      location = "group:CONTRIBUTING.md">
+   </FileRef>
+   <FileRef
+      location = "group:LICENSE">
+   </FileRef>
+   <FileRef
+      location = "group:Makefile">
+   </FileRef>
+   <FileRef
+      location = "group:Package.resolved">
+   </FileRef>
+   <FileRef
+      location = "group:Package.swift">
+   </FileRef>
+   <FileRef
+      location = "group:README.md">
+   </FileRef>
+   <Group
+      location = "group:Samples"
+      name = "Samples">
+      <FileRef
+         location = "group:BasicApp/BasicApp.xcodeproj">
+      </FileRef>
+   </Group>
+   <Group
+      location = "group:Sources"
+      name = "Sources">
+      <Group
+         location = "group:Core"
+         name = "Core">
+         <FileRef
+            location = "group:ClixConfig.swift">
+         </FileRef>
+         <FileRef
+            location = "group:Clix.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ClixAppDelegate.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ClixEnvironment.swift">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Notification"
+         name = "Notification">
+         <FileRef
+            location = "group:ClixNotificationServiceExtension.swift">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Utils"
+         name = "Utils">
+         <Group
+            location = "group:AnyCodable"
+            name = "AnyCodable">
+            <FileRef
+               location = "group:AnyDecodable.swift">
+            </FileRef>
+            <FileRef
+               location = "group:AnyCodable.swift">
+            </FileRef>
+            <FileRef
+               location = "group:AnyEncodable.swift">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:HTTP"
+            name = "HTTP">
+            <FileRef
+               location = "group:HTTPRequest.swift">
+            </FileRef>
+            <FileRef
+               location = "group:HTTPResponse.swift">
+            </FileRef>
+            <FileRef
+               location = "group:HTTPMethod.swift">
+            </FileRef>
+            <FileRef
+               location = "group:HTTPClient.swift">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:Logging"
+            name = "Logging">
+            <FileRef
+               location = "group:ClixLogger.swift">
+            </FileRef>
+            <FileRef
+               location = "group:ClixLogLevel.swift">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:ClixError.swift">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Models"
+         name = "Models">
+         <FileRef
+            location = "group:ClixDevice.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ClixPushNotificationPayload.swift">
+         </FileRef>
+         <FileRef
+            location = "group:ClixUserProperty.swift">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Services"
+         name = "Services">
+         <FileRef
+            location = "group:ClixAPIClient.swift">
+         </FileRef>
+         <FileRef
+            location = "group:StorageService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:EventService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:DeviceAPIService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:DeviceService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:NotificationService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:EventAPIService.swift">
+         </FileRef>
+         <FileRef
+            location = "group:TokenService.swift">
+         </FileRef>
+      </Group>
+   </Group>
+   <Group
+      location = "group:Tests"
+      name = "Tests">
+      <FileRef
+         location = "group:ClixTests.swift">
+      </FileRef>
+   </Group>
+</Workspace>
