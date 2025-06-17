@@ -1,0 +1,14 @@
+"app_name" = "Clix Sample";
+"project_id" = "Project ID";
+"api_key" = "API Key";
+"device_id" = "Device ID";
+"push_token" = "Push Token";
+"user_id" = "User ID";
+"submit" = "Submit";
+"event_name" = "Event Name";
+"event_params" = "Event Params";
+"track_event" = "Track Event";
+"user_property" = "User Property";
+"user_property_key" = "User Property Key";
+"user_property_value" = "User Property Value";
+"set_user_property" = "Set User Property";
