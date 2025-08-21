@@ -1,91 +1,0 @@
-Script started on Thu Aug 21 12:57:39 2025
-ll[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk]1;../clix-ios-sdk]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk\[0m[27m[24m[J[01;32m➜  [36mclix-ios-sdk[00m [K[?1h=[?2004hlll[32ml[32ml[39m[0m[27m[24m[J[01;32m➜  [36mclix-ios-sdk[00m [01;34mgit:([31mmain[34m) [33m✗[00m [32mll[39m[K[?2004l
-]2;ls -G -lh]1;lltotal 80
--rw-r--r--  1 jace-yoo  staff   1.4K Aug 21 12:16 CHANGELOG.md
--rw-r--r--  1 jace-yoo  staff   1.0K Aug 21 12:02 Clix.podspec
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mClix.xcworkspace[39;49m[0m
--rw-r--r--  1 jace-yoo  staff   3.1K Aug  6 02:32 CONTRIBUTING.md
--rw-r--r--  1 jace-yoo  staff   1.4K Aug  6 02:32 LICENSE
--rw-r--r--  1 jace-yoo  staff   1.2K Aug  6 02:32 Makefile
--rw-r--r--  1 jace-yoo  staff   3.9K Aug  6 02:33 Package.resolved
--rw-r--r--  1 jace-yoo  staff   896B Aug 21 12:02 Package.swift
--rw-r--r--  1 jace-yoo  staff   6.4K Aug 21 12:02 README.md
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mSamples[39;49m[0m
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mscripts[39;49m[0m
-drwxr-xr-x  7 jace-yoo  staff   224B Aug  6 02:32 [1m[36mSources[39;49m[0m
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mTests[39;49m[0m
--rw-r--r--  1 jace-yoo  staff    43B Aug 21 12:57 typescript
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk]1;../clix-ios-sdk]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk\[0m[27m[24m[J[01;32m➜  [36mclix-ios-sdk[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004hs[4ms[24m[4ms[24m[90mcript[39m[4ms[39m[4mc[24m[4ms[4mc[39m[4mr[24m[4mr[39m[4mi[24m[4mi[39m[4mp[24m[4mp[39m[4mt[24m[24m[32ms[24m[32mc[24m[32mr[24m[32mi[24m[32mp[24m[32mt[39m[32mp[39m[39m [39m[4ms[39m[4mc[39m[4mr[39m[4mi[39m[4mp[24m[90mt[39m[4mi[24m[24m [39m [90mpt[39m[4mr[24m[24m [39m [39m [90mipt[39m[4ms[4mc[24m[24m [39m [39m [39m [90mript[39m[4ms[24m[24m [39m [39m [39m [39m [4ms[24m[90mcript[39m[24m [39m [39m [39m [39m [39m c[1m[31mc[0m[39m[1m[31mc[0m[39m[90mlaude[39m[1m[31mc[1m[31md[0m[39m[39m [39m [39m [39m [0m[32mc[0m[32md[39m[90m ll[39m[32mc[32md[32m [39m[32mc[32md[39m[39m [39ms[39m [4ms[24m[90mupabase && npx supabase init[39m[28D[4ms[39m[4mc[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [27D[4mc[4mr[24m[4mr[4mi[24m[4mi[4mp[24m[4mp[4mt[24m[?2004l[24ms[24mc[24mr[24mi[24mp[24mt
-]2;cd script]1;cdcd: no such file or directory: script
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk]1;../clix-ios-sdk]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk\[0m[27m[24m[J[01;31m➜  [36mclix-ios-sdk[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ml[39m[?2004l
-]2;ls -G -lh]1;lltotal 80
--rw-r--r--  1 jace-yoo  staff   1.4K Aug 21 12:16 CHANGELOG.md
--rw-r--r--  1 jace-yoo  staff   1.0K Aug 21 12:02 Clix.podspec
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mClix.xcworkspace[39;49m[0m
--rw-r--r--  1 jace-yoo  staff   3.1K Aug  6 02:32 CONTRIBUTING.md
--rw-r--r--  1 jace-yoo  staff   1.4K Aug  6 02:32 LICENSE
--rw-r--r--  1 jace-yoo  staff   1.2K Aug  6 02:32 Makefile
--rw-r--r--  1 jace-yoo  staff   3.9K Aug  6 02:33 Package.resolved
--rw-r--r--  1 jace-yoo  staff   896B Aug 21 12:02 Package.swift
--rw-r--r--  1 jace-yoo  staff   6.4K Aug 21 12:02 README.md
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mSamples[39;49m[0m
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mscripts[39;49m[0m
-drwxr-xr-x  7 jace-yoo  staff   224B Aug  6 02:32 [1m[36mSources[39;49m[0m
-drwxr-xr-x  3 jace-yoo  staff    96B Aug  6 02:32 [1m[36mTests[39;49m[0m
--rw-r--r--  1 jace-yoo  staff    43B Aug 21 12:57 typescript
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk]1;../clix-ios-sdk]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk\[0m[27m[24m[J[01;32m➜  [36mclix-ios-sdk[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004hs[4ms[24m[4ms[24m[90mcript[39m[4ms[39m[4mc[24m[4ms[4mc[39m[4mr[24m[4mr[39m[4mi[24m[4mi[39m[4mp[24m[4mp[39m[4mt[24m[24m[32ms[24m[32mc[24m[32mr[24m[32mi[24m[32mp[24m[32mt[39m[32mt[32ms[39m[4m[32ms[4m[32mc[4m[32mr[4m[32mi[4m[32mp[4m[32mt[4m[32ms[24m[39m[?2004l
-]2;scripts]1;scripts[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk/scripts]1;..s-sdk/scripts]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/scripts\[0m[27m[24m[J[01;32m➜  [36mscripts[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004hl[32ml[39m[32ml[39m[90ml[39m[32ml[32ml[39m[?2004l
-]2;ls -G -lh]1;lltotal 8
--rwxr-xr-x  1 jace-yoo  staff   3.0K Aug  6 02:32 [31mupdate-version.sh[39;49m[0m
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk/scripts]1;..s-sdk/scripts]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/scripts\[0m[27m[24m[J[01;32m➜  [36mscripts[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h.[32m.[39m[32m.[39m[90m.[39m[32m.[32m/[39m[4m[32m.[4m[32m/[24m[39m[90mclix-cli-prompt-executor.sh[39m[27D[4m[32m.[4m[32m/[4m[32mu[24m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [26D[39m[4m.[39m[4m/[39m[4mu[24m[4mu[4mp[24m[4mp[4md[24m[4md[4ma[24m[24m[32m.[24m[32m/[24m[32mu[24m[32mp[24m[32md[24m[32ma[32mte-version.sh[39m[1m [0m[0m [?2004l
-]2;./update-version.sh]1;./update-version.shError: Version number is required
-Usage: ./scripts/update-version.sh "1.0.0"
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk/scripts]1;..s-sdk/scripts]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/scripts\[0m[27m[24m[J[01;31m➜  [36mscripts[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h./update-version.sh[19D[32m.[32m/[32mu[32mp[32md[32ma[32mt[32me[32m-[32mv[32me[32mr[32ms[32mi[32mo[32mn[32m.[32ms[32mh[39m[32mh[32m [39m[32mh[39m[39m 1.1.0[?2004l
-]2;./update-version.sh 1.1.0]1;./update-version.sh🔄 Updating Clix iOS SDK to version: 1.1.0
-
-📝 Updating Swift source file: /Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/Sources/Core/ClixVersion.swift
-✅ Updated ClixVersion.swift
-
-📝 Updating Clix.podspec: /Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/Clix.podspec
-✅ Updated Clix.podspec
-
-🔍 Showing changes to confirm they worked:
-
---- Changes to ClixVersion.swift ---
-[1mdiff --git a/Sources/Core/ClixVersion.swift b/Sources/Core/ClixVersion.swift[m
-[1mindex e4a7886..1c173a1 100644[m
-[1m--- a/Sources/Core/ClixVersion.swift[m
-[1m+++ b/Sources/Core/ClixVersion.swift[m
-[36m@@ -2,5 +2,5 @@[m [mimport Foundation[m
- [m
- internal struct ClixVersion {[m
-   // Don't modify below line - it's automatically updated by scripts/update-version.sh[m
-[31m-  internal static let current: String = "1.0.0"[m
-[32m+[m[32m  internal static let current: String = "1.1.0"[m
- }[m
-
---- Changes to Clix.podspec ---
-[1mdiff --git a/Clix.podspec b/Clix.podspec[m
-[1mindex 818c0c8..9b332ec 100644[m
-[1m--- a/Clix.podspec[m
-[1m+++ b/Clix.podspec[m
-[36m@@ -1,7 +1,7 @@[m
- Pod::Spec.new do |spec|[m
-   spec.name             = 'Clix'[m
-   # Don't modify below line - it's automatically updated by scripts/update-version.sh[m
-[31m-  spec.version          = '1.0.0' # Don't modify this line - it's automatically updated by scripts/update-version.sh[m
-[32m+[m[32m  spec.version          = '1.1.0' # Don't modify this line - it's automatically updated by scripts/update-version.sh[m
-   spec.summary          = 'Clix iOS SDK for push notifications and analytics'[m
-   spec.description      = <<-DESC[m
- Clix iOS SDK provides push notification and analytics capabilities for iOS apps.[m
-
-🎉 Version update completed successfully!
-📦 New version: 1.1.0
-
-Next steps:
-1. Review the changes above
-2. Run tests: make test
-3. Commit changes: git add . && git commit -m "chore: bump version to 1.1.0"
-4. Create tag: git tag 1.1.0
-5. Push: git push origin main --tags
-[1m[7m%[27m[1m[0m                                                                                ]2;jace-yoo@MacBook-Air-4:~/Documents/workspace/sdks/clix-ios-sdk/scripts]1;..s-sdk/scripts]7;file://MacBook-Air-4.local/Users/jace-yoo/Documents/workspace/sdks/clix-ios-sdk/scripts\[0m[27m[24m[J[01;32m➜  [36mscripts[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h
