@@ -20,8 +20,13 @@ pod 'Clix'
 
 ## Requirements
 
-- iOS 14.0 or later
+- iOS 15.0 or later
 - Swift 5.5 or later
+
+## Breaking Changes
+
+### Firebase 12+ Support
+If you need to use Firebase 12 or later, you must use the latest version of Clix iOS SDK. Previous versions may not be compatible with Firebase 12+.
 
 ## Usage
 
