@@ -97,7 +97,7 @@ actor DeviceService {
     }
     return ClixDevice(
       id: deviceId,
-      platform: "iOS",
+      platform: "DEVICE_PLATFORM_TYPE_IOS",
       model: await device.model,
       manufacturer: "Apple",
       osName: await device.systemName,
