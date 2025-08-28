@@ -43,14 +43,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   ) {
     Messaging.messaging().apnsToken = deviceToken
     ClixLogger.debug("APNS token set for Firebase Messaging.")
-
-    Task {
-      do {
-        try await handleDeviceToken(deviceToken)
-      } catch {
-        ClixLogger.error("Failed to process APNS token: \(error)")
-      }
-    }
   }
 
   open func userNotificationCenter(
@@ -263,12 +255,6 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
         completionHandler(.failed)
       }
     }
-  }
-
-  open func handleDeviceToken(_ token: Data) async throws {
-    let tokenService = try Clix.shared.get(\.tokenService)
-    let tokenString = tokenService.convertTokenToString(token)
-    try await processToken(tokenString, tokenType: "APNS")
   }
 
   open func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
