@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:clix-ios-sdk}",
+            "name": "Debug BasicApp",
+            "program": "${workspaceFolder:clix-ios-sdk}/.build/debug/BasicApp",
+            "preLaunchTask": "swift: Build Debug BasicApp"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:clix-ios-sdk}",
+            "name": "Release BasicApp",
+            "program": "${workspaceFolder:clix-ios-sdk}/.build/release/BasicApp",
+            "preLaunchTask": "swift: Build Release BasicApp"
+        }
+    ]
+}

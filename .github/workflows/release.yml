@@ -30,6 +30,11 @@ jobs:
 
           echo "Version validation passed: $INPUT_VERSION"
 
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16"
+
       - name: Read Changelog
         id: read_changelog
         if: ${{ !endsWith(github.event.inputs.version, 'SNAPSHOT') }}
