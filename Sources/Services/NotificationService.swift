@@ -8,6 +8,11 @@ private struct NotificationSettings: Codable {
   var lastUpdated: Date
 }
 
+enum NotificationEvent: String {
+  case PUSH_NOTIFICATION_RECEIVED = "PUSH_NOTIFICATION_RECEIVED"
+  case PUSH_NOTIFICATION_TAPPED = "PUSH_NOTIFICATION_TAPPED"
+}
+
 class NotificationService {
   private let eventService: EventService
   private let storageService: StorageService
@@ -27,13 +32,13 @@ class NotificationService {
       Task {
         do {
           try await eventService.trackEvent(
-            name: "PUSH_NOTIFICATION_RECEIVED",
+            name: NotificationEvent.PUSH_NOTIFICATION_RECEIVED.rawValue,
             messageId: messageId,
             userJourneyId: userJourneyId,
             userJourneyNodeId: userJourneyNodeId
           )
         } catch {
-          ClixLogger.error("Failed to track PUSH_NOTIFICATION_RECEIVED", error: error)
+          ClixLogger.error("Failed to track \(NotificationEvent.PUSH_NOTIFICATION_RECEIVED.rawValue)", error: error)
         }
       }
     } else {
@@ -49,13 +54,13 @@ class NotificationService {
       Task {
         do {
           try await eventService.trackEvent(
-            name: "PUSH_NOTIFICATION_TAPPED",
+            name: NotificationEvent.PUSH_NOTIFICATION_TAPPED.rawValue,
             messageId: messageId,
             userJourneyId: userJourneyId,
             userJourneyNodeId: userJourneyNodeId
           )
         } catch {
-          ClixLogger.error("Failed to track PUSH_NOTIFICATION_TAPPED", error: error)
+          ClixLogger.error("Failed to track \(NotificationEvent.PUSH_NOTIFICATION_TAPPED.rawValue)", error: error)
         }
       }
     } else {
