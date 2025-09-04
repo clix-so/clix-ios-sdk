@@ -8,6 +8,11 @@ private struct NotificationSettings: Codable {
   var lastUpdated: Date
 }
 
+enum NotificationEvent: String {
+  case pushNotificationReceived = "PUSH_NOTIFICATION_RECEIVED"
+  case pushNotificationTapped = "PUSH_NOTIFICATION_TAPPED"
+}
+
 class NotificationService {
   private let eventService: EventService
   private let storageService: StorageService
@@ -21,11 +26,19 @@ class NotificationService {
 
   func handlePushReceived(userInfo: [AnyHashable: Any]) {
     if let messageId = getMessageId(userInfo: userInfo) {
+      let userJourneyId = getUserJourneyId(userInfo: userInfo)
+      let userJourneyNodeId = getUserJourneyNodeId(userInfo: userInfo)
+
       Task {
         do {
-          try await eventService.trackEvent(name: "PUSH_NOTIFICATION_RECEIVED", messageId: messageId)
+          try await eventService.trackEvent(
+            name: NotificationEvent.pushNotificationReceived.rawValue,
+            messageId: messageId,
+            userJourneyId: userJourneyId,
+            userJourneyNodeId: userJourneyNodeId
+          )
         } catch {
-          ClixLogger.error("Failed to track PUSH_NOTIFICATION_RECEIVED", error: error)
+          ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationReceived.rawValue)", error: error)
         }
       }
     } else {
@@ -35,11 +48,19 @@ class NotificationService {
 
   func handlePushTapped(userInfo: [AnyHashable: Any]) {
     if let messageId = getMessageId(userInfo: userInfo) {
+      let userJourneyId = getUserJourneyId(userInfo: userInfo)
+      let userJourneyNodeId = getUserJourneyNodeId(userInfo: userInfo)
+
       Task {
         do {
-          try await eventService.trackEvent(name: "PUSH_NOTIFICATION_TAPPED", messageId: messageId)
+          try await eventService.trackEvent(
+            name: NotificationEvent.pushNotificationTapped.rawValue,
+            messageId: messageId,
+            userJourneyId: userJourneyId,
+            userJourneyNodeId: userJourneyNodeId
+          )
         } catch {
-          ClixLogger.error("Failed to track PUSH_NOTIFICATION_TAPPED", error: error)
+          ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationTapped.rawValue)", error: error)
         }
       }
     } else {
@@ -52,6 +73,26 @@ class NotificationService {
       let messageId = clixData["message_id"] as? String
     {
       return messageId
+    }
+
+    return nil
+  }
+
+  private func getUserJourneyId(userInfo: [AnyHashable: Any]) -> String? {
+    if let clixData = parseClixPayload(from: userInfo),
+      let userJourneyId = clixData["user_journey_id"] as? String
+    {
+      return userJourneyId
+    }
+
+    return nil
+  }
+
+  private func getUserJourneyNodeId(userInfo: [AnyHashable: Any]) -> String? {
+    if let clixData = parseClixPayload(from: userInfo),
+      let userJourneyNodeId = clixData["user_journey_node_id"] as? String
+    {
+      return userJourneyNodeId
     }
 
     return nil
