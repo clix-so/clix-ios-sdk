@@ -47,16 +47,6 @@ class AppDelegate: ClixAppDelegate {
     print("❌ Failed to register for remote notifications: \(error)")
   }
 
-  override func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-    // Call parent implementation first to handle token processing
-    super.messaging(messaging, didReceiveRegistrationToken: fcmToken)
-
-    // Then update our values
-    if let token = fcmToken {
-      print("🔄 FCM Token updated: \(token)")
-      updateClixValues()
-    }
-  }
 
   private func updateClixValues() {
     Task {
