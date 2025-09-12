@@ -24,6 +24,16 @@ class AppDelegate: ClixAppDelegate {
       Clix.setUserId(savedUserId)
       print("✅ Set user_id from UserDefaults: \(savedUserId)")
     }
+
+    Messaging.messaging().token { token, error in
+      if let error = error {
+        print("❌ Error fetching FCM registration token: \(error)")
+      } else if let token = token {
+        print("🔄 FCM Token updated: \(token)")
+        self.updateClixValues()
+      }
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -46,7 +56,6 @@ class AppDelegate: ClixAppDelegate {
     super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
     print("❌ Failed to register for remote notifications: \(error)")
   }
-
 
   private func updateClixValues() {
     Task {
