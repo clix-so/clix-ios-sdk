@@ -172,6 +172,91 @@ class AppDelegate: ClixAppDelegate {
 - Firebase integration is handled internally.
 - Always call super to retain default SDK behavior.
 
+#### Using Clix.Notification
+
+If you prefer not to inherit from `ClixAppDelegate` or need more control over your AppDelegate implementation, you can use the Clix.Notification:
+
+```swift
+import SwiftUI
+import UIKit
+import Firebase
+import FirebaseMessaging
+import Clix
+
+@main
+struct MyApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    var body: some Scene { 
+        WindowGroup { ContentView() } 
+    }
+}
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        // Configure Firebase first
+        FirebaseApp.configure()
+        
+        // Initialize Clix SDK
+        let config = ClixConfig(
+            projectId: "YOUR_PROJECT_ID",
+            apiKey: "YOUR_API_KEY",
+            logLevel: .debug
+        )
+        Clix.initialize(config: config)
+        
+        // Setup push notifications using Clix.Notification
+        Clix.Notification.setup()
+        Clix.Notification.handleLaunchOptions(launchOptions)
+        
+        // Set notification handlers (optional)
+        Clix.Notification.setNotificationWillShowInForegroundHandler { notification in
+            // Return presentation options for foreground notifications
+            return [.list, .banner, .sound, .badge]
+        }
+        
+        Clix.Notification.setNotificationOpenedHandler { userInfo in
+            // Handle notification tapped
+            if let clixData = userInfo["clix"] as? [String: Any],
+               let landingURL = clixData["landing_url"] as? String,
+               let url = URL(string: landingURL) {
+                UIApplication.shared.open(url)
+            }
+        }
+        
+        return true
+    }
+    
+    // MARK: - Push Notification Methods
+    
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        Clix.Notification.handleAPNSToken(deviceToken)
+    }
+    
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        Clix.Notification.handleAPNSRegistrationError(error)
+    }
+    
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification payload: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        Clix.Notification.handleSilentNotification(payload, completionHandler: completionHandler)
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+        Clix.Notification.handleForegroundNotification(userInfo)
+    }
+}
+```
+
 ### Notification Service Extension (Optional)
 
 For rich push notifications with images, you can add a Notification Service Extension:

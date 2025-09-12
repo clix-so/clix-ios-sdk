@@ -71,6 +71,7 @@ public final class Clix {
   // MARK: - Type Properties
   static let version = ClixVersion.current
   static let shared = Clix()
+  public static let Notification = ClixNotification.shared
 
   // MARK: - Storage Keys
   private static let configKey = "clix_config"
