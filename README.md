@@ -348,16 +348,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 ```
 
 ##### Clix.Notification quick reference
-- `setup(autoRequestAuthorization: Bool)`: 푸시 권한 요청 타이밍 선택(기본 true)
-- `handleLaunchOptions(_:)`: 푸시로 앱 실행된 경우 초기 처리
-- `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: APNs 등록 결과 전달
-- `handleBackgroundNotification(_:completionHandler:)`: 백그라운드 수신 처리 및 completion 호출
-- `handleForegroundNotification(_:)`: 포그라운드 수신 분석 처리(자동 딥링크 오픈 없음)
-- `setNotificationWillShowInForegroundHandler(_:)`: 포그라운드 표시 옵션 커스터마이즈
-- `setNotificationOpenedHandler(_:)`: 탭 후 후속 처리(로그/라우팅)
-- `setAutoOpenLandingOnTap(_:)`: 탭 시 SDK가 딥링크 자동 오픈 여부 제어
-- `handleWillPresent(notification:completionHandler:)`: UNUserNotificationCenterDelegate 포워딩 헬퍼
-- `handleDidReceive(response:completionHandler:)`: UNUserNotificationCenterDelegate 포워딩 헬퍼
+- `setup(autoRequestAuthorization: Bool)`: Choose push permission request timing (default true)
+- `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
+- `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
+- `handleBackgroundNotification(_:completionHandler:)`: Handle background notification receipt and call completion
+- `handleForegroundNotification(_:)`: Handle foreground notification analytics (no automatic deep link opening)
+- `setNotificationWillShowInForegroundHandler(_:)`: Customize foreground display options
+- `setNotificationOpenedHandler(_:)`: Handle post-tap processing (logging/routing)
+- `setAutoOpenLandingOnTap(_:)`: Control whether SDK automatically opens deep links on tap
+- `handleWillPresent(notification:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
+- `handleDidReceive(response:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
 
 
 ### Notification Service Extension (Optional)
