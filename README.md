@@ -126,7 +126,7 @@ If you want the quickest working setup with sensible defaults, subclass `ClixApp
 ```swift
 import UIKit
 import Clix
-// import Firebase // Optional: only if using FCM
+import Firebase
 
 @main
 class AppDelegate: ClixAppDelegate {
@@ -136,7 +136,7 @@ class AppDelegate: ClixAppDelegate {
     ) -> Bool {
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
-        // FirebaseApp.configure() // Optional: if you use FCM
+        FirebaseApp.configure()
 
         // Required: initialize Clix with your credentials
         Task {
@@ -181,7 +181,7 @@ class AppDelegate: ClixAppDelegate {
     ) -> Bool {
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
-        // Optional: Configure Firebase if you use FCM.
+        // Configure Firebase
         FirebaseApp.configure()
 
         // Initialize Clix SDK after calling super.
@@ -204,9 +204,9 @@ class AppDelegate: ClixAppDelegate {
         }
 
         // Optional: when autoRequestAuthorizationOnLaunch is false, show the prompt later:
-        // UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-        //   if granted { DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() } }
-        // }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+          if granted { DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() } }
+        }
 
         return result
     }
@@ -251,7 +251,7 @@ class AppDelegate: ClixAppDelegate {
 
 - Permission requests, device token registration, and event tracking are handled automatically.
 - Rich images: for best reliability use a Notification Service Extension. In foreground, the SDK can attach images and re-post the notification when possible.
-- If you use FCM, call `FirebaseApp.configure()` during app launch.
+- Firebase is required, call `FirebaseApp.configure()` during app launch.
 - Always call super to retain default SDK behavior where indicated.
 
 #### Using Clix.Notification
@@ -276,7 +276,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
-        // Configure Firebase first if using FCM
+        // Configure Firebase
         FirebaseApp.configure()
 
         // Initialize Clix SDK
