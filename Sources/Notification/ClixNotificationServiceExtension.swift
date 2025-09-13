@@ -55,16 +55,18 @@ open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
       return
     }
 
-    do {
-      let notificationService = try Clix.shared.get(\.notificationService)
-      notificationService.handlePushReceived(userInfo: bestAttemptContent.userInfo)
-      notificationService.processNotificationWithImage(
-        content: bestAttemptContent,
-        completion: contentHandler
-      )
-    } catch {
-      ClixLogger.error("NotificationService not initialized.")
-      contentHandler(bestAttemptContent)
+    Task {
+      do {
+        let notificationService = try await Clix.shared.getWithWait(\.notificationService)
+        notificationService.handlePushReceived(userInfo: bestAttemptContent.userInfo)
+        notificationService.processNotificationWithImage(
+          content: bestAttemptContent,
+          completion: contentHandler
+        )
+      } catch {
+        ClixLogger.error("NotificationService not initialized: \(error)")
+        contentHandler(bestAttemptContent)
+      }
     }
   }
 
