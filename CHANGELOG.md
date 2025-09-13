@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-09-13
+
+### Added
+
+- **User Properties**
+    - Added datetime property type support with automatic ISO8601 formatting
+
+- **Push Notifications**
+    - Added `Clix.Notification` static helper for manual integration (alternative to ClixAppDelegate)
+    - Added configurable override points in ClixAppDelegate (auto-authorization, auto-deeplink, presentation options)
+
+### Changed
+
+- **Push Notifications**
+    - Refactored notification handling logic into separate ClixNotification class
+    - Improved SDK initialization resilience with fallback configuration handling
+
 ## [1.2.0] - 2025-09-04
 
 ### Added
