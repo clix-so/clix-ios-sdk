@@ -105,12 +105,13 @@ Clix.setLogLevel(.debug)
 
 ### Push Notification Integration
 
-Clix SDK supports push notification integration via `ClixAppDelegate`.
+Clix SDK supports two integration paths:
+- `ClixAppDelegate` subclassing (quick start, minimal code)
+- `Clix.Notification` static helper (manual wiring, fine-grained control)
 
 #### Using ClixAppDelegate
 
-This approach automates push notification registration, permission requests, device token management, and event
-tracking.
+This approach automates push notification registration, permission requests, device token management, and event tracking.
 
 1. **Enable Push Notifications in Xcode**
     - In your project, go to **Signing & Capabilities**.
@@ -118,9 +119,14 @@ tracking.
 
 2. **Inherit from ClixAppDelegate in your AppDelegate**
 
+##### Quick Start (Defaults)
+
+If you want the quickest working setup with sensible defaults, subclass `ClixAppDelegate` and initialize the SDK. Firebase is only needed if you use FCM.
+
 ```swift
 import UIKit
 import Clix
+import Firebase
 
 @main
 class AppDelegate: ClixAppDelegate {
@@ -129,8 +135,56 @@ class AppDelegate: ClixAppDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-        
-        // Initialize Clix SDK after calling super
+
+        FirebaseApp.configure()
+
+        // Required: initialize Clix with your credentials
+        Task {
+            let config = ClixConfig(
+                projectId: "YOUR_PROJECT_ID",
+                apiKey: "YOUR_API_KEY"
+            )
+            await Clix.initialize(config: config)
+        }
+
+        return result
+    }
+}
+```
+
+##### Advanced Customization (Override Hooks)
+
+```swift
+import UIKit
+import Firebase
+import Clix
+
+@main
+class AppDelegate: ClixAppDelegate {
+    // Optional: delay the system permission prompt until your onboarding is ready.
+    // Remove or change to `true` to use SDK default behavior.
+    override var autoRequestAuthorizationOnLaunch: Bool { false }
+
+    // Optional: prevent automatic deep-link opening on push tap; route manually instead.
+    // Remove or change to `true` to use SDK default behavior.
+    override var autoOpenLandingOnTap: Bool { false }
+
+    // Optional: force foreground presentation options instead of SDK logic.
+    override func willPresentOptions(for notification: UNNotification) -> UNNotificationPresentationOptions? {
+        if #available(iOS 14.0, *) { return [.list, .banner, .sound, .badge] }
+        else { return [.alert, .sound, .badge] }
+    }
+
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+        // Configure Firebase
+        FirebaseApp.configure()
+
+        // Initialize Clix SDK after calling super.
         Task {
             let config = ClixConfig(
                 projectId: "YOUR_PROJECT_ID",
@@ -139,38 +193,172 @@ class AppDelegate: ClixAppDelegate {
             )
             await Clix.initialize(config: config)
         }
-        
+
+        // Optional: since autoOpenLandingOnTap is set to false above, handle routing yourself if needed.
+        Clix.Notification.setNotificationOpenedHandler { userInfo in
+            if let clix = userInfo["clix"] as? [String: Any],
+               let urlStr = clix["landing_url"] as? String,
+               let url = URL(string: urlStr) {
+                UIApplication.shared.open(url)
+            }
+        }
+
+        // Optional: when autoRequestAuthorizationOnLaunch is false, show the prompt later:
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+          if granted { DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() } }
+        }
+
         return result
     }
 
-    // Optional: Customize foreground notification presentation
-    override func notificationDeliveredInForeground(
-        notification: UNNotification
-    ) -> UNNotificationPresentationOptions {
-        return super.notificationDeliveredInForeground(notification: notification)
-    }
-
-    // Optional: Handle notification tap
-    override func notificationTapped(userInfo: [AnyHashable: Any]) {
-        super.notificationTapped(userInfo: userInfo)
-        // Custom handling
-    }
-
-    // Optional: Handle silent notifications
-    override func notificationDeliveredSilently(
-        payload: [AnyHashable: Any],
-        completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    // Optional: override foreground notifications handler and forward to SDK.
+    override func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        super.notificationDeliveredSilently(payload: payload, completionHandler: completionHandler)
-        // Custom handling
+        // Use SDK default logic (images, analytics) and just forward.
+        Clix.Notification.handleWillPresent(notification: notification, completionHandler: completionHandler)
+
+        // Or, force custom options regardless of SDK logic:
+        // completionHandler([.banner, .sound, .badge])
+    }
+
+    // Optional: override background notifications handler.
+    override func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification payload: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        // Wrap the completion to add your own work.
+        Clix.Notification.handleBackgroundNotification(payload) { result in
+            // Custom background work (e.g., refresh local cache)
+            completionHandler(result)
+        }
+    }
+
+    // Optional: override notification tap event handler.
+    override func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        // Forward to Clix to keep analytics and deep link behavior consistent.
+        Clix.Notification.handleDidReceive(response: response, completionHandler: completionHandler)
     }
 }
 ```
 
 - Permission requests, device token registration, and event tracking are handled automatically.
-- Image notifications are automatically processed and displayed.
-- Firebase integration is handled internally.
-- Always call super to retain default SDK behavior.
+- Rich images: for best reliability use a Notification Service Extension. In foreground, the SDK can attach images and re-post the notification when possible.
+- Firebase is required, call `FirebaseApp.configure()` during app launch.
+- Always call super to retain default SDK behavior where indicated.
+
+#### Using Clix.Notification
+
+If you prefer not to inherit from `ClixAppDelegate` or need more control over your AppDelegate implementation, you can use the static `Clix.Notification` helpers to handle APNs/FCM wiring and lifecycle callbacks.
+
+```swift
+import SwiftUI
+import UIKit
+import Firebase
+import FirebaseMessaging
+import Clix
+
+@main
+struct MyApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    var body: some Scene { WindowGroup { ContentView() } }
+}
+
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
+        // Configure Firebase
+        FirebaseApp.configure()
+
+        // Initialize Clix SDK
+        let config = ClixConfig(projectId: "YOUR_PROJECT_ID", apiKey: "YOUR_API_KEY", logLevel: .debug)
+        Clix.initialize(config: config)
+
+        // Set UNUserNotificationCenter delegate if you need to intercept callbacks
+        UNUserNotificationCenter.current().delegate = self
+
+        // Setup push via Clix.Notification (delay prompt optional)
+        Clix.Notification.setup()
+        Clix.Notification.handleLaunchOptions(launchOptions)
+
+        // Optional: customize foreground presentation and tap handling
+        Clix.Notification.setNotificationWillShowInForegroundHandler { _ in
+            if #available(iOS 14.0, *) { return [.list, .banner, .sound, .badge] }
+            else { return [.alert, .sound, .badge] }
+        }
+        Clix.Notification.setNotificationOpenedHandler { userInfo in
+            // Custom routing (also see setAutoOpenLandingOnTap below)
+            if let clixData = userInfo["clix"] as? [String: Any],
+               let landingURL = clixData["landing_url"] as? String,
+               let url = URL(string: landingURL) {
+                UIApplication.shared.open(url)
+            }
+        }
+        // Optional: control whether SDK auto-opens deep links on tap, default true.
+        Clix.Notification.setAutoOpenLandingOnTap(true)
+
+        return true
+    }
+
+    // MARK: - APNs/FCM registration
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Clix.Notification.handleAPNSToken(deviceToken)
+    }
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        Clix.Notification.handleAPNSRegistrationError(error)
+    }
+
+    // MARK: - Background/foreground receipt
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+        Clix.Notification.handleForegroundNotification(userInfo)
+    }
+
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification payload: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        Clix.Notification.handleBackgroundNotification(payload, completionHandler: completionHandler)
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate (optional)
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Forward to SDK for consistent image handling and analytics
+        Clix.Notification.handleWillPresent(notification: notification, completionHandler: completionHandler)
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        Clix.Notification.handleDidReceive(response: response, completionHandler: completionHandler)
+    }
+}
+```
+
+##### Clix.Notification quick reference
+- `setup(autoRequestAuthorization: Bool)`: Choose push permission request timing (default true)
+- `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
+- `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
+- `handleBackgroundNotification(_:completionHandler:)`: Handle background notification receipt and call completion
+- `handleForegroundNotification(_:)`: Handle foreground notification analytics (no automatic deep link opening)
+- `setNotificationWillShowInForegroundHandler(_:)`: Customize foreground display options
+- `setNotificationOpenedHandler(_:)`: Handle post-tap processing (logging/routing)
+- `setAutoOpenLandingOnTap(_:)`: Control whether SDK automatically opens deep links on tap
+- `handleWillPresent(notification:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
+- `handleDidReceive(response:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
+
 
 ### Notification Service Extension (Optional)
 

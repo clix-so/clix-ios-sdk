@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 @preconcurrency import Foundation
 import UIKit
 import UserNotifications
@@ -71,6 +72,7 @@ public final class Clix {
   // MARK: - Type Properties
   static let version = ClixVersion.current
   static let shared = Clix()
+  public static let Notification = ClixNotification.shared
 
   // MARK: - Storage Keys
   private static let configKey = "clix_config"
@@ -181,11 +183,7 @@ public final class Clix {
 
   static func initialize(projectId: String) async throws {
     let storageService = StorageService(projectId: projectId)
-    let config: ClixConfig? = await storageService.get(Self.configKey)
-    guard let config = config else {
-      ClixLogger.error("Failed to initialize Clix SDK: Project ID not found in UserDefaults config")
-      throw ClixError.notInitialized
-    }
+    let config = await storageService.getWithRetry(Self.configKey, fallbackValue: ClixConfig(projectId: projectId))
     await initialize(config: config)
   }
 

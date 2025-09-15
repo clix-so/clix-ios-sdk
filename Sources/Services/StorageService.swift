@@ -35,7 +35,26 @@ actor StorageService {
     return try? decoder.decode(T.self, from: data)
   }
 
+  func getWithRetry<T: Codable>(_ key: String, fallbackValue: T, retryDelayMs: UInt64 = 50) async -> T {
+    var value: T? = get(key)
+
+    if value == nil {
+      ClixLogger.debug("Value not immediately available, checking App Group sync...")
+      synchronize()
+      try? await Task.sleep(nanoseconds: retryDelayMs * 1_000_000)
+      value = get(key)
+    }
+
+    let result = value ?? fallbackValue
+    ClixLogger.info("Retrieved value source: \(value != nil ? "stored" : "fallback")")
+    return result
+  }
+
   func remove(_ key: String) {
     userDefaults.removeObject(forKey: key)
+  }
+
+  func synchronize() {
+    userDefaults.synchronize()
   }
 }
