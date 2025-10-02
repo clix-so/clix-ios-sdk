@@ -157,6 +157,7 @@ public final class Clix {
       shared.setEnvironment(environment)
 
       try await shared.get(\.storageService).set(Self.configKey, config)
+      try await shared.get(\.deviceService).upsertDevice(device)
 
       ClixLogger.debug("Clix SDK initialized with environment: \(environment.toString())")
 

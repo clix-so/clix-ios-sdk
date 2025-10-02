@@ -55,9 +55,23 @@ actor DeviceService {
     try await deviceApiService.removeUserProperties(deviceId: deviceId, propertyNames: names)
   }
 
+  func upsertDevice(_ device: ClixDevice) async throws {
+    ClixLogger.debug("upsertDevice: \(device)")
+    
+    try await deviceApiService.upsertDevice(device: device)
+  }
+
   func upsertToken(_ token: String, tokenType: String = pushTokenTypeFCM) async throws {
+    ClixLogger.debug("upsertToken: \(token), \(tokenType)")
+
     let environment = try Clix.shared.get(\.environment)
     let device = environment.getDevice()
+
+    if (device.pushToken == token && device.pushTokenType == tokenType) {
+      ClixLogger.debug("Token already exists, skipping upsert")
+      return
+    }
+
     let updatedDevice = ClixDevice(
       id: device.id,
       platform: device.platform,
@@ -73,7 +87,7 @@ actor DeviceService {
       sdkType: device.sdkType,
       sdkVersion: ClixVersion.current,
       adId: device.adId,
-      isPushPermissionGranted: true,
+      isPushPermissionGranted: device.isPushPermissionGranted,
       pushToken: token,
       pushTokenType: tokenType
     )
@@ -86,15 +100,55 @@ actor DeviceService {
     try await deviceApiService.upsertDevice(device: updatedDevice)
   }
 
+  func upsertIsPushPermissionGranted(_ isPushPermissionGranted: Bool) async throws {
+    ClixLogger.debug("upsertIsPushPermissionGranted: \(isPushPermissionGranted)")
+
+    let environment = try Clix.shared.get(\.environment)
+    let device = environment.getDevice()
+
+    if (device.isPushPermissionGranted == isPushPermissionGranted) {
+      ClixLogger.debug("Push permission already exists, skipping upsert")
+      return
+    }
+
+    let updatedDevice = ClixDevice(
+      id: device.id,
+      platform: device.platform,
+      model: device.model,
+      manufacturer: device.manufacturer,
+      osName: device.osName,
+      osVersion: device.osVersion,
+      localeRegion: device.localeRegion,
+      localeLanguage: device.localeLanguage,
+      timezone: device.timezone,
+      appName: device.appName,
+      appVersion: device.appVersion,
+      sdkType: device.sdkType,
+      sdkVersion: ClixVersion.current,
+      adId: device.adId,
+      isPushPermissionGranted: isPushPermissionGranted,
+      pushToken: device.pushToken,
+      pushTokenType: device.pushTokenType
+    )
+
+    var newEnvironment = environment
+    newEnvironment.setDevice(updatedDevice)
+    Clix.shared.setEnvironment(newEnvironment)
+
+    try await deviceApiService.upsertDevice(device: updatedDevice)
+  }
+
   static func createDevice(deviceId: String, token: String?) async -> ClixDevice {
     let device = await UIDevice.current
     let bundle = Bundle.main
-    var isPushPermissionGranted = false
     let notificationCenter = UNUserNotificationCenter.current()
     let settings = await notificationCenter.notificationSettings()
+
+    var isPushPermissionGranted = false
     if settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional {
       isPushPermissionGranted = true
     }
+
     return ClixDevice(
       id: deviceId,
       platform: "DEVICE_PLATFORM_TYPE_IOS",
@@ -112,7 +166,7 @@ actor DeviceService {
       adId: ASIdentifierManager.shared().advertisingIdentifier.uuidString,
       isPushPermissionGranted: isPushPermissionGranted,
       pushToken: token,
-      pushTokenType: token == nil ? pushTokenTypeFCM : pushTokenTypeAPNS
+      pushTokenType: pushTokenTypeFCM
     )
   }
 }
