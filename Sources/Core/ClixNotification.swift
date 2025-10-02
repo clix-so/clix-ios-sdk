@@ -35,17 +35,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
 
     if autoRequestAuthorization {
-      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-        if let error = error { ClixLogger.error("Failed to request notification authorization", error: error) }
-        Task {
-          do {
-            try await self.processPushPermission(granted)
-            ClixLogger.debug("Push permission synced to server")
-          } catch {
-            ClixLogger.error("Failed to sync push permission", error: error)
-          }
-        }
-      }
+      requestNotificationAuthorization()
     }
     setupAppStateNotifications()
   }
@@ -348,6 +338,20 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   private func extractMessageId(from userInfo: [AnyHashable: Any]) -> String? {
     parseClixPayload(from: userInfo)?["message_id"] as? String
+  }
+
+  private func requestNotificationAuthorization() {
+    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
+      if let error = error { ClixLogger.error("Failed to request notification authorization", error: error) }
+      Task {
+        do {
+          try await self?.processPushPermission(granted)
+          ClixLogger.debug("Push permission synced to server")
+        } catch {
+          ClixLogger.error("Failed to sync push permission", error: error)
+        }
+      }
+    }
   }
 
   private func processToken(_ token: String, tokenType: String) async throws {
