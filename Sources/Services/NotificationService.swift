@@ -253,23 +253,6 @@ class NotificationService {
     await storageService.get(settingsKey)
   }
 
-  func requestNotificationPermission() async throws {
-    let granted = try await UNUserNotificationCenter.current()
-      .requestAuthorization(options: [.alert, .sound, .badge])
-    if granted {
-      await MainActor.run {
-        UIApplication.shared.registerForRemoteNotifications()
-      }
-    }
-
-    let settings = NotificationSettings(
-      enabled: granted,
-      categories: nil,
-      lastUpdated: Date()
-    )
-    await storageService.set(settingsKey, settings)
-  }
-
   func reset() async {
     await storageService.remove(settingsKey)
     await storageService.remove(lastNotificationKey)
