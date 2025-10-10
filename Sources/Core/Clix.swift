@@ -371,11 +371,30 @@ public final class Clix {
     }
   }
 
+  /// Tracks an event (async version - recommended)
+  ///
+  /// This async version ensures the event is tracked before returning.
+  /// Use this when you can await the operation in an async context.
+  ///
+  /// - Parameters:
+  ///   - name: Event name to track
+  ///   - properties: Additional event properties
+  /// - Throws: ClixError if tracking fails
   public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async throws {
     await shared.initCoordinator.waitForInitialization()
     try await shared.get(\.eventService).trackEvent(name: name, properties: properties)
   }
 
+  /// Tracks an event (synchronous version)
+  ///
+  /// This synchronous version returns immediately while the operation continues in the background.
+  /// Consider using the async version for guaranteed operation completion.
+  ///
+  /// - Parameters:
+  ///   - name: Event name to track
+  ///   - properties: Additional event properties
+  /// - Note: An async version is available that ensures the operation completes before returning.
+  ///         Use `try await Clix.trackEvent(_:properties:)` for better control over operation timing.
   public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) {
     Task.detached(priority: .userInitiated) {
       do {
