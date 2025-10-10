@@ -371,6 +371,21 @@ public final class Clix {
     }
   }
 
+  public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async throws {
+    await shared.initCoordinator.waitForInitialization()
+    try await shared.get(\.eventService).trackEvent(name: name, properties: properties)
+  }
+
+  public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await trackEvent(name, properties: properties)
+      } catch {
+        ClixLogger.error("Failed to track event: \(error)")
+      }
+    }
+  }
+
   /// Sets the logging level
   /// - Parameter level: Logging level to set
   public static func setLogLevel(_ level: ClixLogLevel) {
@@ -429,30 +444,6 @@ public final class Clix {
   public static func getPushToken() async -> String? {
     await shared.initCoordinator.waitForInitialization()
     return (try? shared.get(\.environment))?.getDevice().pushToken
-  }
-
-  // MARK: - Internal Static API
-
-  /// Tracks an event
-  /// - Parameters:
-  ///   - name: Event name
-  ///   - properties: Event properties
-  ///   - messageId: Optional message ID to include in properties
-  static func trackEvent(_ name: String, properties: [String: Any?] = [:], messageId: String? = nil) {
-    Task.detached(priority: .userInitiated) {
-      await shared.initCoordinator.waitForInitialization()
-
-      do {
-        let eventService = try shared.get(\.eventService)
-        var eventProperties = properties
-        if let messageId = messageId {
-          eventProperties["message_id"] = messageId
-        }
-        try await eventService.trackEvent(name: name, properties: eventProperties, messageId: messageId)
-      } catch {
-        ClixLogger.error("Failed to track event: \(error)")
-      }
-    }
   }
 
   private actor InitCoordinator {

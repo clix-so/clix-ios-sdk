@@ -9,6 +9,16 @@ struct ContentView: View {
   @State private var userPropertyKeyInput: String = ""
   @State private var userPropertyValueInput: String = ""
 
+  @State private var eventNameInput: String = "test"
+  @State private var eventParamsInput: String = """
+  {
+    "string": "string",
+    "number": 1.5,
+    "boolean": true,
+    "object": { "key": "value" }
+  }
+  """
+
   @State private var showAlert: Bool = false
   @State private var alertMessage: String = ""
 
@@ -124,6 +134,82 @@ struct ContentView: View {
               },
               label: {
                 Text(NSLocalizedString("set_user_property", comment: ""))
+                  .fontWeight(.bold)
+                  .foregroundColor(AppTheme.buttonText)
+                  .frame(maxHeight: .infinity)
+              }
+            )
+            .frame(height: 56)
+            .padding(.horizontal, 12)
+            .background(AppTheme.buttonBackground)
+            .cornerRadius(12)
+          }
+
+          Spacer().frame(height: 32)
+
+          VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_name", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              TextField("", text: $eventNameInput)
+                .padding()
+                .background(AppTheme.surfaceVariant.opacity(0.5))
+                .cornerRadius(12)
+                .foregroundColor(AppTheme.text)
+                .frame(height: 56)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+              Text(NSLocalizedString("event_params", comment: ""))
+                .font(.system(size: 14))
+                .foregroundColor(AppTheme.text)
+              Group {
+                if #available(iOS 16.0, *) {
+                  TextEditor(text: $eventParamsInput)
+                    .scrollContentBackground(.hidden)
+                    .background(.clear)
+                } else {
+                  TextEditor(text: $eventParamsInput)
+                    .background(.clear)
+                }
+              }
+              .padding()
+              .background(AppTheme.surfaceVariant.opacity(0.5))
+              .cornerRadius(12)
+              .foregroundColor(AppTheme.text)
+              .frame(minHeight: 120)
+            }
+
+            Button(
+              action: {
+                guard !eventNameInput.isEmpty else {
+                  alertMessage = "Please enter an event name"
+                  showAlert = true
+                  return
+                }
+
+                var properties: [String: Any?] = [:]
+                if !eventParamsInput.isEmpty && eventParamsInput != "{}" {
+                  if let data = eventParamsInput.data(using: .utf8) {
+                    do {
+                      if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                        properties = json
+                      }
+                    } catch {
+                      alertMessage = "Invalid JSON format"
+                      showAlert = true
+                      return
+                    }
+                  }
+                }
+
+                Clix.trackEvent(eventNameInput, properties: properties)
+                alertMessage = "Event tracked: \(eventNameInput)"
+                showAlert = true
+              },
+              label: {
+                Text(NSLocalizedString("track_event", comment: ""))
                   .fontWeight(.bold)
                   .foregroundColor(AppTheme.buttonText)
                   .frame(maxHeight: .infinity)
