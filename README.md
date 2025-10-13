@@ -26,6 +26,7 @@ pod 'Clix'
 ## Breaking Changes
 
 ### Firebase 12+ Support
+
 If you need to use Firebase 12 or later, you must use the latest version of Clix iOS SDK. Previous versions may not be compatible with Firebase 12+.
 
 ## Usage
@@ -81,6 +82,21 @@ try await Clix.removeUserProperties(["age", "premium"])
 try await Clix.removeUserId()
 ```
 
+### Event Tracking
+
+```swift
+// Track an event with properties
+try await Clix.trackEvent(
+  "signup_completed",
+  properties: [
+    "method": "email",
+    "discount_applied": true,
+    "trial_days": 14,
+    "completed_at": Date()
+  ]
+)
+```
+
 ### Device Information
 
 ```swift
@@ -106,6 +122,7 @@ Clix.setLogLevel(.debug)
 ### Push Notification Integration
 
 Clix SDK supports two integration paths:
+
 - `ClixAppDelegate` subclassing (quick start, minimal code)
 - `Clix.Notification` static helper (manual wiring, fine-grained control)
 
@@ -114,8 +131,9 @@ Clix SDK supports two integration paths:
 This approach automates push notification registration, permission requests, device token management, and event tracking.
 
 1. **Enable Push Notifications in Xcode**
-    - In your project, go to **Signing & Capabilities**.
-    - Add **Push Notifications** and **Background Modes** (check Remote notifications).
+
+   - In your project, go to **Signing & Capabilities**.
+   - Add **Push Notifications** and **Background Modes** (check Remote notifications).
 
 2. **Inherit from ClixAppDelegate in your AppDelegate**
 
@@ -348,6 +366,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 ```
 
 ##### Clix.Notification quick reference
+
 - `setup(autoRequestAuthorization: Bool)`: Choose push permission request timing (default true)
 - `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
 - `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
@@ -358,7 +377,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 - `setAutoOpenLandingOnTap(_:)`: Control whether SDK automatically opens deep links on tap
 - `handleWillPresent(notification:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
 - `handleDidReceive(response:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
-
 
 ### Notification Service Extension (Optional)
 
@@ -378,7 +396,7 @@ class NotificationService: ClixNotificationServiceExtension {
     ) {
         // Register with your project ID
         register(projectId: "YOUR_PROJECT_ID")
-        
+
         // Call super to handle image processing and event tracking
         super.didReceive(request, withContentHandler: contentHandler)
     }
@@ -394,6 +412,7 @@ A comprehensive sample app is provided in the `Samples/BasicApp` directory. You 
 - User property management
 
 To run the sample:
+
 1. Open `Samples/BasicApp/BasicApp.xcodeproj`
 2. Update the configuration in `ClixConfiguration.swift` with your project details
 3. Add your `GoogleService-Info.plist` file
@@ -426,3 +445,4 @@ See the full release history and changes in the [CHANGELOG.md](CHANGELOG.md) fil
 ## Contributing
 
 We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull requests.
+

@@ -371,6 +371,40 @@ public final class Clix {
     }
   }
 
+  /// Tracks an event (async version - recommended)
+  ///
+  /// This async version ensures the event is tracked before returning.
+  /// Use this when you can await the operation in an async context.
+  ///
+  /// - Parameters:
+  ///   - name: Event name to track
+  ///   - properties: Additional event properties
+  /// - Throws: ClixError if tracking fails
+  public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) async throws {
+    await shared.initCoordinator.waitForInitialization()
+    try await shared.get(\.eventService).trackEvent(name: name, properties: properties)
+  }
+
+  /// Tracks an event (synchronous version)
+  ///
+  /// This synchronous version returns immediately while the operation continues in the background.
+  /// Consider using the async version for guaranteed operation completion.
+  ///
+  /// - Parameters:
+  ///   - name: Event name to track
+  ///   - properties: Additional event properties
+  /// - Note: An async version is available that ensures the operation completes before returning.
+  ///         Use `try await Clix.trackEvent(_:properties:)` for better control over operation timing.
+  public static func trackEvent(_ name: String, properties: [String: Any?] = [:]) {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await trackEvent(name, properties: properties)
+      } catch {
+        ClixLogger.error("Failed to track event: \(error)")
+      }
+    }
+  }
+
   /// Sets the logging level
   /// - Parameter level: Logging level to set
   public static func setLogLevel(_ level: ClixLogLevel) {
@@ -429,30 +463,6 @@ public final class Clix {
   public static func getPushToken() async -> String? {
     await shared.initCoordinator.waitForInitialization()
     return (try? shared.get(\.environment))?.getDevice().pushToken
-  }
-
-  // MARK: - Internal Static API
-
-  /// Tracks an event
-  /// - Parameters:
-  ///   - name: Event name
-  ///   - properties: Event properties
-  ///   - messageId: Optional message ID to include in properties
-  static func trackEvent(_ name: String, properties: [String: Any?] = [:], messageId: String? = nil) {
-    Task.detached(priority: .userInitiated) {
-      await shared.initCoordinator.waitForInitialization()
-
-      do {
-        let eventService = try shared.get(\.eventService)
-        var eventProperties = properties
-        if let messageId = messageId {
-          eventProperties["message_id"] = messageId
-        }
-        try await eventService.trackEvent(name: name, properties: eventProperties, messageId: messageId)
-      } catch {
-        ClixLogger.error("Failed to track event: \(error)")
-      }
-    }
   }
 
   private actor InitCoordinator {

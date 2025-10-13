@@ -1,8 +1,13 @@
 import Foundation
 
+extension NSNumber {
+  var isBool: Bool {
+    return CFGetTypeID(self) == CFBooleanGetTypeID()
+  }
+}
+
 class EventService {
   private let apiService = EventAPIService()
-
   func trackEvent(
     name: String,
     properties: [String: Any?] = [:],
@@ -13,7 +18,24 @@ class EventService {
     do {
       let environment = try Clix.shared.get(\.environment)
       let deviceId = environment.getDevice().id
-      let eventProperties = properties.compactMapValues { $0 }.mapValues { AnyCodable($0) }
+      let eventProperties = properties.compactMapValues { $0 }.mapValues { value -> AnyCodable in
+        switch value {
+        case let number as NSNumber:
+          if number.isBool {
+            return AnyCodable(number.boolValue)
+          } else {
+            return AnyCodable(number.doubleValue)
+          }
+        case let string as String:
+          return AnyCodable(string)
+        case let date as Date:
+          let isoString = ClixDateFormatter.format(date)
+          return AnyCodable(isoString)
+        default:
+          return AnyCodable(String(describing: value))
+        }
+      }
+      
       try await apiService.trackEvent(
         deviceId: deviceId,
         name: name,
