@@ -8,13 +8,6 @@ public struct ClixUserProperty: Codable {
     case datetime = "USER_PROPERTY_TYPE_DATETIME"
   }
 
-  private static let dateFormatter: ISO8601DateFormatter = {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withTimeZone]
-    formatter.timeZone = TimeZone.current
-    return formatter
-  }()
-
   public let name: String
   public let value_string: AnyCodable  // swiftlint:disable:this identifier_name
   public let type: PropertyType
@@ -34,7 +27,7 @@ public struct ClixUserProperty: Codable {
     case let typedValue as String:
       return ClixUserProperty(name: name, value: AnyCodable(typedValue), type: .string)
     case let typedValue as Date:
-      let isoString = dateFormatter.string(from: typedValue)
+      let isoString = ClixDateFormatter.format(typedValue)
       return ClixUserProperty(name: name, value: AnyCodable(isoString), type: .datetime)
     default:
       return ClixUserProperty(name: name, value: AnyCodable(String(describing: value)), type: .string)

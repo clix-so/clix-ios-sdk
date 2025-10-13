@@ -8,14 +8,6 @@ extension NSNumber {
 
 class EventService {
   private let apiService = EventAPIService()
-  
-  private let dateFormatter: ISO8601DateFormatter = {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withTimeZone]
-    formatter.timeZone = TimeZone.current
-    return formatter
-  }()
-
   func trackEvent(
     name: String,
     properties: [String: Any?] = [:],
@@ -37,7 +29,7 @@ class EventService {
         case let string as String:
           return AnyCodable(string)
         case let date as Date:
-          let isoString = dateFormatter.string(from: date)
+          let isoString = ClixDateFormatter.format(date)
           return AnyCodable(isoString)
         default:
           return AnyCodable(String(describing: value))
