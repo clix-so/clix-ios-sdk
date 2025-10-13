@@ -446,6 +446,3 @@ See the full release history and changes in the [CHANGELOG.md](CHANGELOG.md) fil
 
 We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull requests.
 
-```
-
-```
