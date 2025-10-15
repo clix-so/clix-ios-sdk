@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-10-15
+
+### Added
+
+- **Event Tracking**
+    - Exposed `trackEvent` for public integrations.
+    - Normalized event property values for consistent payloads.
+
+### Fixed
+
+- **Push Notifications**
+    - Ensured push tokens are issued even when users decline permissions.
+
+
 ## [1.3.0] - 2025-09-13
 
 ### Added
