@@ -21,11 +21,10 @@ class EventService {
       let eventProperties = properties.compactMapValues { $0 }.mapValues { value -> AnyCodable in
         switch value {
         case let number as NSNumber:
-          if number.isBool {
-            return AnyCodable(number.boolValue)
-          } else {
+          guard number.isBool else {
             return AnyCodable(number.doubleValue)
           }
+          return AnyCodable(number.boolValue)
         case let string as String:
           return AnyCodable(string)
         case let date as Date:
@@ -35,7 +34,7 @@ class EventService {
           return AnyCodable(String(describing: value))
         }
       }
-      
+
       try await apiService.trackEvent(
         deviceId: deviceId,
         name: name,

@@ -29,7 +29,12 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     if UNUserNotificationCenter.current().delegate == nil {
       UNUserNotificationCenter.current().delegate = self
     }
-    if autoRequestAuthorization { requestAndRegisterForNotifications() }
+
+    DispatchQueue.main.async {
+      UIApplication.shared.registerForRemoteNotifications()
+    }
+
+    if autoRequestAuthorization { requestNotificationAuthorization() }
     setupAppStateNotifications()
   }
 
@@ -306,12 +311,15 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  private func requestAndRegisterForNotifications() {
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-      if granted {
-        DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() }
+  private func requestNotificationAuthorization() {
+    Task {
+      do {
+        let notificationService = try await Clix.shared.getWithWait(\.notificationService)
+        try await notificationService.requestNotificationPermission()
+        ClixLogger.debug("Notification authorization requested successfully")
+      } catch {
+        ClixLogger.error("Failed to request notification authorization", error: error)
       }
-      if let error = error { ClixLogger.error("Failed to request notification authorization", error: error) }
     }
   }
 

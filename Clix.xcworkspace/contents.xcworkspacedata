@@ -50,6 +50,9 @@
          <FileRef
             location = "group:ClixEnvironment.swift">
          </FileRef>
+         <FileRef
+            location = "group:ClixNotification.swift">
+         </FileRef>
       </Group>
       <Group
          location = "group:Notification"
