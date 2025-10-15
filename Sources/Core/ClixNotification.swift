@@ -34,9 +34,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
       UIApplication.shared.registerForRemoteNotifications()
     }
 
-    if autoRequestAuthorization {
-      requestNotificationAuthorization()
-    }
+    if autoRequestAuthorization { requestNotificationAuthorization() }
     setupAppStateNotifications()
   }
 
@@ -313,6 +311,18 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
+  private func requestNotificationAuthorization() {
+    Task {
+      do {
+        let notificationService = try await Clix.shared.getWithWait(\.notificationService)
+        try await notificationService.requestNotificationPermission()
+        ClixLogger.debug("Notification authorization requested successfully")
+      } catch {
+        ClixLogger.error("Failed to request notification authorization", error: error)
+      }
+    }
+  }
+
   private func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
     guard #available(iOS 14.0, *) else { return [.alert, .sound, .badge] }
     return [.list, .banner, .sound, .badge]
@@ -340,27 +350,8 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     parseClixPayload(from: userInfo)?["message_id"] as? String
   }
 
-  private func requestNotificationAuthorization() {
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
-      if let error = error { ClixLogger.error("Failed to request notification authorization", error: error) }
-      Task {
-        do {
-          try await self?.processPushPermission(granted)
-          ClixLogger.debug("Push permission synced to server")
-        } catch {
-          ClixLogger.error("Failed to sync push permission", error: error)
-        }
-      }
-    }
-  }
-
   private func processToken(_ token: String, tokenType: String) async throws {
     let deviceService = try await Clix.shared.getWithWait(\.deviceService)
     try await deviceService.upsertToken(token, tokenType: tokenType)
-  }
-
-  private func processPushPermission(_ granted: Bool) async throws {
-    let deviceService = try await Clix.shared.getWithWait(\.deviceService)
-    try await deviceService.upsertIsPushPermissionGranted(granted)
   }
 }

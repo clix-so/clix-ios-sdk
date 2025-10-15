@@ -11,13 +11,13 @@ struct ContentView: View {
 
   @State private var eventNameInput: String = "test"
   @State private var eventParamsInput: String = """
-  {
-    "string": "string",
-    "number": 1.5,
-    "boolean": true,
-    "object": { "key": "value" }
-  }
-  """
+    {
+      "string": "string",
+      "number": 1.5,
+      "boolean": true,
+      "object": { "key": "value" }
+    }
+    """
 
   @State private var showAlert: Bool = false
   @State private var alertMessage: String = ""

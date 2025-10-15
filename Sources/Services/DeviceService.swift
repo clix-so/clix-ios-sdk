@@ -57,7 +57,7 @@ actor DeviceService {
 
   func upsertDevice(_ device: ClixDevice) async throws {
     ClixLogger.debug("upsertDevice: \(device)")
-    
+
     try await deviceApiService.upsertDevice(device: device)
   }
 

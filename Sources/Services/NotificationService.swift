@@ -253,6 +253,22 @@ class NotificationService {
     await storageService.get(settingsKey)
   }
 
+  func requestNotificationPermission() async throws {
+    ClixLogger.debug("Requesting notification permission")
+    let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+    ClixLogger.debug("Notification permission \(granted ? "granted": "denied")")
+
+    let settings = NotificationSettings(
+      enabled: granted,
+      categories: nil,
+      lastUpdated: Date()
+    )
+    await storageService.set(settingsKey, settings)
+    let deviceService = try await Clix.shared.getWithWait(\.deviceService)
+    try await deviceService.upsertIsPushPermissionGranted(granted)
+    ClixLogger.debug("Push permission synced to server")
+  }
+
   func reset() async {
     await storageService.remove(settingsKey)
     await storageService.remove(lastNotificationKey)
