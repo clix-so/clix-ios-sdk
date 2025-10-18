@@ -25,12 +25,12 @@ class AppDelegate: ClixAppDelegate {
       print("✅ Set user_id from UserDefaults: \(savedUserId)")
     }
 
-    Messaging.messaging().token { token, error in
-      if let error = error {
-        print("❌ Error fetching FCM registration token: \(error)")
-      } else if let _ = token {
-        self.updateClixValues()
-      }
+    NotificationCenter.default.addObserver(
+      forName: .MessagingRegistrationTokenRefreshed,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateClixValues()
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -61,8 +61,10 @@ class AppDelegate: ClixAppDelegate {
       let deviceId = await Clix.getDeviceId()
       let fcmToken = await Clix.getPushToken()
 
+      await MainActor.run {
       AppState.shared.updateDeviceId(deviceId)
       AppState.shared.updateFCMToken(fcmToken)
+      }
 
       print("🔄 Updated AppState - Device ID: \(deviceId ?? "nil"), FCM Token: \(fcmToken ?? "nil")")
     }
