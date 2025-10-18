@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Push Notifications**
-    - Prevented duplicate `PUSH_NOTIFICATION_RECEIVED` tracking when both the notification service extension and application process handle the same message id.
+  - Prevented duplicate `PUSH_NOTIFICATION_RECEIVED` tracking when both the notification service extension and application process handle the same message id.
 
 ## [1.4.0] - 2025-10-15
 
