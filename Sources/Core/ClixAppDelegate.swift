@@ -9,7 +9,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   // MARK: - Override Points
   /// Whether to request notification authorization automatically on launch.
   /// Override to delay the permission prompt (e.g., show onboarding first).
-  open var autoRequestAuthorizationOnLaunch: Bool { true }
+  open var autoRequestAuthorizationOnLaunch: Bool { false }
 
   /// Whether the SDK should automatically open landing URLs when a push is tapped.
   /// Override to disable auto-opening and handle routing yourself.
