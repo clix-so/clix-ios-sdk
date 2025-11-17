@@ -554,7 +554,7 @@ UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound
 }
 ```
 
-**Note:** This method is available in SDK version 1.5.0-beta.1 and later.
+**Note:** This method is available in SDK version 1.5.0 and later.
 
 ### Debugging Checklist
 
