@@ -17,7 +17,7 @@ class NotificationService {
   private let eventService: EventService
   private let storageService: StorageService
   private let settingsKey = "clix_notification_settings"
-  private let lastNotificationKey = "clix_last_notification"
+  private let lastReceivedMessageIdKey = "clix_last_received_message_id"
 
   init(storageService: StorageService, eventService: EventService) {
     self.storageService = storageService
@@ -30,6 +30,14 @@ class NotificationService {
       let userJourneyNodeId = getUserJourneyNodeId(userInfo: userInfo)
 
       Task {
+        let shouldTrack = await recordReceivedMessageId(messageId: messageId)
+        guard shouldTrack else {
+          ClixLogger.debug(
+            "Skipping duplicate \(NotificationEvent.pushNotificationReceived.rawValue) for messageId: \(messageId)"
+          )
+          return
+        }
+
         do {
           try await eventService.trackEvent(
             name: NotificationEvent.pushNotificationReceived.rawValue,
@@ -38,6 +46,7 @@ class NotificationService {
             userJourneyNodeId: userJourneyNodeId
           )
         } catch {
+          await recoverReceivedMessageId(messageId: messageId)
           ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationReceived.rawValue)", error: error)
         }
       }
@@ -256,7 +265,7 @@ class NotificationService {
   func requestNotificationPermission() async throws {
     ClixLogger.debug("Requesting notification permission")
     let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-    ClixLogger.debug("Notification permission \(granted ? "granted": "denied")")
+    ClixLogger.debug("Notification permission \(granted ? "granted" : "denied")")
 
     let settings = NotificationSettings(
       enabled: granted,
@@ -269,9 +278,23 @@ class NotificationService {
     ClixLogger.debug("Push permission synced to server")
   }
 
+  private func recordReceivedMessageId(messageId: String) async -> Bool {
+    let previous: String? = await storageService.get(lastReceivedMessageIdKey)
+    if previous == messageId { return false }
+    await storageService.set(lastReceivedMessageIdKey, messageId)
+    return true
+  }
+
+  private func recoverReceivedMessageId(messageId: String) async {
+    let previous: String? = await storageService.get(lastReceivedMessageIdKey)
+    if previous == messageId {
+      await storageService.remove(lastReceivedMessageIdKey)
+    }
+  }
+
   func reset() async {
     await storageService.remove(settingsKey)
-    await storageService.remove(lastNotificationKey)
+    await storageService.remove(lastReceivedMessageIdKey)
 
     await MainActor.run {
       UNUserNotificationCenter.current().removeAllDeliveredNotifications()

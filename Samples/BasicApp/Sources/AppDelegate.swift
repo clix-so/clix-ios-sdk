@@ -5,6 +5,8 @@ import UIKit
 import UserNotifications
 
 class AppDelegate: ClixAppDelegate {
+  override var autoRequestAuthorizationOnLaunch: Bool { true }
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -25,12 +27,12 @@ class AppDelegate: ClixAppDelegate {
       print("✅ Set user_id from UserDefaults: \(savedUserId)")
     }
 
-    Messaging.messaging().token { token, error in
-      if let error = error {
-        print("❌ Error fetching FCM registration token: \(error)")
-      } else if let _ = token {
-        self.updateClixValues()
-      }
+    NotificationCenter.default.addObserver(
+      forName: .MessagingRegistrationTokenRefreshed,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateClixValues()
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -42,6 +44,12 @@ class AppDelegate: ClixAppDelegate {
   ) {
     // Call parent implementation first to handle token processing
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+
+    Messaging.messaging().token { token, error in
+      if let error = error {
+        print("❌ Error fetching FCM registration token after APNS registration: \(error)")
+      }
+    }
 
     // Update values after APNS token is processed
     print("🔄 APNS Token received and processed")

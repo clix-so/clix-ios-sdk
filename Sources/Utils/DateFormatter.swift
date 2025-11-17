@@ -9,6 +9,6 @@ enum ClixDateFormatter {
   }()
 
   static func format(_ date: Date) -> String {
-    return iso8601Formatter.string(from: date)
+    iso8601Formatter.string(from: date)
   }
 }

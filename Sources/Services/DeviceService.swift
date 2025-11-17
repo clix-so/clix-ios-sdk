@@ -67,7 +67,7 @@ actor DeviceService {
     let environment = try Clix.shared.get(\.environment)
     let device = environment.getDevice()
 
-    if (device.pushToken == token && device.pushTokenType == tokenType) {
+    if device.pushToken == token && device.pushTokenType == tokenType {
       ClixLogger.debug("Token already exists, skipping upsert")
       return
     }
@@ -106,7 +106,7 @@ actor DeviceService {
     let environment = try Clix.shared.get(\.environment)
     let device = environment.getDevice()
 
-    if (device.isPushPermissionGranted == isPushPermissionGranted) {
+    if device.isPushPermissionGranted == isPushPermissionGranted {
       ClixLogger.debug("Push permission already exists, skipping upsert")
       return
     }
