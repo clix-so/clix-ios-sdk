@@ -9,12 +9,12 @@ public struct ClixUserProperty: Codable {
   }
 
   public let name: String
-  public let value_string: AnyCodable  // swiftlint:disable:this identifier_name
+  public let value: AnyCodable  // swiftlint:disable:this identifier_name
   public let type: PropertyType
 
   public init(name: String, value: AnyCodable, type: PropertyType) {
     self.name = name
-    self.value_string = value
+    self.value = value
     self.type = type
   }
 

@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
   spec.name             = 'Clix'
   # Don't modify below line - it's automatically updated by scripts/update-version.sh
-  spec.version          = '1.5.0' # Don't modify this line - it's automatically updated by scripts/update-version.sh
+  spec.version          = '1.5.1' # Don't modify this line - it's automatically updated by scripts/update-version.sh
   spec.summary          = 'Clix iOS SDK for push notifications and analytics'
   spec.description      = <<-DESC
 Clix iOS SDK provides push notification and analytics capabilities for iOS apps.
