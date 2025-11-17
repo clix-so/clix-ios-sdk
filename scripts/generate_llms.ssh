@@ -438,7 +438,7 @@ if [[ -n "${BASE_REF:-}" && -n "${HEAD_REF:-}" ]]; then
     compare_json="$(curl -sS -H "Accept: application/vnd.github+json" "${AUTH_HDR[@]}" \
       "https://api.github.com/repos/${REPO_SLUG}/compare/${BASE_REF}...${HEAD_REF}" || true)"
     printf "%s\n" "$compare_json" | jq -r '
-      .files[]? | select(.status=="modified" or .status=="added" or .status=="renamed") |
+      .files[]? | select(.status=="modified" or .status=="added" or .status=="renamed" or .status=="removed" or .status=="deleted") |
       .filename
     ' 2>/dev/null | sed 's#^./##' | sort -u >> "$CHANGED_SET"
   else
