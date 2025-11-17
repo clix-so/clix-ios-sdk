@@ -48,8 +48,6 @@ class AppDelegate: ClixAppDelegate {
     Messaging.messaging().token { token, error in
       if let error = error {
         print("❌ Error fetching FCM registration token after APNS registration: \(error)")
-      } else if token != nil {
-        self.updateClixValues()
       }
     }
 
