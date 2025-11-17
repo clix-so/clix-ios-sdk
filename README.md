@@ -181,8 +181,8 @@ import Clix
 @main
 class AppDelegate: ClixAppDelegate {
     // Optional: delay the system permission prompt until your onboarding is ready.
-    // Remove or change to `true` to use SDK default behavior.
-    override var autoRequestAuthorizationOnLaunch: Bool { false }
+    // Remove or change to `false` to use SDK default behavior.
+    override var autoRequestAuthorizationOnLaunch: Bool { true }
 
     // Optional: prevent automatic deep-link opening on push tap; route manually instead.
     // Remove or change to `true` to use SDK default behavior.

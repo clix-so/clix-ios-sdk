@@ -32,7 +32,9 @@ class NotificationService {
       Task {
         let shouldTrack = await recordReceivedMessageId(messageId: messageId)
         guard shouldTrack else {
-          ClixLogger.debug("Skipping duplicate \(NotificationEvent.pushNotificationReceived.rawValue) for messageId: \(messageId)")
+          ClixLogger.debug(
+            "Skipping duplicate \(NotificationEvent.pushNotificationReceived.rawValue) for messageId: \(messageId)"
+          )
           return
         }
 
@@ -263,7 +265,7 @@ class NotificationService {
   func requestNotificationPermission() async throws {
     ClixLogger.debug("Requesting notification permission")
     let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-    ClixLogger.debug("Notification permission \(granted ? "granted": "denied")")
+    ClixLogger.debug("Notification permission \(granted ? "granted" : "denied")")
 
     let settings = NotificationSettings(
       enabled: granted,
@@ -299,5 +301,4 @@ class NotificationService {
       UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
   }
-
 }

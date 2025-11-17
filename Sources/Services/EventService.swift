@@ -2,7 +2,7 @@ import Foundation
 
 extension NSNumber {
   var isBool: Bool {
-    return CFGetTypeID(self) == CFBooleanGetTypeID()
+    CFGetTypeID(self) == CFBooleanGetTypeID()
   }
 }
 

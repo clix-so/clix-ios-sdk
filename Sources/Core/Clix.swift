@@ -72,6 +72,8 @@ public final class Clix {
   // MARK: - Type Properties
   static let version = ClixVersion.current
   static let shared = Clix()
+
+  /// Provides access to notification-related functionality in the Clix SDK
   public static let Notification = ClixNotification.shared
 
   // MARK: - Storage Keys
