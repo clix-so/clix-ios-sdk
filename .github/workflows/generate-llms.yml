@@ -39,6 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
+          chmod +x scripts/generate_llms.sh || true
 
       - name: Compute compare range and inputs
         id: range
@@ -94,13 +95,13 @@ jobs:
 
           # Determine compare range (strict surgical mode)
           if [[ "${LLM_MODE}" == "all" ]]; then
-            CMD='./scripts/generate_llms.ssh --llm-all --slug "clix-so/clix-ios-sdk" --branch main'
+            CMD='./scripts/generate_llms.sh --llm-all --slug "'"${{ github.repository }}"'" --branch "'"${{ github.event.repository.default_branch }}"'"'
           else
             # HEAD ref: inputs.head or default to origin/<default_branch>
             if [[ -n "${{ inputs.head }}" ]]; then
               HEAD_REF="${{ inputs.head }}"
             else
-              HEAD_REF="main"
+              HEAD_REF="${{ github.event.repository.default_branch }}"
             fi
 
             if [[ -n "${COMPARE:-}" ]]; then
@@ -111,7 +112,7 @@ jobs:
               [[ -z "${BASE}" ]] && BASE="${HEAD_REF}"
               COMPARE_RANGE="${BASE}...${HEAD_REF}"
             fi
-            CMD='./scripts/generate_llms.ssh --compare "'"${COMPARE_RANGE}"'" --llm --slug "clix-so/clix-ios-sdk" --branch main'
+            CMD='./scripts/generate_llms.sh --compare "'"${COMPARE_RANGE}"'" --llm --slug "'"${{ github.repository }}"'" --branch "'"${{ github.event.repository.default_branch }}"'"'
           fi
 
           eval "${CMD}"
@@ -124,6 +125,7 @@ jobs:
           git add llms.txt 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
+            echo "NO_CHANGES=true" >> "$GITHUB_ENV"
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -132,6 +134,7 @@ jobs:
           git push origin "HEAD:${BRANCH}"
 
       - name: Create pull request
+        if: env.NO_CHANGES != 'true'
         uses: actions/github-script@v7
         with:
           script: |

@@ -3,9 +3,9 @@ set -euo pipefail
 
 # CLIX iOS LLMS generator (outputs llms.txt)
 # Usage:
-#   ./scripts/generate_llms.ssh --llm-all
-#   ./scripts/generate_llms.ssh --base <old> --head <new> [--llm]
-#   ./scripts/generate_llms.ssh --compare "<old>...<new>" [--llm]
+#   ./scripts/generate_llms.sh --llm-all
+#   ./scripts/generate_llms.sh --base <old> --head <new> [--llm]
+#   ./scripts/generate_llms.sh --compare "<old>...<new>" [--llm]
 # Env:
 #   OPENAI_API_KEY  required for --llm
 #   INCLUDE_DIRS    dirs to scan (default ".")
@@ -184,6 +184,11 @@ rel_to_url() { printf "%s/%s" "$RAW_BASE" "$(url_encode_spaces "$1")"; }
 
 path_is_target() {
   local rel="$1"
+  local base="$(basename "$rel")"
+  # Whitelist select top-level docs regardless of EXTENSIONS/INCLUDE_DIRS
+  case "$base" in
+    README.md|CHANGELOG.md|LICENSE|Package.swift) return 0 ;;
+  esac
   # Check extension
   local ext="${rel##*.}"
   local match_ext=0
@@ -207,7 +212,7 @@ path_is_target() {
 replace_or_append_line() {
   local rel="$1" raw_url="$2" newline="$3" dir_rel="$4"
   if grep -F "](${raw_url}):" "$OUTFILE" >/dev/null 2>&1; then
-    awk -v url="$raw_url" -v nl="$newline" 'index($0, "]("url"):") {print nl; next} {print}' "$OUTFILE" > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
+    awk -v url="$raw_url" -v nl="$newline" 'index($0, "](" url "):") {print nl; next} {print}' "$OUTFILE" > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
   else
     # Ensure section header exists
     if ! grep -xq "## ${dir_rel}" "$OUTFILE" >/dev/null 2>&1; then
@@ -219,7 +224,7 @@ replace_or_append_line() {
 
 remove_line_by_url() {
   local raw_url="$1"
-  awk -v url="$raw_url" 'index($0, "]("url"):")==0' "$OUTFILE" > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
+  awk -v url="$raw_url" 'index($0, "](" url "):")==0' "$OUTFILE" > "$OUTFILE.tmp" && mv "$OUTFILE.tmp" "$OUTFILE"
 }
 
 update_header_in_place() {
@@ -299,7 +304,7 @@ llm_describe_file() {
   esac
   local code
   code="$(fetch_code_for_llm "$url" "$file")"
-  local input_prompt="You are a senior SDK engineer. Write 1 concise sentences (<= 40 words) describing this SDK source file for a developer-facing index. Be specific and technical (core responsibilities, key flows/side-effects, dependencies, notable public APIs/entry points).
+  local input_prompt="You are a senior SDK engineer. Write 1 concise sentence (<= 40 words) describing this SDK source file for a developer-facing index. Be specific and technical (core responsibilities, key flows/side-effects, dependencies, notable public APIs/entry points).
 Repository: ${repo}
 Section: ${section}
 Path: ${rel}
@@ -382,8 +387,8 @@ if [[ -f "$EXISTING_LLMS_PATH" ]]; then
   while IFS= read -r line; do
     case "$line" in
       -*\[*\]\(*\)*)
-        url="$(printf "%s\n" "$line" | sed -n 's/.*](\([^)]\+\)).*/\1/p')"
-        desc="$(printf "%s\n" "$line" | sed -n 's/^[[:space:]]*-\s*\[[^]]\+\]([^)]\+):[[:space:]]*//p' | sed 's/[[:space:]]*<!--.*$//' | tr -d '\r')"
+        url="$(printf "%s\n" "$line" | sed -nE 's/.*\]\(([^)]*)\).*/\1/p')"
+        desc="$(printf "%s\n" "$line" | sed -nE 's/^[[:space:]]*-[[:space:]]*\[[^]]+\]\([^)]*\):[[:space:]]*//p' | sed 's/[[:space:]]*<!--.*$//' | tr -d '\r')"
         if [[ -n "$url" ]]; then
           printf "%s\t%s\n" "$url" "$desc" >> "$EXISTING_MAP"
         fi
@@ -438,9 +443,10 @@ if [[ -n "${BASE_REF:-}" && -n "${HEAD_REF:-}" ]]; then
     compare_json="$(curl -sS -H "Accept: application/vnd.github+json" "${AUTH_HDR[@]}" \
       "https://api.github.com/repos/${REPO_SLUG}/compare/${BASE_REF}...${HEAD_REF}" || true)"
     printf "%s\n" "$compare_json" | jq -r '
-      .files[]? | select(.status=="modified" or .status=="added" or .status=="renamed" or .status=="removed" or .status=="deleted") |
-      .filename
-    ' 2>/dev/null | sed 's#^./##' | sort -u >> "$CHANGED_SET"
+      .files[]?
+      | select(.status=="modified" or .status=="added" or .status=="renamed" or .status=="removed" or .status=="deleted")
+      | (.filename, (.previous_filename // empty))
+    ' 2>/dev/null | sed '/^$/d; s#^./##' | sort -u >> "$CHANGED_SET"
   else
     git fetch --no-tags --depth=1 origin "${BASE_REF}" "${HEAD_REF}" >/dev/null 2>&1 || true
     git diff --name-only "${BASE_REF}...${HEAD_REF}" 2>/dev/null | sed 's#^./##' | sort -u >> "$CHANGED_SET" || true
