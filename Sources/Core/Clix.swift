@@ -466,6 +466,36 @@ public final class Clix {
     return (try? shared.get(\.environment))?.getDevice().pushToken
   }
 
+  /// Sets the push permission granted status (async version - recommended)
+  ///
+  /// This async version ensures the operation completes before returning.
+  /// Use this when you can await the operation in an async context.
+  ///
+  /// - Parameter isGranted: Whether push permission is granted
+  /// - Throws: ClixError if the operation fails
+  public static func setPushPermissionGranted(_ isGranted: Bool) async throws {
+    await shared.initCoordinator.waitForInitialization()
+    try await shared.get(\.deviceService).upsertIsPushPermissionGranted(isGranted)
+  }
+
+  /// Sets the push permission granted status (synchronous version)
+  ///
+  /// This synchronous version returns immediately while the operation continues in the background.
+  /// Consider using the async version for guaranteed operation completion.
+  ///
+  /// - Parameter isGranted: Whether push permission is granted
+  /// - Note: An async version is available that ensures the operation completes before returning.
+  ///         Use `try await Clix.setPushPermissionGranted(_:)` for better control over operation timing.
+  public static func setPushPermissionGranted(_ isGranted: Bool) {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await setPushPermissionGranted(isGranted)
+      } catch {
+        ClixLogger.error("Failed to set push permission granted: \(error)")
+      }
+    }
+  }
+
   private actor InitCoordinator {
     private var isInitialized = false
     private var pendingContinuations: [CheckedContinuation<Void, Never>] = []
