@@ -1,7 +1,7 @@
 <!-- repo: clix-so/clix-ios-sdk -->
 <!-- ref: main -->
-<!-- commit: f172b1a36d895966f9936a16ed846430c0e5b1cf -->
-<!-- generated_at: 2025-11-17T06:52:16Z -->
+<!-- commit: dc98c2ac713412a135af55f3ac38e4b84df20b6d -->
+<!-- generated_at: 2025-11-17T06:59:25Z -->
 # Platform: iOS
 
 ## /
