@@ -39,7 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-          chmod +x scripts/generate_llms.sh
+          chmod +x scripts/generate_llms.sh || true
 
       - name: Compute compare range and inputs
         id: range
