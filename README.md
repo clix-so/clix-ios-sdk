@@ -152,9 +152,10 @@ class AppDelegate: ClixAppDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
+        // Configure Firebase first (before calling super)
         FirebaseApp.configure()
+
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         // Required: initialize Clix with your credentials
         Task {
@@ -180,8 +181,8 @@ import Clix
 @main
 class AppDelegate: ClixAppDelegate {
     // Optional: delay the system permission prompt until your onboarding is ready.
-    // Remove or change to `true` to use SDK default behavior.
-    override var autoRequestAuthorizationOnLaunch: Bool { false }
+    // SDK default is `false`. Override to `true` to auto-request permissions on launch.
+    override var autoRequestAuthorizationOnLaunch: Bool { true }
 
     // Optional: prevent automatic deep-link opening on push tap; route manually instead.
     // Remove or change to `true` to use SDK default behavior.
@@ -197,12 +198,12 @@ class AppDelegate: ClixAppDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
-        // Configure Firebase
+        // Configure Firebase first (before calling super)
         FirebaseApp.configure()
 
-        // Initialize Clix SDK after calling super.
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+        // Initialize Clix SDK
         Task {
             let config = ClixConfig(
                 projectId: "YOUR_PROJECT_ID",
@@ -223,6 +224,9 @@ class AppDelegate: ClixAppDelegate {
 
         // Optional: when autoRequestAuthorizationOnLaunch is false, show the prompt later:
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+          // Notify Clix SDK about permission status
+          Clix.setPushPermissionGranted(granted)
+
           if granted { DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() } }
         }
 
@@ -269,7 +273,7 @@ class AppDelegate: ClixAppDelegate {
 
 - Permission requests, device token registration, and event tracking are handled automatically.
 - Rich images: for best reliability use a Notification Service Extension. In foreground, the SDK can attach images and re-post the notification when possible.
-- Firebase is required, call `FirebaseApp.configure()` during app launch.
+- **Important:** Firebase must be configured **before** calling `super.application()` to ensure proper token collection.
 - Always call super to retain default SDK behavior where indicated.
 
 #### Using Clix.Notification
@@ -433,6 +437,147 @@ do {
 ## Thread Safety
 
 The SDK is thread-safe and all operations can be called from any thread. Async operations will automatically wait for SDK initialization to complete.
+
+## Troubleshooting
+
+### Push Token Not Being Collected
+
+If you notice that push tokens (FCM tokens) are not being collected in the Clix console, check the following:
+
+#### 1. Firebase Must Be Configured Before super.application
+
+When using `ClixAppDelegate`, ensure `FirebaseApp.configure()` is called **before** `super.application(application, didFinishLaunchingWithOptions: launchOptions)`:
+
+```swift
+@main
+class AppDelegate: ClixAppDelegate {
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        // ✅ Configure Firebase FIRST
+        FirebaseApp.configure()
+
+        // ✅ Then call super
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
+        // Initialize Clix SDK
+        Task {
+            let config = ClixConfig(
+                projectId: "YOUR_PROJECT_ID",
+                apiKey: "YOUR_API_KEY"
+            )
+            await Clix.initialize(config: config)
+        }
+
+        return result
+    }
+}
+```
+
+**Why this matters:** The SDK's `super.application` internally references the Firebase instance, so Firebase must be initialized first.
+
+#### 2. Forward FCM Token to Clix SDK
+
+If you implement `MessagingDelegate`, you must forward the FCM token to Clix:
+
+```swift
+import FirebaseMessaging
+
+extension AppDelegate: MessagingDelegate {
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        // ✅ Forward token to Clix SDK
+        Clix.Notification.messaging(messaging, didReceiveRegistrationToken: fcmToken)
+
+        // Your custom logic here
+        Task {
+            guard let fcmToken else { return }
+            // Handle token as needed
+        }
+    }
+}
+```
+
+#### 3. Do NOT Override Messaging Delegate Directly
+
+**Avoid** setting `Messaging.messaging().delegate = self` in your AppDelegate when using `ClixAppDelegate`:
+
+```swift
+// ❌ DON'T DO THIS
+Messaging.messaging().delegate = self
+```
+
+**Why:** Clix SDK internally sets `Messaging.messaging().delegate = ClixNotification.shared` to collect FCM tokens. If you override this, token collection will fail.
+
+If you need custom `MessagingDelegate` behavior, implement the delegate methods and forward to Clix as shown in step 2.
+
+#### 4. Enable Debug Logging
+
+To verify token collection, enable debug logging:
+
+```swift
+let config = ClixConfig(
+    projectId: "YOUR_PROJECT_ID",
+    apiKey: "YOUR_API_KEY",
+    logLevel: .debug  // Enable debug logs
+)
+await Clix.initialize(config: config)
+```
+
+Look for these log messages in Xcode console:
+- `[Clix] FCM registration token received: ...`
+- `[Clix] FCM token successfully processed after SDK initialization`
+
+### Push Permission Status Not Updating
+
+If you've disabled automatic permission requests (`autoRequestAuthorizationOnLaunch = false`), you must manually notify Clix when users grant or deny push permissions.
+
+#### Update Permission Status
+
+After requesting push permissions in your app, call `Clix.setPushPermissionGranted()`:
+
+```swift
+UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+    if let error = error {
+        print("Permission request error: \(error)")
+        return
+    }
+
+    // ✅ Notify Clix SDK about permission status
+    Clix.setPushPermissionGranted(granted)
+
+    if granted {
+        DispatchQueue.main.async {
+            UIApplication.shared.registerForRemoteNotifications()
+        }
+    }
+}
+```
+
+**Note:** This method is available in SDK version 1.5.0 and later.
+
+### Debugging Checklist
+
+If push notifications aren't working, verify:
+
+1. ✅ Push Notifications capability is enabled in Xcode project settings
+2. ✅ Background Modes > Remote notifications is enabled
+3. ✅ `FirebaseApp.configure()` is called before `super.application` (when using `ClixAppDelegate`)
+4. ✅ `Clix.Notification.messaging()` is called in `MessagingDelegate` (if implementing custom delegate)
+5. ✅ NOT setting `Messaging.messaging().delegate = self` when using `ClixAppDelegate`
+6. ✅ `Clix.setPushPermissionGranted()` is called after requesting permissions (when using `autoRequestAuthorizationOnLaunch = false`)
+7. ✅ Testing on a real device (push notifications don't work on iOS 26 simulator)
+8. ✅ Debug logs show "FCM registration token received" message
+
+### Getting Help
+
+If you continue to experience issues:
+
+1. Enable debug logging (`.debug` log level)
+2. Check Xcode console for Clix log messages
+3. Verify your device appears in the Clix console Users page
+4. Check if `push_token` field is populated for your device
+5. Create an issue on [GitHub](https://github.com/clix-so/clix-ios-sdk/issues) with logs and configuration details
 
 ## License
 
