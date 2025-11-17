@@ -1,0 +1,166 @@
+name: Generate CLIX iOS LLMS
+
+on:
+  workflow_dispatch:
+    inputs:
+      llm_mode:
+        description: 'Generation mode'
+        type: choice
+        options: [changed, all]
+        default: changed
+      base:
+        description: 'Base ref/tag/sha for compare (optional)'
+        type: string
+        required: false
+      head:
+        description: 'Head ref/tag/sha for compare (optional)'
+        type: string
+        required: false
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    name: Generate LLMS
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          chmod +x scripts/generate_llms.sh || true
+
+      - name: Compute compare range and inputs
+        id: range
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Defaults from inputs
+          LLM_MODE="${{ inputs.llm_mode || 'changed' }}"
+          echo "LLM_MODE=$LLM_MODE" >> "$GITHUB_ENV"
+
+          # Optionally honor explicit base/head
+          if [[ -n "${{ inputs.base }}" && -n "${{ inputs.head }}" ]]; then
+            echo "COMPARE=${{ inputs.base }}...${{ inputs.head }}" >> "$GITHUB_ENV"
+          fi
+
+          # If release event, try to set COMPARE to previous tag...current tag
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+            echo "HEAD_REF=$TAG" >> "$GITHUB_ENV"
+            git fetch --tags --force --depth=1 origin "+refs/tags/*:refs/tags/*" || true
+            BASE_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+            if [[ -n "$BASE_TAG" ]]; then
+              echo "COMPARE=${BASE_TAG}...${TAG}" >> "$GITHUB_ENV"
+            fi
+          fi
+
+          # Echo for debugging
+          echo "LLM_MODE=${LLM_MODE}"
+          echo "COMPARE=${COMPARE:-"(none)"}"
+
+      - name: Create update branch
+        id: branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          BRANCH="chore/llms-${{ github.run_id }}-${{ github.run_attempt }}"
+          git checkout -B "$BRANCH" "origin/${DEFAULT_BRANCH}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      - name: Run generators
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }} # used by scripts for GitHub compare API if needed
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+            echo "OPENAI_API_KEY is not set. Add it in repository Secrets." >&2
+            exit 1
+          fi
+          # Always fetch default branch for raw links
+          git fetch origin "${{ github.event.repository.default_branch }}" --depth=1 || true
+
+          # Determine compare range (strict surgical mode)
+          if [[ "${LLM_MODE}" == "all" ]]; then
+            CMD='./scripts/generate_llms.sh --llm-all --slug "'"${{ github.repository }}"'" --branch "'"${{ github.event.repository.default_branch }}"'"'
+          else
+            # HEAD ref: inputs.head or default to origin/<default_branch>
+            if [[ -n "${{ inputs.head }}" ]]; then
+              HEAD_REF="${{ inputs.head }}"
+            else
+              HEAD_REF="${{ github.event.repository.default_branch }}"
+            fi
+
+            if [[ -n "${COMPARE:-}" ]]; then
+              COMPARE_RANGE="${COMPARE}"
+            else
+              # Read base SHA from existing file header
+              BASE="$(sed -nE 's/^<!--[[:space:]]*commit:[[:space:]]*([0-9a-f]+).*/\1/p' llms.txt | head -1 || true)"
+              [[ -z "${BASE}" ]] && BASE="${HEAD_REF}"
+              COMPARE_RANGE="${BASE}...${HEAD_REF}"
+            fi
+            CMD='./scripts/generate_llms.sh --compare "'"${COMPARE_RANGE}"'" --llm --slug "'"${{ github.repository }}"'" --branch "'"${{ github.event.repository.default_branch }}"'"'
+          fi
+
+          eval "${CMD}"
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Stage files if present
+          git add llms.txt 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            echo "NO_CHANGES=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update llms index [skip ci]"
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Create pull request
+        if: env.NO_CHANGES != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const defaultBranch = context.payload.repository.default_branch;
+            const head = process.env.BRANCH;
+            const title = 'chore: update CLIX iOS LLMS index';
+            const body = [
+              'This PR updates the generated CLIX iOS SDK LLMS index.',
+              '',
+              `- Triggered by: ${context.eventName}`,
+              `- Range: ${process.env.COMPARE || '(none / full)'}`
+            ].join('\n');
+            try {
+              const { data: pr } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                head,
+                base: defaultBranch,
+                body
+              });
+              core.info(`Created PR #${pr.number}`);
+            } catch (e) {
+              if (e.status === 422) {
+                core.info('PR likely already exists or no changes to propose.');
+              } else {
+                throw e;
+              }
+            }
