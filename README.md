@@ -8,7 +8,7 @@ Clix iOS SDK is a powerful tool for managing push notifications and user events 
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.5.1")
+    .package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.5.2")
 ]
 ```
 
@@ -182,7 +182,7 @@ import Clix
 class AppDelegate: ClixAppDelegate {
     // Optional: delay the system permission prompt until your onboarding is ready.
     // SDK default is `false`. Override to `true` to auto-request permissions on launch.
-    override var autoRequestAuthorizationOnLaunch: Bool { true }
+    override var autoRequestPermissionOnLaunch: Bool { true }
 
     // Optional: prevent automatic deep-link opening on push tap; route manually instead.
     // Remove or change to `true` to use SDK default behavior.
@@ -222,7 +222,7 @@ class AppDelegate: ClixAppDelegate {
             }
         }
 
-        // Optional: when autoRequestAuthorizationOnLaunch is false, show the prompt later:
+        // Optional: when autoRequestPermissionOnLaunch is false, show the prompt later:
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
           // Notify Clix SDK about permission status
           Clix.setPushPermissionGranted(granted)
@@ -371,7 +371,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
 ##### Clix.Notification quick reference
 
-- `setup(autoRequestAuthorization: Bool)`: Choose push permission request timing (default true)
+- `setup(autoRequestPermission: Bool)`: Choose push permission request timing (default true)
 - `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
 - `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
 - `handleBackgroundNotification(_:completionHandler:)`: Handle background notification receipt and call completion
@@ -525,12 +525,13 @@ await Clix.initialize(config: config)
 ```
 
 Look for these log messages in Xcode console:
+
 - `[Clix] FCM registration token received: ...`
 - `[Clix] FCM token successfully processed after SDK initialization`
 
 ### Push Permission Status Not Updating
 
-If you've disabled automatic permission requests (`autoRequestAuthorizationOnLaunch = false`), you must manually notify Clix when users grant or deny push permissions.
+If you've disabled automatic permission requests (`autoRequestPermissionOnLaunch = false`), you must manually notify Clix when users grant or deny push permissions.
 
 #### Update Permission Status
 
@@ -565,7 +566,7 @@ If push notifications aren't working, verify:
 3. ✅ `FirebaseApp.configure()` is called before `super.application` (when using `ClixAppDelegate`)
 4. ✅ `Clix.Notification.messaging()` is called in `MessagingDelegate` (if implementing custom delegate)
 5. ✅ NOT setting `Messaging.messaging().delegate = self` when using `ClixAppDelegate`
-6. ✅ `Clix.setPushPermissionGranted()` is called after requesting permissions (when using `autoRequestAuthorizationOnLaunch = false`)
+6. ✅ `Clix.setPushPermissionGranted()` is called after requesting permissions (when using `autoRequestPermissionOnLaunch = false`)
 7. ✅ Testing on a real device (push notifications don't work on iOS 26 simulator)
 8. ✅ Debug logs show "FCM registration token received" message
 
@@ -590,4 +591,3 @@ See the full release history and changes in the [CHANGELOG.md](CHANGELOG.md) fil
 ## Contributing
 
 We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull requests.
-
