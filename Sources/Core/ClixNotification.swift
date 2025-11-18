@@ -311,7 +311,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  private func requestNotificationPermission() {
+  func requestNotificationPermission() {
     Task {
       do {
         let notificationService = try await Clix.shared.getWithWait(\.notificationService)

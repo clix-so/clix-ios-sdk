@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Push Notifications**
-  - Renamed `autoRequestAuthorizationOnLaunch`/`autoRequestAuthorization` to `autoRequestPermissionOnLaunch`/
-    `autoRequestPermission` with deprecated aliases for backward compatibility.
+  - Renamed `autoRequestAuthorizationOnLaunch`/`autoRequestAuthorization` to `autoRequestPermissionOnLaunch`/`autoRequestPermission` with deprecated aliases for backward compatibility.
+  - Changed `Clix.Notification.requestNotificationPermission` to public.
 
 ## [1.5.1] - 2025-11-17
 
