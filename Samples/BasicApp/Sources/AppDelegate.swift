@@ -5,7 +5,7 @@ import UIKit
 import UserNotifications
 
 class AppDelegate: ClixAppDelegate {
-  override var autoRequestAuthorizationOnLaunch: Bool { true }
+  override var autoRequestPermissionOnLaunch: Bool { true }
 
   override func application(
     _ application: UIApplication,
@@ -48,6 +48,11 @@ class AppDelegate: ClixAppDelegate {
     Messaging.messaging().token { token, error in
       if let error = error {
         print("❌ Error fetching FCM registration token after APNS registration: \(error)")
+        return
+      }
+
+      if let token = token {
+        print("✅ FCM registration token fetched after APNS registration: \(token)")
       }
     }
 

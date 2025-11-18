@@ -7,9 +7,13 @@ import UserNotifications
 @available(iOSApplicationExtension, unavailable)
 open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   // MARK: - Override Points
-  /// Whether to request notification authorization automatically on launch.
+  /// Whether to request notification permission automatically on launch.
   /// Override to delay the permission prompt (e.g., show onboarding first).
-  open var autoRequestAuthorizationOnLaunch: Bool { false }
+  open var autoRequestPermissionOnLaunch: Bool { false }
+
+  /// Deprecated alias for `autoRequestPermissionOnLaunch`.
+  @available(*, deprecated, renamed: "autoRequestPermissionOnLaunch")
+  open var autoRequestAuthorizationOnLaunch: Bool { autoRequestPermissionOnLaunch }
 
   /// Whether the SDK should automatically open landing URLs when a push is tapped.
   /// Override to disable auto-opening and handle routing yourself.
@@ -26,7 +30,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     UNUserNotificationCenter.current().delegate = self
 
     // Apply configuration from override points
-    Clix.Notification.setup(autoRequestAuthorization: autoRequestAuthorizationOnLaunch)
+    Clix.Notification.setup(autoRequestPermission: autoRequestPermissionOnLaunch)
     Clix.Notification.setAutoOpenLandingOnTap(autoOpenLandingOnTap)
     Clix.Notification.handleLaunchOptions(launchOptions)
     return true
