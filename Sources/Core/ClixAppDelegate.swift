@@ -13,7 +13,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
 
   /// Deprecated alias for `autoRequestPermissionOnLaunch`.
   @available(*, deprecated, renamed: "autoRequestPermissionOnLaunch")
-  open var autoRequestAuthorizationOnLaunch: Bool { autoRequestPermissionOnLaunch }
+  open var autoRequestAuthorizationOnLaunch: Bool { false }
 
   /// Whether the SDK should automatically open landing URLs when a push is tapped.
   /// Override to disable auto-opening and handle routing yourself.
@@ -30,7 +30,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     UNUserNotificationCenter.current().delegate = self
 
     // Apply configuration from override points
-    Clix.Notification.setup(autoRequestPermission: autoRequestPermissionOnLaunch)
+    Clix.Notification.setup(autoRequestPermission: autoRequestPermissionOnLaunch || autoRequestAuthorizationOnLaunch)
     Clix.Notification.setAutoOpenLandingOnTap(autoOpenLandingOnTap)
     Clix.Notification.handleLaunchOptions(launchOptions)
     return true

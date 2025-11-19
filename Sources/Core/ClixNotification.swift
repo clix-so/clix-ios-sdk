@@ -38,6 +38,11 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     setupAppStateNotifications()
   }
 
+  @available(*, deprecated, renamed: "setup(autoRequestPermission:)")
+  public func setup(autoRequestAuthorization: Bool = true) {
+    setup(autoRequestPermission: autoRequestAuthorization)
+  }
+
   public func handleLaunchOptions(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
     if let launchOptions = launchOptions, let payload = launchOptions[.remoteNotification] as? [AnyHashable: Any] {
       ClixLogger.debug("App launched from push notification")
@@ -311,7 +316,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  func requestNotificationPermission() {
+  public func requestNotificationPermission() {
     Task {
       do {
         let notificationService = try await Clix.shared.getWithWait(\.notificationService)
