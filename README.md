@@ -371,7 +371,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
 ##### Clix.Notification quick reference
 
-- `setup(autoRequestPermission: Bool)`: Choose push permission request timing (default true)
+- `setup(autoRequestPermission: Bool)`: Choose push permission request timing (default false)
 - `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
 - `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
 - `handleBackgroundNotification(_:completionHandler:)`: Handle background notification receipt and call completion

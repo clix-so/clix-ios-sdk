@@ -24,7 +24,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   deinit { NotificationCenter.default.removeObserver(self) }
 
   // MARK: - Configuration
-  public func setup(autoRequestPermission: Bool = true) {
+  public func setup(autoRequestPermission: Bool = false) {
     Messaging.messaging().delegate = self
     if UNUserNotificationCenter.current().delegate == nil {
       UNUserNotificationCenter.current().delegate = self
@@ -196,8 +196,8 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   // MARK: - Deep Link Helpers
   public func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
-    guard let clixData = parseClixPayload(from: userInfo),
-      let landingURL = clixData["landing_url"] as? String,
+    guard let payload = ClixPushNotificationPayload.decode(from: userInfo),
+      let landingURL = payload.landingUrl,
       let url = URL(string: landingURL)
     else { return false }
     DispatchQueue.main.async { self.openURLSafely(url) }
@@ -266,7 +266,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   private func extractImageURL(from userInfo: [AnyHashable: Any]) -> URL? {
     let sources: [(String, Any?)] = [
-      ("clix data", parseClixPayload(from: userInfo)?["image_url"]),
+      ("clix data", ClixPushNotificationPayload.decode(from: userInfo)?.imageUrl),
       ("userInfo", userInfo["image_url"]),
       ("fcm_options", (userInfo["fcm_options"] as? [String: Any])?["image_url"]),
       ("fcm_options dictionary", (userInfo["fcm_options"] as? NSDictionary)?["image_url"]),
@@ -333,26 +333,8 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     return [.list, .banner, .sound, .badge]
   }
 
-  private func parseClixPayload(from userInfo: [AnyHashable: Any]) -> [String: Any]? {
-    guard let clix = userInfo["clix"] else { return nil }
-    ClixLogger.debug("Clix notification data: \(clix)")
-    if let clixData = clix as? [String: Any] { return clixData }
-    if let clixString = clix as? String {
-      do {
-        if let data = clixString.data(using: .utf8),
-          let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        {
-          return clixData
-        }
-      } catch {
-        ClixLogger.error("Failed to parse clix JSON data", error: error)
-      }
-    }
-    return nil
-  }
-
   private func extractMessageId(from userInfo: [AnyHashable: Any]) -> String? {
-    parseClixPayload(from: userInfo)?["message_id"] as? String
+    ClixPushNotificationPayload.decode(from: userInfo)?.messageId
   }
 
   private func processToken(_ token: String, tokenType: String) async throws {
