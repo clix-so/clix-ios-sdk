@@ -14,10 +14,10 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   private var processedTappedEvents: Set<String> = []
 
   // MARK: - Handlers
-  public typealias NotificationWillShowHandler = (UNNotification) -> UNNotificationPresentationOptions
+  public typealias MessageHandler = (UNNotification) -> UNNotificationPresentationOptions
   public typealias NotificationOpenedHandler = ([AnyHashable: Any]) -> Void
   public typealias ApnsTokenErrorHandler = (Error) -> Void
-  private var willShowHandler: NotificationWillShowHandler?
+  private var messageHandler: MessageHandler?
   private var openedHandler: NotificationOpenedHandler?
   private var apnsTokenErrorHandler: ApnsTokenErrorHandler?
 
@@ -67,8 +67,8 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   /// Register handler for messages received while app is in foreground.
-  public func onMessage(_ handler: @escaping NotificationWillShowHandler) {
-    willShowHandler = handler
+  public func onMessage(_ handler: @escaping MessageHandler) {
+    messageHandler = handler
   }
 
   /// Register handler for when user taps on a notification.
@@ -82,7 +82,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   @available(*, deprecated, renamed: "onMessage")
-  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping NotificationWillShowHandler) {
+  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping MessageHandler) {
     onMessage(handler)
   }
 
@@ -138,7 +138,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     handleNotificationReceived(userInfo: userInfo)
 
     // 1) App-level handler has priority
-    if let handler = willShowHandler {
+    if let handler = messageHandler {
       completionHandler(handler(notification))
       return
     }
