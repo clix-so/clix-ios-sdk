@@ -10,7 +10,6 @@ struct ClixPushNotificationPayload: Codable {
   let imageUrl: String?
   let userJourneyId: String?
   let userJourneyNodeId: String?
-  let customProperties: [String: AnyCodable]?
 }
 
 extension ClixPushNotificationPayload {
