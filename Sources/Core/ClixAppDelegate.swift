@@ -12,7 +12,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   /// Override to delay the permission prompt (e.g., show onboarding first).
   open var autoRequestPermission: Bool { false }
 
-  @available(*, deprecated, renamed: "autoRequestPermissionOnLaunch")
+  @available(*, deprecated, renamed: "autoRequestPermission")
   open var autoRequestAuthorizationOnLaunch: Bool { false }
 
   /// Whether the SDK should automatically handle landing URLs when a notification is tapped.
