@@ -88,7 +88,7 @@ public final class Clix {
   var notificationService: NotificationService?
 
   // MARK: - Initialization Coordinator
-  private let initCoordinator = InitCoordinator()
+  internal let initCoordinator = InitCoordinator()
 
   private init() {}
 
@@ -443,29 +443,16 @@ public final class Clix {
 
   /// Gets the push token
   /// - Returns: Push token
+  @available(*, deprecated, message: "Use Clix.Notification.getToken() instead")
   public static func getPushToken() -> String? {
-    if let environment = try? shared.get(\.environment) {
-      return environment.getDevice().pushToken
-    }
-
-    if Thread.isMainThread {
-      ClixLogger.warn(
-        "getPushToken() called on main thread before initialization complete. "
-          + "Returning nil to avoid freeze. Consider using async version: await Clix.getPushToken()"
-      )
-      return nil
-    }
-
-    return shared.initCoordinator.waitAndGet {
-      (try? shared.get(\.environment))?.getDevice().pushToken
-    }
+    Notification.getToken()
   }
 
   /// Gets the push token
   /// - Returns: Push token
+  @available(*, deprecated, message: "Use await Clix.Notification.getToken() instead")
   public static func getPushToken() async -> String? {
-    await shared.initCoordinator.waitForInitialization()
-    return (try? shared.get(\.environment))?.getDevice().pushToken
+    await Notification.getToken()
   }
 
   /// Sets the push permission granted status (async version - recommended)
@@ -475,9 +462,9 @@ public final class Clix {
   ///
   /// - Parameter isGranted: Whether push permission is granted
   /// - Throws: ClixError if the operation fails
+  @available(*, deprecated, message: "Use try await Clix.Notification.setPermissionGranted(_:) instead")
   public static func setPushPermissionGranted(_ isGranted: Bool) async throws {
-    await shared.initCoordinator.waitForInitialization()
-    try await shared.get(\.deviceService).upsertIsPushPermissionGranted(isGranted)
+    try await Notification.setPermissionGranted(isGranted)
   }
 
   /// Sets the push permission granted status (synchronous version)
@@ -488,21 +475,16 @@ public final class Clix {
   /// - Parameter isGranted: Whether push permission is granted
   /// - Note: An async version is available that ensures the operation completes before returning.
   ///         Use `try await Clix.setPushPermissionGranted(_:)` for better control over operation timing.
+  @available(*, deprecated, message: "Use Clix.Notification.setPermissionGranted(_:) instead")
   public static func setPushPermissionGranted(_ isGranted: Bool) {
-    Task.detached(priority: .userInitiated) {
-      do {
-        try await setPushPermissionGranted(isGranted)
-      } catch {
-        ClixLogger.error("Failed to set push permission granted: \(error)")
-      }
-    }
+    Notification.setPermissionGranted(isGranted)
   }
 
-  private actor InitCoordinator {
+  internal actor InitCoordinator {
     private var isInitialized = false
     private var pendingContinuations: [CheckedContinuation<Void, Never>] = []
 
-    func waitForInitialization() async {
+    internal func waitForInitialization() async {
       if isInitialized {
         return
       }
@@ -512,7 +494,7 @@ public final class Clix {
       }
     }
 
-    func completeInitialization() {
+    internal func completeInitialization() {
       isInitialized = true
       let continuations = pendingContinuations
       pendingContinuations.removeAll()
@@ -522,7 +504,7 @@ public final class Clix {
       }
     }
 
-    nonisolated func waitAndGet<T>(_ getter: @escaping () -> T?) -> T? {
+    nonisolated internal func waitAndGet<T>(_ getter: @escaping () -> T?) -> T? {
       let semaphore = DispatchSemaphore(value: 0)
       var result: T?
 

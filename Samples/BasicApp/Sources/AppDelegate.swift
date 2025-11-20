@@ -72,7 +72,7 @@ class AppDelegate: ClixAppDelegate {
   private func updateClixValues() {
     Task {
       let deviceId = await Clix.getDeviceId()
-      let fcmToken = await Clix.getPushToken()
+      let fcmToken = await Clix.Notification.getToken()
 
       AppState.shared.updateDeviceId(deviceId)
       AppState.shared.updateFCMToken(fcmToken)
