@@ -46,7 +46,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     setupAppStateNotifications()
   }
 
-  @available(*, deprecated, renamed: "configure(autoRequestPermission:)")
+  @available(*, deprecated, renamed: "configure(autoRequestPermission:autoHandleLandingURL:)")
   public func setup(autoRequestAuthorization: Bool = true) {
     configure(autoRequestPermission: autoRequestAuthorization)
   }
@@ -77,6 +77,10 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   /// Register handler for APNs token registration errors.
+  ///
+  /// - Important: Register this handler early in your app startup (e.g., in `application(_:didFinishLaunchingWithOptions:)`)
+  ///              to ensure it captures any APNs registration errors that occur during initialization.
+  ///              Errors that occur before handler registration will only be logged and won't trigger the handler.
   public func onApnsTokenError(_ handler: @escaping ApnsTokenErrorHandler) {
     apnsTokenErrorHandler = handler
   }
@@ -91,7 +95,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     onNotificationOpened(handler)
   }
 
-  @available(*, deprecated, message: "Use configure(autoHandleLandingURL:) instead")
+  @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
   public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoOpenLandingOnTap = enabled }
 
   /// Set the APNs device token for push notifications.
@@ -350,7 +354,16 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  /// Request notification permissions from the user.
+  /// Request notification permissions from the user on-demand.
+  ///
+  /// Call this method to request permission at any time, such as after onboarding
+  /// or when `autoRequestPermission` is `false` in `configure()`.
+  ///
+  /// Safe to call multiple times; subsequent calls will reflect the current permission state.
+  /// This will show the system permission prompt if not yet shown.
+  ///
+  /// - Note: When `autoRequestPermission` is `true` in `configure()`, the SDK automatically
+  ///         requests permission during setup. Use this method for manual control.
   public func requestPermission() {
     Task {
       do {

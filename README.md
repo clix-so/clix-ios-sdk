@@ -329,6 +329,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             }
         }
 
+        // Optional: handle APNs token registration errors
+        Clix.Notification.onApnsTokenError { error in
+            print("APNs registration failed: \(error)")
+        }
+
         return true
     }
 
@@ -340,8 +345,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        // Log error - SDK will handle this automatically if you registered an error handler
-        print("APNs registration failed: \(error)")
+        // Errors are automatically logged and forwarded to onApnsTokenError handler if registered
     }
 
     // MARK: - Background/foreground receipt

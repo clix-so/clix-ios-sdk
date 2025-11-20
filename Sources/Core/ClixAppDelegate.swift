@@ -32,6 +32,10 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     autoRequestPermission || autoRequestAuthorizationOnLaunch
   }
 
+  private var shouldAutoHandleLandingURL: Bool {
+    autoHandleLandingURL && autoOpenLandingOnTap
+  }
+
   // MARK: - UIApplicationDelegate
 
   open func application(
@@ -43,7 +47,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     // Apply configuration from override points
     Clix.Notification.configure(
       autoRequestPermission: shouldAutoRequestPermission,
-      autoHandleLandingURL: autoHandleLandingURL
+      autoHandleLandingURL: shouldAutoHandleLandingURL
     )
     Clix.Notification.handleLaunchOptions(launchOptions)
     return true
