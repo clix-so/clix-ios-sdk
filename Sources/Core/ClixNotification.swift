@@ -100,7 +100,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
-  public func setautoHandleLandingURL(_ enabled: Bool) { autoHandleLandingURL = enabled }
+  public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoHandleLandingURL = enabled }
 
   // MARK: - Token Management
   /// Returns the current FCM token.
