@@ -16,26 +16,39 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   // MARK: - Handlers
   public typealias NotificationWillShowHandler = (UNNotification) -> UNNotificationPresentationOptions
   public typealias NotificationOpenedHandler = ([AnyHashable: Any]) -> Void
+  public typealias ApnsTokenErrorHandler = (Error) -> Void
   private var willShowHandler: NotificationWillShowHandler?
   private var openedHandler: NotificationOpenedHandler?
+  private var apnsTokenErrorHandler: ApnsTokenErrorHandler?
 
   // MARK: - Lifecycle
   private override init() { super.init() }
   deinit { NotificationCenter.default.removeObserver(self) }
 
   // MARK: - Configuration
-  public func setup(autoRequestPermission: Bool = false) {
+  /// Configure push notification handling with optional settings.
+  public func configure(
+    autoRequestPermission: Bool = false,
+    autoHandleLandingURL: Bool = true
+  ) {
     Messaging.messaging().delegate = self
     if UNUserNotificationCenter.current().delegate == nil {
       UNUserNotificationCenter.current().delegate = self
     }
 
+    self.autoOpenLandingOnTap = autoHandleLandingURL
+
     DispatchQueue.main.async {
       UIApplication.shared.registerForRemoteNotifications()
     }
 
-    if autoRequestPermission { requestNotificationPermission() }
+    if autoRequestPermission { requestPermission() }
     setupAppStateNotifications()
+  }
+
+  @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
+  public func setup(autoRequestPermission: Bool = false) {
+    configure(autoRequestPermission: autoRequestPermission)
   }
 
   @available(*, deprecated, renamed: "setup(autoRequestPermission:)")
@@ -58,23 +71,49 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping NotificationWillShowHandler) {
+  /// Register handler for messages received while app is in foreground.
+  public func onMessage(_ handler: @escaping NotificationWillShowHandler) {
     willShowHandler = handler
   }
 
-  public func setNotificationOpenedHandler(_ handler: @escaping NotificationOpenedHandler) {
+  /// Register handler for when user taps on a notification.
+  public func onNotificationOpened(_ handler: @escaping NotificationOpenedHandler) {
     openedHandler = handler
   }
 
+  /// Register handler for APNs token registration errors.
+  public func onApnsTokenError(_ handler: @escaping ApnsTokenErrorHandler) {
+    apnsTokenErrorHandler = handler
+  }
+
+  @available(*, deprecated, message: "Use onMessage(_:) instead")
+  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping NotificationWillShowHandler) {
+    onMessage(handler)
+  }
+
+  @available(*, deprecated, message: "Use onNotificationOpened(_:) instead")
+  public func setNotificationOpenedHandler(_ handler: @escaping NotificationOpenedHandler) {
+    onNotificationOpened(handler)
+  }
+
+  @available(*, deprecated, message: "Use configure(autoHandleLandingURL:) instead")
   public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoOpenLandingOnTap = enabled }
 
-  public func handleAPNSToken(_ deviceToken: Data) {
+  /// Set the APNs device token for push notifications.
+  public func setApnsToken(_ deviceToken: Data) {
     Messaging.messaging().apnsToken = deviceToken
     ClixLogger.debug("APNS token set for Firebase Messaging.")
   }
 
+  @available(*, deprecated, message: "Use setApnsToken(_:) instead")
+  public func handleAPNSToken(_ deviceToken: Data) {
+    setApnsToken(deviceToken)
+  }
+
+  @available(*, deprecated, message: "Use onApnsTokenError(_:) to register error handler instead")
   public func handleAPNSRegistrationError(_ error: Error) {
     ClixLogger.error("Failed to register for remote notifications", error: error)
+    apnsTokenErrorHandler?(error)
   }
 
   // MARK: - UNUserNotificationCenterDelegate
@@ -180,14 +219,14 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     // Respect UX: do not auto-open URLs on foreground receipt
   }
 
-  public func handleNotificationReceived(userInfo: [AnyHashable: Any]) {
+  internal func handleNotificationReceived(userInfo: [AnyHashable: Any]) {
     executeNotificationTask("notification received") {
       let notificationService = try await Clix.shared.getWithWait(\.notificationService)
       notificationService.handlePushReceived(userInfo: userInfo)
     }
   }
 
-  public func handleNotificationTapped(userInfo: [AnyHashable: Any]) {
+  internal func handleNotificationTapped(userInfo: [AnyHashable: Any]) {
     executeNotificationTask("notification tapped") {
       let notificationService = try await Clix.shared.getWithWait(\.notificationService)
       notificationService.handlePushTapped(userInfo: userInfo)
@@ -195,7 +234,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   // MARK: - Deep Link Helpers
-  public func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
+  internal func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
     guard let payload = ClixPushNotificationPayload.decode(from: userInfo),
       let landingURL = payload.landingUrl,
       let url = URL(string: landingURL)
@@ -316,7 +355,8 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  public func requestNotificationPermission() {
+  /// Request notification permissions from the user.
+  public func requestPermission() {
     Task {
       do {
         let notificationService = try await Clix.shared.getWithWait(\.notificationService)
@@ -326,6 +366,11 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
         ClixLogger.error("Failed to request notification permission", error: error)
       }
     }
+  }
+
+  @available(*, deprecated, message: "Use requestPermission() instead")
+  public func requestNotificationPermission() {
+    requestPermission()
   }
 
   private func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {

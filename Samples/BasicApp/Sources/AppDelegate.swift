@@ -5,7 +5,7 @@ import UIKit
 import UserNotifications
 
 class AppDelegate: ClixAppDelegate {
-  override var autoRequestPermissionOnLaunch: Bool { true }
+  override var autoRequestPermission: Bool { true }
 
   override func application(
     _ application: UIApplication,
