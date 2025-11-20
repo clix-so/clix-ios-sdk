@@ -10,7 +10,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   // MARK: - State
   private var pendingURL: URL?
-  private var autoOpenLandingOnTap: Bool = true
+  private var autoHandleLandingURL: Bool = true
   private var processedTappedEvents: Set<String> = []
 
   // MARK: - Handlers
@@ -38,7 +38,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
       UNUserNotificationCenter.current().delegate = self
     }
 
-    self.autoOpenLandingOnTap = autoHandleLandingURL
+    self.autoHandleLandingURL = autoHandleLandingURL
 
     DispatchQueue.main.async {
       UIApplication.shared.registerForRemoteNotifications()
@@ -100,7 +100,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   }
 
   @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
-  public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoOpenLandingOnTap = enabled }
+  public func setautoHandleLandingURL(_ enabled: Bool) { autoHandleLandingURL = enabled }
 
   // MARK: - Token Management
   /// Returns the current FCM token.
@@ -396,7 +396,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   private func notificationTapped(userInfo: [AnyHashable: Any]) {
     handleNotificationTapped(userInfo: userInfo)
-    if autoOpenLandingOnTap { _ = openLandingURLIfPresent(from: userInfo) }
+    if autoHandleLandingURL { _ = openLandingURLIfPresent(from: userInfo) }
   }
 
   // MARK: - Utilities

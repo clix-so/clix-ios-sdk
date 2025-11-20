@@ -390,6 +390,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 - `setApnsToken(_:)`: Set APNs device token
 - `requestPermission()`: Request notification permissions
 
+###### About `userInfo` (notification data)
+
+- The `userInfo` parameter is the full dictionary that APNs delivers with a notification; it is equivalent to the Android SDK’s `notificationData` map.
+- Every Clix notification callback (`onMessage`, `onBackgroundMessage`, `onNotificationOpened`) forwards this dictionary untouched, so you can read both the `"clix"` payload and any custom keys you or your backend include.
+- `userInfo["clix"]` contains the serialized Clix metadata JSON, while any other keys represent app-specific data.
+- Apple’s APIs and delegate signatures already use the `userInfo` name, so keeping that term in your code and documentation keeps everything aligned with the platform vocabulary.
+
 ### Notification Service Extension (Optional)
 
 For rich push notifications with images, you can add a Notification Service Extension:
