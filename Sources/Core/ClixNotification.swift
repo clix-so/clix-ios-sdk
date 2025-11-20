@@ -46,14 +46,9 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     setupAppStateNotifications()
   }
 
-  @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
-  public func setup(autoRequestPermission: Bool = false) {
-    configure(autoRequestPermission: autoRequestPermission)
-  }
-
-  @available(*, deprecated, renamed: "setup(autoRequestPermission:)")
+  @available(*, deprecated, renamed: "configure(autoRequestPermission:)")
   public func setup(autoRequestAuthorization: Bool = true) {
-    setup(autoRequestPermission: autoRequestAuthorization)
+    configure(autoRequestPermission: autoRequestAuthorization)
   }
 
   public func handleLaunchOptions(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
@@ -86,12 +81,12 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     apnsTokenErrorHandler = handler
   }
 
-  @available(*, deprecated, message: "Use onMessage(_:) instead")
+  @available(*, deprecated, renamed: "onMessage")
   public func setNotificationWillShowInForegroundHandler(_ handler: @escaping NotificationWillShowHandler) {
     onMessage(handler)
   }
 
-  @available(*, deprecated, message: "Use onNotificationOpened(_:) instead")
+  @available(*, deprecated, renamed: "onNotificationOpened")
   public func setNotificationOpenedHandler(_ handler: @escaping NotificationOpenedHandler) {
     onNotificationOpened(handler)
   }
@@ -105,7 +100,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     ClixLogger.debug("APNS token set for Firebase Messaging.")
   }
 
-  @available(*, deprecated, message: "Use setApnsToken(_:) instead")
+  @available(*, deprecated, renamed: "setApnsToken")
   public func handleAPNSToken(_ deviceToken: Data) {
     setApnsToken(deviceToken)
   }
@@ -368,7 +363,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  @available(*, deprecated, message: "Use requestPermission() instead")
+  @available(*, deprecated, renamed: "requestPermission")
   public func requestNotificationPermission() {
     requestPermission()
   }
