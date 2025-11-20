@@ -64,7 +64,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
-    ClixLogger.error("Failed to register for remote notifications", error: error)
+    Clix.Notification.handleApnsTokenError(error)
   }
 
   open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {

@@ -345,7 +345,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        // Errors are automatically logged and forwarded to onApnsTokenError handler if registered
+        Clix.Notification.handleApnsTokenError(error)
     }
 
     // MARK: - Background/foreground receipt
@@ -378,17 +378,32 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
 ##### Clix.Notification API reference
 
+**Configuration**
 - `configure(autoRequestPermission:autoHandleLandingURL:)`: Configure push notification handling
 - `handleLaunchOptions(_:)`: Process launch options when app starts from push
-- `handleBackgroundNotification(_:completionHandler:)`: Forward background notification to SDK
-- `handleForegroundNotification(_:)`: Forward foreground notification to SDK
-- `handleWillPresent(notification:completionHandler:)`: Forward willPresent delegate to SDK
-- `handleDidReceive(response:completionHandler:)`: Forward didReceive delegate to SDK
+
+**Handler Registration**
 - `onMessage(_:)`: Register handler for foreground messages
+- `onBackgroundMessage(_:)`: Register handler for background messages
 - `onNotificationOpened(_:)`: Register handler for notification taps
 - `onApnsTokenError(_:)`: Register handler for APNs token errors
+
+**Delegate Forwarding**
+- `handleForegroundNotification(_:)`: Forward foreground notification to SDK
+- `handleBackgroundNotification(_:completionHandler:)`: Forward background notification to SDK
+- `handleDidReceive(response:completionHandler:)`: Forward didReceive delegate to SDK
+- `handleWillPresent(notification:completionHandler:)`: Forward willPresent delegate to SDK
+- `handleApnsTokenError(_:)`: Forward APNs token registration error to SDK
+
+**Token Management**
 - `setApnsToken(_:)`: Set APNs device token
+- `getToken()`: Get current FCM token
+- `deleteToken()`: Delete FCM token
+
+**Permission Management**
 - `requestPermission()`: Request notification permissions
+- `getPermissionStatus() async`: Get current permission status
+- `setPermissionGranted(_:)`: Update permission status on server
 
 ###### About `userInfo` (notification data)
 
