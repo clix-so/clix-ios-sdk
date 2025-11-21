@@ -1,7 +1,7 @@
 <!-- repo: clix-so/clix-ios-sdk -->
 <!-- ref: main -->
-<!-- commit: dc98c2ac713412a135af55f3ac38e4b84df20b6d -->
-<!-- generated_at: 2025-11-17T07:20:48Z -->
+<!-- commit: 84c8974c25cb32bcc716392793b23f19f620bd9e -->
+<!-- generated_at: 2025-11-21T08:42:58Z -->
 # Platform: iOS
 
 ## /
@@ -47,7 +47,8 @@
 - [Tokenservice](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Services/TokenService.swift): Manages APNs push token persistence and migration using `StorageService`, exposing async APIs to get/set the current token, maintain a capped history of previous tokens, clear all tokens, and convert `Data` device tokens to hex strings.
 
 ## Sources/Utils
-- [Dateformatter](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Utils/DateFormatter.swift): Provides a utility for formatting `Date` instances into ISO 8601 internet date-time strings using a shared `ISO8601DateFormatter` configured with the current time zone via the static `ClixDateFormatter.format(_:)` API.
+- [Clixjsoncoders](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Utils/ClixJSONCoders.swift): Provides centralized, lazily-initialized JSONEncoder and JSONDecoder singletons (ClixJSONCoders.encoder/decoder) configured for ISO8601 date handling and snake_case ↔ camelCase key conversion, used across the SDK for consistent JSON (de)serialization.
+- [Clixdateformatter](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Utils/ClixDateFormatter.swift): Provides ClixDateFormatter.format(_:) to serialize Date to ISO8601 with timezone, using a lazily-initialized ISO8601DateFormatter configured with.
 - [Clixerror](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Utils/ClixError.swift): Defines the `ClixError` enum as the SDK’s central error type (conforming to `Error`, `LocalizedError`, `Equatable`, `CustomStringConvertible`), modeling initialization/configuration/network/encoding/decoding failures with localized descriptions and custom equality for network, decoding, and unknown errors.
 
 ## Sources/Utils/AnyCodable
