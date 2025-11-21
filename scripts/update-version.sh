@@ -24,6 +24,7 @@ ABSOLUTE_PATH_TO_ROOT_DIR=$(realpath "$RELATIVE_PATH_TO_SCRIPTS_DIR/..")
 # File paths
 SWIFT_SOURCE_FILE="$ABSOLUTE_PATH_TO_ROOT_DIR/Sources/Core/ClixVersion.swift"
 PODSPEC_FILE="$ABSOLUTE_PATH_TO_ROOT_DIR/Clix.podspec"
+README_FILE="$ABSOLUTE_PATH_TO_ROOT_DIR/README.md"
 
 echo "🔄 Updating Clix iOS SDK to version: $NEW_VERSION"
 echo ""
@@ -68,6 +69,26 @@ fi
 echo "✅ Updated Clix.podspec"
 echo ""
 
+# 3. Update README.md
+echo "📝 Updating README.md: $README_FILE"
+if [ ! -f "$README_FILE" ]; then
+    echo "Error: README file not found at $README_FILE"
+    exit 1
+fi
+
+# Use sed to replace the version string in README.md Swift Package Manager section
+# Pattern matches: `.package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.0.0")`
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS version of sed
+    sed -i '' "s/\.package(url: \"https:\/\/github\.com\/clix-so\/clix-ios-sdk\.git\", from: \"[^\"]*\")/\.package(url: \"https:\/\/github.com\/clix-so\/clix-ios-sdk.git\", from: \"$NEW_VERSION\")/" "$README_FILE"
+else
+    # Linux version of sed
+    sed -i "s/\.package(url: \"https:\/\/github\.com\/clix-so\/clix-ios-sdk\.git\", from: \"[^\"]*\")/\.package(url: \"https:\/\/github.com\/clix-so\/clix-ios-sdk.git\", from: \"$NEW_VERSION\")/" "$README_FILE"
+fi
+
+echo "✅ Updated README.md"
+echo ""
+
 # Show changes
 echo "🔍 Showing changes to confirm they worked:"
 echo ""
@@ -78,6 +99,10 @@ echo ""
 
 echo "--- Changes to Clix.podspec ---"
 git --no-pager diff "$PODSPEC_FILE" || echo "No git repository or no changes detected"
+echo ""
+
+echo "--- Changes to README.md ---"
+git --no-pager diff "$README_FILE" || echo "No git repository or no changes detected"
 echo ""
 
 echo "🎉 Version update completed successfully!"

@@ -10,31 +10,41 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   // MARK: - State
   private var pendingURL: URL?
-  private var autoOpenLandingOnTap: Bool = true
+  private var autoHandleLandingURL: Bool = true
   private var processedTappedEvents: Set<String> = []
 
   // MARK: - Handlers
-  public typealias NotificationWillShowHandler = (UNNotification) -> UNNotificationPresentationOptions
+  public typealias MessageHandler = (UNNotification) -> UNNotificationPresentationOptions
+  public typealias BackgroundMessageHandler = ([AnyHashable: Any]) -> Void
   public typealias NotificationOpenedHandler = ([AnyHashable: Any]) -> Void
-  private var willShowHandler: NotificationWillShowHandler?
+  public typealias ApnsTokenErrorHandler = (Error) -> Void
+  private var messageHandler: MessageHandler?
+  private var backgroundMessageHandler: BackgroundMessageHandler?
   private var openedHandler: NotificationOpenedHandler?
+  private var apnsTokenErrorHandler: ApnsTokenErrorHandler?
 
   // MARK: - Lifecycle
   private override init() { super.init() }
   deinit { NotificationCenter.default.removeObserver(self) }
 
   // MARK: - Configuration
-  public func setup(autoRequestAuthorization: Bool = true) {
+  /// Configure push notification handling with optional settings.
+  public func configure(
+    autoRequestPermission: Bool = false,
+    autoHandleLandingURL: Bool = true
+  ) {
     Messaging.messaging().delegate = self
     if UNUserNotificationCenter.current().delegate == nil {
       UNUserNotificationCenter.current().delegate = self
     }
 
+    self.autoHandleLandingURL = autoHandleLandingURL
+
     DispatchQueue.main.async {
       UIApplication.shared.registerForRemoteNotifications()
     }
 
-    if autoRequestAuthorization { requestNotificationAuthorization() }
+    if autoRequestPermission { requestPermission() }
     setupAppStateNotifications()
   }
 
@@ -53,23 +63,119 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping NotificationWillShowHandler) {
-    willShowHandler = handler
+  // MARK: - Handler Registration
+  /// Register handler for messages received while app is in foreground.
+  public func onMessage(_ handler: @escaping MessageHandler) {
+    messageHandler = handler
   }
 
-  public func setNotificationOpenedHandler(_ handler: @escaping NotificationOpenedHandler) {
+  /// Register handler for background messages.
+  public func onBackgroundMessage(_ handler: @escaping BackgroundMessageHandler) {
+    backgroundMessageHandler = handler
+  }
+
+  /// Register handler for notification taps.
+  public func onNotificationOpened(_ handler: @escaping NotificationOpenedHandler) {
     openedHandler = handler
   }
 
-  public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoOpenLandingOnTap = enabled }
+  /// Register handler for APNs token errors.
+  public func onApnsTokenError(_ handler: @escaping ApnsTokenErrorHandler) {
+    apnsTokenErrorHandler = handler
+  }
 
-  public func handleAPNSToken(_ deviceToken: Data) {
+  // MARK: - Token Management
+  /// Returns the current FCM token.
+  public func getToken() -> String? {
+    guard let environment = try? Clix.shared.get(\.environment) else {
+      if Thread.isMainThread {
+        ClixLogger.warn(
+          "getToken() called on main thread before initialization complete. "
+            + "Returning nil to avoid freeze. Consider using async version: await Clix.Notification.getToken()"
+        )
+        return nil
+      }
+
+      return Clix.shared.initCoordinator.waitAndGet {
+        (try? Clix.shared.get(\.environment))?.getDevice().pushToken
+      }
+    }
+
+    return environment.getDevice().pushToken
+  }
+
+  /// Returns the current FCM token (async).
+  public func getToken() async -> String? {
+    await Clix.shared.initCoordinator.waitForInitialization()
+    return (try? Clix.shared.get(\.environment))?.getDevice().pushToken
+  }
+
+  /// Deletes the FCM token.
+  public func deleteToken() async throws {
+    await Clix.shared.initCoordinator.waitForInitialization()
+
+    let tokenService = try Clix.shared.get(\.tokenService)
+    await tokenService.clearTokens()
+
+    let deviceService = try Clix.shared.get(\.deviceService)
+    try await deviceService.upsertToken("", tokenType: "FCM")
+
+    ClixLogger.debug("FCM token deleted successfully")
+  }
+
+  /// Deletes the FCM token (fires and forgets).
+  public func deleteToken() {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await self.deleteToken()
+      } catch {
+        ClixLogger.error("Failed to delete token: \(error)")
+      }
+    }
+  }
+
+  /// Set the APNs device token for push notifications.
+  public func setApnsToken(_ deviceToken: Data) {
     Messaging.messaging().apnsToken = deviceToken
     ClixLogger.debug("APNS token set for Firebase Messaging.")
   }
 
-  public func handleAPNSRegistrationError(_ error: Error) {
-    ClixLogger.error("Failed to register for remote notifications", error: error)
+  // MARK: - Permission Management
+  /// Requests notification permissions.
+  public func requestPermission() {
+    Task {
+      do {
+        let notificationService = try await Clix.shared.getWithWait(\.notificationService)
+        try await notificationService.requestNotificationPermission()
+        ClixLogger.debug("Notification permission requested successfully")
+      } catch {
+        ClixLogger.error("Failed to request notification permission", error: error)
+      }
+    }
+  }
+
+  /// Returns the current permission status.
+  public func getPermissionStatus() async -> UNAuthorizationStatus {
+    let settings = await UNUserNotificationCenter.current().notificationSettings()
+    return settings.authorizationStatus
+  }
+
+  /// Updates the permission status on the server.
+  public func setPermissionGranted(_ isGranted: Bool) async throws {
+    await Clix.shared.initCoordinator.waitForInitialization()
+    let deviceService = try Clix.shared.get(\.deviceService)
+    try await deviceService.upsertIsPushPermissionGranted(isGranted)
+  }
+
+  /// Updates the permission status on the server (fires and forgets).
+  public func setPermissionGranted(_ isGranted: Bool) {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await self.setPermissionGranted(isGranted)
+      } catch {
+        ClixLogger.error("Failed to set permission granted: \(error)")
+      }
+    }
   }
 
   // MARK: - UNUserNotificationCenterDelegate
@@ -99,7 +205,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     handleNotificationReceived(userInfo: userInfo)
 
     // 1) App-level handler has priority
-    if let handler = willShowHandler {
+    if let handler = messageHandler {
       completionHandler(handler(notification))
       return
     }
@@ -159,40 +265,50 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  // MARK: - High-level Handlers
+  // MARK: - Notification Handlers
+  public func handleForegroundNotification(_ userInfo: [AnyHashable: Any]) {
+    ClixLogger.debug("Push notification received (foreground)")
+    handleNotificationReceived(userInfo: userInfo)
+  }
+
   public func handleBackgroundNotification(
     _ payload: [AnyHashable: Any],
     completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
     ClixLogger.debug("Push notification received (background)")
+
+    // Call user's background message handler first
+    if let handler = backgroundMessageHandler {
+      handler(payload)
+    }
+
     handleNotificationReceived(userInfo: payload)
     completionHandler(.newData)
   }
 
-  public func handleForegroundNotification(_ userInfo: [AnyHashable: Any]) {
-    ClixLogger.debug("Push notification received (foreground)")
-    handleNotificationReceived(userInfo: userInfo)
-    // Respect UX: do not auto-open URLs on foreground receipt
-  }
-
-  public func handleNotificationReceived(userInfo: [AnyHashable: Any]) {
+  internal func handleNotificationReceived(userInfo: [AnyHashable: Any]) {
     executeNotificationTask("notification received") {
       let notificationService = try await Clix.shared.getWithWait(\.notificationService)
       notificationService.handlePushReceived(userInfo: userInfo)
     }
   }
 
-  public func handleNotificationTapped(userInfo: [AnyHashable: Any]) {
+  internal func handleNotificationTapped(userInfo: [AnyHashable: Any]) {
     executeNotificationTask("notification tapped") {
       let notificationService = try await Clix.shared.getWithWait(\.notificationService)
       notificationService.handlePushTapped(userInfo: userInfo)
     }
   }
 
+  public func handleApnsTokenError(_ error: Error) {
+    ClixLogger.error("Failed to register for remote notifications", error: error)
+    apnsTokenErrorHandler?(error)
+  }
+
   // MARK: - Deep Link Helpers
-  public func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
-    guard let clixData = parseClixPayload(from: userInfo),
-      let landingURL = clixData["landing_url"] as? String,
+  internal func openLandingURLIfPresent(from userInfo: [AnyHashable: Any]) -> Bool {
+    guard let payload = ClixPushNotificationPayload.decode(from: userInfo),
+      let landingURL = payload.landingUrl,
       let url = URL(string: landingURL)
     else { return false }
     DispatchQueue.main.async { self.openURLSafely(url) }
@@ -245,10 +361,15 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   private func notificationTapped(userInfo: [AnyHashable: Any]) {
     handleNotificationTapped(userInfo: userInfo)
-    if autoOpenLandingOnTap { _ = openLandingURLIfPresent(from: userInfo) }
+    if autoHandleLandingURL { _ = openLandingURLIfPresent(from: userInfo) }
   }
 
   // MARK: - Utilities
+  private func processToken(_ token: String, tokenType: String) async throws {
+    let deviceService = try await Clix.shared.getWithWait(\.deviceService)
+    try await deviceService.upsertToken(token, tokenType: tokenType)
+  }
+
   private func executeNotificationTask(_ context: String, _ operation: @escaping () async throws -> Void) {
     Task {
       do {
@@ -261,7 +382,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
 
   private func extractImageURL(from userInfo: [AnyHashable: Any]) -> URL? {
     let sources: [(String, Any?)] = [
-      ("clix data", parseClixPayload(from: userInfo)?["image_url"]),
+      ("clix data", ClixPushNotificationPayload.decode(from: userInfo)?.imageUrl),
       ("userInfo", userInfo["image_url"]),
       ("fcm_options", (userInfo["fcm_options"] as? [String: Any])?["image_url"]),
       ("fcm_options dictionary", (userInfo["fcm_options"] as? NSDictionary)?["image_url"]),
@@ -311,47 +432,46 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
     }
   }
 
-  private func requestNotificationAuthorization() {
-    Task {
-      do {
-        let notificationService = try await Clix.shared.getWithWait(\.notificationService)
-        try await notificationService.requestNotificationPermission()
-        ClixLogger.debug("Notification authorization requested successfully")
-      } catch {
-        ClixLogger.error("Failed to request notification authorization", error: error)
-      }
-    }
-  }
-
   private func notificationDeliveredInForeground(notification: UNNotification) -> UNNotificationPresentationOptions {
     guard #available(iOS 14.0, *) else { return [.alert, .sound, .badge] }
     return [.list, .banner, .sound, .badge]
   }
 
-  private func parseClixPayload(from userInfo: [AnyHashable: Any]) -> [String: Any]? {
-    guard let clix = userInfo["clix"] else { return nil }
-    ClixLogger.debug("Clix notification data: \(clix)")
-    if let clixData = clix as? [String: Any] { return clixData }
-    if let clixString = clix as? String {
-      do {
-        if let data = clixString.data(using: .utf8),
-          let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        {
-          return clixData
-        }
-      } catch {
-        ClixLogger.error("Failed to parse clix JSON data", error: error)
-      }
-    }
-    return nil
-  }
-
   private func extractMessageId(from userInfo: [AnyHashable: Any]) -> String? {
-    parseClixPayload(from: userInfo)?["message_id"] as? String
+    ClixPushNotificationPayload.decode(from: userInfo)?.messageId
   }
 
-  private func processToken(_ token: String, tokenType: String) async throws {
-    let deviceService = try await Clix.shared.getWithWait(\.deviceService)
-    try await deviceService.upsertToken(token, tokenType: tokenType)
+  // MARK: - Deprecated Methods
+  @available(*, deprecated, renamed: "configure(autoRequestPermission:autoHandleLandingURL:)")
+  public func setup(autoRequestAuthorization: Bool = true) {
+    configure(autoRequestPermission: autoRequestAuthorization)
+  }
+
+  @available(*, deprecated, renamed: "onMessage")
+  public func setNotificationWillShowInForegroundHandler(_ handler: @escaping MessageHandler) {
+    onMessage(handler)
+  }
+
+  @available(*, deprecated, renamed: "onNotificationOpened")
+  public func setNotificationOpenedHandler(_ handler: @escaping NotificationOpenedHandler) {
+    onNotificationOpened(handler)
+  }
+
+  @available(*, deprecated, message: "Use configure(autoRequestPermission:autoHandleLandingURL:) instead")
+  public func setAutoOpenLandingOnTap(_ enabled: Bool) { autoHandleLandingURL = enabled }
+
+  @available(*, deprecated, renamed: "setApnsToken")
+  public func handleAPNSToken(_ deviceToken: Data) {
+    setApnsToken(deviceToken)
+  }
+
+  @available(*, deprecated, renamed: "handleApnsTokenError")
+  public func handleAPNSRegistrationError(_ error: Error) {
+    handleApnsTokenError(error)
+  }
+
+  @available(*, deprecated, renamed: "requestPermission")
+  public func requestNotificationPermission() {
+    requestPermission()
   }
 }

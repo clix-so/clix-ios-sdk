@@ -4,20 +4,39 @@ import Foundation
 import UIKit
 import UserNotifications
 
+/// Base AppDelegate class for Clix SDK integration.
 @available(iOSApplicationExtension, unavailable)
 open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   // MARK: - Override Points
-  /// Whether to request notification authorization automatically on launch.
+  /// Whether to request notification permission automatically.
   /// Override to delay the permission prompt (e.g., show onboarding first).
-  open var autoRequestAuthorizationOnLaunch: Bool { false }
+  open var autoRequestPermission: Bool { false }
 
-  /// Whether the SDK should automatically open landing URLs when a push is tapped.
-  /// Override to disable auto-opening and handle routing yourself.
-  open var autoOpenLandingOnTap: Bool { true }
+  @available(*, deprecated, renamed: "autoRequestPermission")
+  open var autoRequestAuthorizationOnLaunch: Bool { autoRequestPermission }
+
+  /// Whether the SDK should automatically handle landing URLs when a notification is tapped.
+  /// Override to disable auto-handling and handle routing yourself.
+  open var autoHandleLandingURL: Bool { true }
+
+  @available(*, deprecated, renamed: "autoHandleLandingURL")
+  open var autoOpenLandingOnTap: Bool { autoHandleLandingURL }
 
   /// Optional hook to provide custom foreground presentation options.
   /// Return a value to override; return nil to use SDK's default handling.
   open func willPresentOptions(for notification: UNNotification) -> UNNotificationPresentationOptions? { nil }
+
+  // MARK: - Private Helpers
+
+  private var shouldAutoRequestPermission: Bool {
+    autoRequestPermission || autoRequestAuthorizationOnLaunch
+  }
+
+  private var shouldAutoHandleLandingURL: Bool {
+    autoHandleLandingURL && autoOpenLandingOnTap
+  }
+
+  // MARK: - UIApplicationDelegate
 
   open func application(
     _ application: UIApplication,
@@ -26,8 +45,10 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     UNUserNotificationCenter.current().delegate = self
 
     // Apply configuration from override points
-    Clix.Notification.setup(autoRequestAuthorization: autoRequestAuthorizationOnLaunch)
-    Clix.Notification.setAutoOpenLandingOnTap(autoOpenLandingOnTap)
+    Clix.Notification.configure(
+      autoRequestPermission: shouldAutoRequestPermission,
+      autoHandleLandingURL: shouldAutoHandleLandingURL
+    )
     Clix.Notification.handleLaunchOptions(launchOptions)
     return true
   }
@@ -36,14 +57,14 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
-    Clix.Notification.handleAPNSToken(deviceToken)
+    Clix.Notification.setApnsToken(deviceToken)
   }
 
   open func application(
     _ application: UIApplication,
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
-    Clix.Notification.handleAPNSRegistrationError(error)
+    Clix.Notification.handleApnsTokenError(error)
   }
 
   open func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {

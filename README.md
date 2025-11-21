@@ -8,7 +8,7 @@ Clix iOS SDK is a powerful tool for managing push notifications and user events 
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.5.1")
+    .package(url: "https://github.com/clix-so/clix-ios-sdk.git", from: "1.5.3")
 ]
 ```
 
@@ -182,11 +182,11 @@ import Clix
 class AppDelegate: ClixAppDelegate {
     // Optional: delay the system permission prompt until your onboarding is ready.
     // SDK default is `false`. Override to `true` to auto-request permissions on launch.
-    override var autoRequestAuthorizationOnLaunch: Bool { true }
+    override var autoRequestPermission: Bool { true }
 
     // Optional: prevent automatic deep-link opening on push tap; route manually instead.
     // Remove or change to `true` to use SDK default behavior.
-    override var autoOpenLandingOnTap: Bool { false }
+    override var autoHandleLandingURL: Bool { false }
 
     // Optional: force foreground presentation options instead of SDK logic.
     override func willPresentOptions(for notification: UNNotification) -> UNNotificationPresentationOptions? {
@@ -213,8 +213,8 @@ class AppDelegate: ClixAppDelegate {
             await Clix.initialize(config: config)
         }
 
-        // Optional: since autoOpenLandingOnTap is set to false above, handle routing yourself if needed.
-        Clix.Notification.setNotificationOpenedHandler { userInfo in
+        // Optional: since autoHandleLandingURL is set to false above, handle routing yourself if needed.
+        Clix.Notification.onNotificationOpened { userInfo in
             if let clix = userInfo["clix"] as? [String: Any],
                let urlStr = clix["landing_url"] as? String,
                let url = URL(string: urlStr) {
@@ -222,7 +222,7 @@ class AppDelegate: ClixAppDelegate {
             }
         }
 
-        // Optional: when autoRequestAuthorizationOnLaunch is false, show the prompt later:
+        // Optional: when autoRequestPermission is false, show the prompt later:
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
           // Notify Clix SDK about permission status
           Clix.setPushPermissionGranted(granted)
@@ -308,25 +308,31 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         // Set UNUserNotificationCenter delegate if you need to intercept callbacks
         UNUserNotificationCenter.current().delegate = self
 
-        // Setup push via Clix.Notification (delay prompt optional)
-        Clix.Notification.setup()
+        // Configure push notification handling (disable auto-handling to use custom routing below)
+        Clix.Notification.configure(
+            autoRequestPermission: false,
+            autoHandleLandingURL: false
+        )
         Clix.Notification.handleLaunchOptions(launchOptions)
 
         // Optional: customize foreground presentation and tap handling
-        Clix.Notification.setNotificationWillShowInForegroundHandler { _ in
+        Clix.Notification.onMessage { _ in
             if #available(iOS 14.0, *) { return [.list, .banner, .sound, .badge] }
             else { return [.alert, .sound, .badge] }
         }
-        Clix.Notification.setNotificationOpenedHandler { userInfo in
-            // Custom routing (also see setAutoOpenLandingOnTap below)
+        Clix.Notification.onNotificationOpened { userInfo in
+            // Custom routing (autoHandleLandingURL is disabled above)
             if let clixData = userInfo["clix"] as? [String: Any],
                let landingURL = clixData["landing_url"] as? String,
                let url = URL(string: landingURL) {
                 UIApplication.shared.open(url)
             }
         }
-        // Optional: control whether SDK auto-opens deep links on tap, default true.
-        Clix.Notification.setAutoOpenLandingOnTap(true)
+
+        // Optional: handle APNs token registration errors
+        Clix.Notification.onApnsTokenError { error in
+            print("APNs registration failed: \(error)")
+        }
 
         return true
     }
@@ -334,11 +340,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     // MARK: - APNs/FCM registration
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Clix.Notification.handleAPNSToken(deviceToken)
+        Clix.Notification.setApnsToken(deviceToken)
     }
+
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        Clix.Notification.handleAPNSRegistrationError(error)
+        Clix.Notification.handleApnsTokenError(error)
     }
 
     // MARK: - Background/foreground receipt
@@ -369,18 +376,41 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 }
 ```
 
-##### Clix.Notification quick reference
+##### Clix.Notification API reference
 
-- `setup(autoRequestAuthorization: Bool)`: Choose push permission request timing (default true)
-- `handleLaunchOptions(_:)`: Handle initial processing when app is launched via push
-- `handleAPNSToken(_:)`, `handleAPNSRegistrationError(_:)`: Forward APNs registration results
-- `handleBackgroundNotification(_:completionHandler:)`: Handle background notification receipt and call completion
-- `handleForegroundNotification(_:)`: Handle foreground notification analytics (no automatic deep link opening)
-- `setNotificationWillShowInForegroundHandler(_:)`: Customize foreground display options
-- `setNotificationOpenedHandler(_:)`: Handle post-tap processing (logging/routing)
-- `setAutoOpenLandingOnTap(_:)`: Control whether SDK automatically opens deep links on tap
-- `handleWillPresent(notification:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
-- `handleDidReceive(response:completionHandler:)`: UNUserNotificationCenterDelegate forwarding helper
+**Configuration**
+- `configure(autoRequestPermission:autoHandleLandingURL:)`: Configure push notification handling
+- `handleLaunchOptions(_:)`: Process launch options when app starts from push
+
+**Handler Registration**
+- `onMessage(_:)`: Register handler for foreground messages
+- `onBackgroundMessage(_:)`: Register handler for background messages
+- `onNotificationOpened(_:)`: Register handler for notification taps
+- `onApnsTokenError(_:)`: Register handler for APNs token errors
+
+**Delegate Forwarding**
+- `handleForegroundNotification(_:)`: Forward foreground notification to SDK
+- `handleBackgroundNotification(_:completionHandler:)`: Forward background notification to SDK
+- `handleDidReceive(response:completionHandler:)`: Forward didReceive delegate to SDK
+- `handleWillPresent(notification:completionHandler:)`: Forward willPresent delegate to SDK
+- `handleApnsTokenError(_:)`: Forward APNs token registration error to SDK
+
+**Token Management**
+- `setApnsToken(_:)`: Set APNs device token
+- `getToken()`: Get current FCM token
+- `deleteToken()`: Delete FCM token
+
+**Permission Management**
+- `requestPermission()`: Request notification permissions
+- `getPermissionStatus() async`: Get current permission status
+- `setPermissionGranted(_:)`: Update permission status on server
+
+###### About `userInfo` (notification data)
+
+- The `userInfo` parameter is the full dictionary that APNs delivers with a notification; it is equivalent to the Other SDK’s `notificationData` map.
+- Every Clix notification callback (`onMessage`, `onBackgroundMessage`, `onNotificationOpened`) forwards this dictionary untouched, so you can read both the `"clix"` payload and any custom keys you or your backend include.
+- `userInfo["clix"]` contains the serialized Clix metadata JSON, while any other keys represent app-specific data.
+- Apple’s APIs and delegate signatures already use the `userInfo` name, so keeping that term in your code and documentation keeps everything aligned with the platform vocabulary.
 
 ### Notification Service Extension (Optional)
 
@@ -525,12 +555,13 @@ await Clix.initialize(config: config)
 ```
 
 Look for these log messages in Xcode console:
+
 - `[Clix] FCM registration token received: ...`
 - `[Clix] FCM token successfully processed after SDK initialization`
 
 ### Push Permission Status Not Updating
 
-If you've disabled automatic permission requests (`autoRequestAuthorizationOnLaunch = false`), you must manually notify Clix when users grant or deny push permissions.
+If you've disabled automatic permission requests (default is `false`), you must manually notify Clix when users grant or deny push permissions.
 
 #### Update Permission Status
 
@@ -565,7 +596,7 @@ If push notifications aren't working, verify:
 3. ✅ `FirebaseApp.configure()` is called before `super.application` (when using `ClixAppDelegate`)
 4. ✅ `Clix.Notification.messaging()` is called in `MessagingDelegate` (if implementing custom delegate)
 5. ✅ NOT setting `Messaging.messaging().delegate = self` when using `ClixAppDelegate`
-6. ✅ `Clix.setPushPermissionGranted()` is called after requesting permissions (when using `autoRequestAuthorizationOnLaunch = false`)
+6. ✅ `Clix.setPushPermissionGranted()` is called after requesting permissions (when not using auto-request)
 7. ✅ Testing on a real device (push notifications don't work on iOS 26 simulator)
 8. ✅ Debug logs show "FCM registration token received" message
 
@@ -590,4 +621,3 @@ See the full release history and changes in the [CHANGELOG.md](CHANGELOG.md) fil
 ## Contributing
 
 We welcome contributions! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting issues or pull requests.
-

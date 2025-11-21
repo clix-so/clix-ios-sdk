@@ -4,24 +4,9 @@ class HTTPClient {
   static let shared = HTTPClient()
 
   private let session: URLSession
-  private let jsonDecoder: JSONDecoder
-  private let jsonEncoder: JSONEncoder
 
   init(session: URLSession = .shared) {
     self.session = session
-
-    let decoder = JSONDecoder()
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
-    formatter.calendar = Calendar(identifier: .iso8601)
-    formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-    decoder.dateDecodingStrategy = .formatted(formatter)
-    self.jsonDecoder = decoder
-
-    let encoder = JSONEncoder()
-    encoder.dateEncodingStrategy = .iso8601
-    self.jsonEncoder = encoder
   }
 
   private func buildRequestHeaders(_ headers: [String: String]?) -> [String: String] {
@@ -50,7 +35,7 @@ class HTTPClient {
     urlRequest.allHTTPHeaderFields = buildRequestHeaders(request.headers)
 
     if let data = request.data {
-      urlRequest.httpBody = try jsonEncoder.encode(data)
+      urlRequest.httpBody = try ClixJSONCoders.encoder.encode(data)
     }
 
     let (data, response) = try await session.data(for: urlRequest)
@@ -64,7 +49,7 @@ class HTTPClient {
     guard (200...299).contains(httpResponse.statusCode) else {
       throw ClixError.invalidResponse
     }
-    let decoded = try jsonDecoder.decode(Res.self, from: data)
+    let decoded = try ClixJSONCoders.decoder.decode(Res.self, from: data)
     return HTTPResponse(data: decoded, statusCode: httpResponse.statusCode, headers: httpResponse.allHeaderFields)
   }
 

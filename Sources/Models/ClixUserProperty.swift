@@ -9,7 +9,7 @@ public struct ClixUserProperty: Codable {
   }
 
   public let name: String
-  public let value: AnyCodable  // swiftlint:disable:this identifier_name
+  public let value: AnyCodable
   public let type: PropertyType
 
   public init(name: String, value: AnyCodable, type: PropertyType) {

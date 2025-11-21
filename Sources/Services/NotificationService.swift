@@ -25,112 +25,57 @@ class NotificationService {
   }
 
   func handlePushReceived(userInfo: [AnyHashable: Any]) {
-    if let messageId = getMessageId(userInfo: userInfo) {
-      let userJourneyId = getUserJourneyId(userInfo: userInfo)
-      let userJourneyNodeId = getUserJourneyNodeId(userInfo: userInfo)
+    guard let payload = ClixPushNotificationPayload.decode(from: userInfo) else {
+      ClixLogger.warn("Failed to decode Clix payload for push received event")
+      return
+    }
 
-      Task {
-        let shouldTrack = await recordReceivedMessageId(messageId: messageId)
-        guard shouldTrack else {
-          ClixLogger.debug(
-            "Skipping duplicate \(NotificationEvent.pushNotificationReceived.rawValue) for messageId: \(messageId)"
-          )
-          return
-        }
-
-        do {
-          try await eventService.trackEvent(
-            name: NotificationEvent.pushNotificationReceived.rawValue,
-            messageId: messageId,
-            userJourneyId: userJourneyId,
-            userJourneyNodeId: userJourneyNodeId
-          )
-        } catch {
-          await recoverReceivedMessageId(messageId: messageId)
-          ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationReceived.rawValue)", error: error)
-        }
+    Task {
+      let shouldTrack = await recordReceivedMessageId(messageId: payload.messageId)
+      guard shouldTrack else {
+        ClixLogger.debug(
+          "Skipping duplicate \(NotificationEvent.pushNotificationReceived.rawValue) for messageId: \(payload.messageId)"
+        )
+        return
       }
-    } else {
-      ClixLogger.warn("messageId not found in userInfo")
+
+      do {
+        try await eventService.trackEvent(
+          name: NotificationEvent.pushNotificationReceived.rawValue,
+          messageId: payload.messageId,
+          userJourneyId: payload.userJourneyId,
+          userJourneyNodeId: payload.userJourneyNodeId
+        )
+      } catch {
+        await recoverReceivedMessageId(messageId: payload.messageId)
+        ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationReceived.rawValue)", error: error)
+      }
     }
   }
 
   func handlePushTapped(userInfo: [AnyHashable: Any]) {
-    if let messageId = getMessageId(userInfo: userInfo) {
-      let userJourneyId = getUserJourneyId(userInfo: userInfo)
-      let userJourneyNodeId = getUserJourneyNodeId(userInfo: userInfo)
-
-      Task {
-        do {
-          try await eventService.trackEvent(
-            name: NotificationEvent.pushNotificationTapped.rawValue,
-            messageId: messageId,
-            userJourneyId: userJourneyId,
-            userJourneyNodeId: userJourneyNodeId
-          )
-        } catch {
-          ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationTapped.rawValue)", error: error)
-        }
-      }
-    } else {
-      ClixLogger.warn("messageId not found in userInfo")
-    }
-  }
-
-  private func getMessageId(userInfo: [AnyHashable: Any]) -> String? {
-    if let clixData = parseClixPayload(from: userInfo),
-      let messageId = clixData["message_id"] as? String
-    {
-      return messageId
+    guard let payload = ClixPushNotificationPayload.decode(from: userInfo) else {
+      ClixLogger.warn("Failed to decode Clix payload for push tapped event")
+      return
     }
 
-    return nil
-  }
-
-  private func getUserJourneyId(userInfo: [AnyHashable: Any]) -> String? {
-    if let clixData = parseClixPayload(from: userInfo),
-      let userJourneyId = clixData["user_journey_id"] as? String
-    {
-      return userJourneyId
-    }
-
-    return nil
-  }
-
-  private func getUserJourneyNodeId(userInfo: [AnyHashable: Any]) -> String? {
-    if let clixData = parseClixPayload(from: userInfo),
-      let userJourneyNodeId = clixData["user_journey_node_id"] as? String
-    {
-      return userJourneyNodeId
-    }
-
-    return nil
-  }
-
-  func parseClixPayload(from userInfo: [AnyHashable: Any]) -> [String: Any]? {
-    guard let clixValue = userInfo["clix"] else { return nil }
-
-    if let clixData = clixValue as? [String: Any] {
-      return clixData
-    }
-
-    if let clixString = clixValue as? String {
+    Task {
       do {
-        if let data = clixString.data(using: .utf8),
-          let clixData = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        {
-          return clixData
-        }
+        try await eventService.trackEvent(
+          name: NotificationEvent.pushNotificationTapped.rawValue,
+          messageId: payload.messageId,
+          userJourneyId: payload.userJourneyId,
+          userJourneyNodeId: payload.userJourneyNodeId
+        )
       } catch {
-        ClixLogger.warn("Error parsing Clix payload", error: error)
+        ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationTapped.rawValue)", error: error)
       }
     }
-    return nil
   }
 
   func extractImageURL(from userInfo: [AnyHashable: Any]) -> String? {
-    if let clixData = parseClixPayload(from: userInfo),
-      let imageURL = clixData["image_url"] as? String
+    if let payload = ClixPushNotificationPayload.decode(from: userInfo),
+      let imageURL = payload.imageUrl
     {
       ClixLogger.info("Found image_url in Clix payload: \(imageURL)")
       return imageURL
