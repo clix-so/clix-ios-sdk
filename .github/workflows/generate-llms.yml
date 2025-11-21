@@ -1,4 +1,4 @@
-name: Generate CLIX iOS LLMS
+name: Generate llms.txt
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       llm_mode:
         description: 'Generation mode'
         type: choice
-        options: [changed, all]
+        options: [ changed, all ]
         default: changed
       base:
         description: 'Base ref/tag/sha for compare (optional)'
@@ -17,7 +17,7 @@ on:
         type: string
         required: false
   release:
-    types: [published]
+    types: [ published ]
 
 permissions:
   contents: write
@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   generate:
-    name: Generate LLMS
+    name: Generate llms.txt
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -140,9 +140,9 @@ jobs:
           script: |
             const defaultBranch = context.payload.repository.default_branch;
             const head = process.env.BRANCH;
-            const title = 'chore: update CLIX iOS LLMS index';
+            const title = 'chore: update CLIX iOS llms.txt index';
             const body = [
-              'This PR updates the generated CLIX iOS SDK LLMS index.',
+              'This PR updates the generated CLIX iOS SDK llms.txt index.',
               '',
               `- Triggered by: ${context.eventName}`,
               `- Range: ${process.env.COMPARE || '(none / full)'}`
