@@ -1,15 +1,14 @@
 import Foundation
 
-// swiftlint:disable identifier_name
 struct EventRequestBody: Codable {
-  let device_id: String
+  let deviceId: String
   let name: String
   let properties: [String: AnyCodable]  // expects ["custom_properties": ...]
 }
 
 struct EventResponseBody: Codable {
-  let user_id: String?
-  let device_id: String
+  let userId: String?
+  let deviceId: String
   let name: String
   let properties: [String: AnyCodable]
 }
@@ -17,7 +16,6 @@ struct EventResponseBody: Codable {
 struct EventsResponse: Codable {
   let events: [EventResponseBody]
 }
-// swiftlint:enable identifier_name
 
 class EventAPIService: ClixAPIClient {
   func trackEvent(
@@ -31,7 +29,7 @@ class EventAPIService: ClixAPIClient {
     async throws
   {
     let event = EventRequestBody(
-      device_id: deviceId,
+      deviceId: deviceId,
       name: name,
       properties: [
         "custom_properties": AnyCodable(properties ?? [:]), "message_id": AnyCodable(messageId),

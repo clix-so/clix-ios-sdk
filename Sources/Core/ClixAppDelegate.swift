@@ -13,7 +13,7 @@ open class ClixAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificati
   open var autoRequestPermission: Bool { false }
 
   @available(*, deprecated, renamed: "autoRequestPermission")
-  open var autoRequestAuthorizationOnLaunch: Bool { false }
+  open var autoRequestAuthorizationOnLaunch: Bool { autoRequestPermission }
 
   /// Whether the SDK should automatically handle landing URLs when a notification is tapped.
   /// Override to disable auto-handling and handle routing yourself.

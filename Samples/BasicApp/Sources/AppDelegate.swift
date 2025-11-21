@@ -6,6 +6,7 @@ import UserNotifications
 
 class AppDelegate: ClixAppDelegate {
   override var autoRequestPermission: Bool { true }
+  override var autoHandleLandingURL: Bool { true }
 
   override func application(
     _ application: UIApplication,
