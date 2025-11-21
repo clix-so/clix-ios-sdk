@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# CLIX iOS LLMS generator (outputs llms.txt)
+# llms.txt generator
 # Usage:
 #   ./scripts/generate_llms.sh --llm-all
 #   ./scripts/generate_llms.sh --base <old> --head <new> [--llm]

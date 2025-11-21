@@ -140,9 +140,9 @@ jobs:
           script: |
             const defaultBranch = context.payload.repository.default_branch;
             const head = process.env.BRANCH;
-            const title = 'chore: update CLIX iOS llms.txt index';
+            const title = 'chore: update llms.txt';
             const body = [
-              'This PR updates the generated CLIX iOS SDK llms.txt index.',
+              'This PR updates the generated SDK llms.txt file.',
               '',
               `- Triggered by: ${context.eventName}`,
               `- Range: ${process.env.COMPARE || '(none / full)'}`
