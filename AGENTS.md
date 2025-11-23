@@ -16,6 +16,7 @@ Clix iOS SDK is a Swift Package Manager library for managing push notifications,
 ## Development Commands
 
 ### Building
+
 ```bash
 # Build for iOS devices (arm64)
 make build
@@ -25,6 +26,7 @@ make clean
 ```
 
 ### Code Quality
+
 ```bash
 # Format code with swift-format
 make format
@@ -40,6 +42,7 @@ make all
 ```
 
 ### Testing
+
 ```bash
 # Run tests
 swift test
@@ -77,13 +80,32 @@ The SDK follows a singleton pattern with lazy service initialization:
 ### Service Layer (`Sources/Services/`)
 Services are lazily initialized during SDK initialization:
 
-- **`StorageService`**: UserDefaults wrapper for persistent storage (device ID, user properties, push tokens)
+- **`StorageService`**: Persistent storage abstraction layer using the Storage protocol
+  - Automatically migrates from UserDefaults to MMKV for improved performance
+  - Supports App Group migration from projectId-based to bundleId-based storage
+  - Uses `StorageInitializer` for intelligent storage selection and migration
 - **`TokenService`**: Manages device ID generation and persistence
 - **`DeviceService`**: User management (userId, userProperties) and device registration
 - **`EventService`**: Event tracking and analytics
 - **`NotificationService`**: Push notification payload processing and event tracking
 - **`ClixAPIClient`**: HTTP client wrapper with project authentication headers
 - **`DeviceAPIService`** / **`EventAPIService`**: API-specific services for device and event operations
+
+### Storage Layer (`Sources/Storage/`)
+The SDK uses an abstracted storage architecture with automatic migration:
+
+- **`Storage` Protocol**: Defines the storage interface for CRUD operations
+- **`MmkvStorage`**: High-performance storage implementation using Tencent MMKV (~30x faster than UserDefaults)
+  - Memory-mapped file I/O for optimal performance
+  - Multi-process support for app extensions
+  - Automatic persistence without manual sync
+- **`UserDefaultsStorage`**: Traditional UserDefaults-based storage (fallback/legacy)
+- **`StorageInitializer`**: Orchestrates storage selection and migration
+  - Automatically selects optimal storage (bundleId-based → projectId-based → default)
+  - Handles App Group migration transparently
+- **`StorageMigrator`**: Common migration utilities for data transfer
+- **`StorageTypeMigrator`**: Migrates data from UserDefaults to MMKV
+- **`AppGroupMigrator`**: Migrates data from projectId-based to bundleId-based App Groups
 
 ### Models (`Sources/Models/`)
 - **`ClixDevice`**: Device model (id, userId, pushToken, userProperties, permissions)
@@ -145,6 +167,57 @@ Located in `Samples/BasicApp/` directory:
 - Requires `ClixConfiguration.swift` update with project credentials
 - Requires `GoogleService-Info.plist` file
 
+## App Groups Configuration
+
+The SDK uses App Groups to share data between the main app and Notification Service Extension.
+
+**App Group Identifier Format**: `group.clix.{your-bundle-id}`
+
+### Setup Instructions
+
+1. **Main App Target**:
+   - Open Xcode → Select your app target
+   - Go to "Signing & Capabilities" tab
+   - Click "+ Capability" → Add "App Groups"
+   - Add new group: `group.clix.{your-bundle-id}`
+   - Example: If your bundle ID is `com.example.myapp`, use `group.clix.com.example.myapp`
+
+2. **Notification Service Extension Target**:
+   - Select your Notification Service Extension target
+   - Go to "Signing & Capabilities" tab
+   - Click "+ Capability" → Add "App Groups"
+   - Add the **same** group: `group.clix.{your-bundle-id}`
+
+**Important**: Both targets must use the **exact same** App Group identifier for proper data sharing.
+
+### Why App Groups?
+
+App Groups enable:
+- Shared storage between main app and extension
+- Device ID synchronization
+- Push token sharing
+- Notification settings consistency
+
+### Entitlements Files
+
+Your entitlements should look like this:
+
+**MainApp.entitlements**:
+```xml
+<key>com.apple.security.application-groups</key>
+<array>
+    <string>group.clix.{your-bundle-id}</string>
+</array>
+```
+
+**NotificationExtension.entitlements**:
+```xml
+<key>com.apple.security.application-groups</key>
+<array>
+    <string>group.clix.{your-bundle-id}</string>
+</array>
+```
+
 ## Important Notes
 
 - **Thread Safety**: All public APIs are thread-safe, services handle concurrent access
@@ -153,6 +226,7 @@ Located in `Samples/BasicApp/` directory:
 - **iOS Simulator**: Push notifications don't work on iOS 26 simulator, test on real devices
 - **Permission Status**: When `autoRequestPermission: false`, manually call `Clix.setPushPermissionGranted()` after requesting permissions
 - **Background Modes**: Enable "Remote notifications" in Background Modes capability for background push handling
+- **App Groups Required**: Configure App Groups in Xcode for proper SDK functionality (see "App Groups Configuration" section)
 
 ## Common Development Patterns
 
