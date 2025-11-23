@@ -93,8 +93,8 @@ public final class Clix {
   private init() {}
 
   // MARK: - Private Methods
-  private func setConfig(_ config: ClixConfig) {
-    self.storageService = StorageService(projectId: config.projectId)
+  private func setConfig(_ config: ClixConfig) async {
+    self.storageService = await StorageService(projectId: config.projectId)
     guard let storageService = self.storageService else {
       ClixLogger.error("Failed to initialize StorageService")
       return
@@ -151,7 +151,7 @@ public final class Clix {
   public static func initialize(config: ClixConfig) async {
     do {
       ClixLogger.setLogLevel(config.logLevel)
-      shared.setConfig(config)
+      await shared.setConfig(config)
       let deviceId = try await shared.get(\.deviceService).getCurrentDeviceId()
       let token = try await shared.get(\.tokenService).getCurrentToken()
       let device = await DeviceService.createDevice(deviceId: deviceId, token: token)
@@ -185,7 +185,7 @@ public final class Clix {
   }
 
   static func initialize(projectId: String) async throws {
-    let storageService = StorageService(projectId: projectId)
+    let storageService = await StorageService(projectId: projectId)
     let config = await storageService.getWithRetry(Self.configKey, fallbackValue: ClixConfig(projectId: projectId))
     await initialize(config: config)
   }
