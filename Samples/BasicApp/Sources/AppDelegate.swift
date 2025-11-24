@@ -17,10 +17,11 @@ class AppDelegate: ClixAppDelegate {
       config: ClixConfig(
         projectId: ClixConfiguration.projectId,
         apiKey: ClixConfiguration.apiKey,
-        logLevel: .debug
+        endpoint: ClixConfiguration.endpoint,
+        logLevel: ClixConfiguration.logLevel,
+        extraHeaders: ClixConfiguration.extraHeaders
       )
     )
-    AppState.shared.isClixInitialized = true
     updateClixValues()
 
     if let savedUserId = UserDefaults.standard.string(forKey: "user_id"), !savedUserId.isEmpty {
