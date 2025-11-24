@@ -18,20 +18,6 @@ on:
         required: false
   release:
     types: [ published ]
-  workflow_call:
-    inputs:
-      llm_mode:
-        description: 'Generation mode'
-        type: string
-        default: changed
-      base:
-        description: 'Base ref/tag/sha for compare (optional)'
-        type: string
-        default: ''
-      head:
-        description: 'Head ref/tag/sha for compare (optional)'
-        type: string
-        default: ''
 
 permissions:
   contents: write
