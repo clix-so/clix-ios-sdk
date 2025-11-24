@@ -63,6 +63,7 @@ jobs:
     # This job should never cause the overall release workflow to fail.
     continue-on-error: true
     uses: ./.github/workflows/generate-llms.yml
+    secrets: inherit
     with:
       llm_mode: changed
       base: ''
