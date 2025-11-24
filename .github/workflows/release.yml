@@ -56,3 +56,14 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: pod trunk push --allow-warnings Clix.podspec
+
+  generate-llms:
+    name: Generate llms.txt after release
+    needs: release
+    # This job should never cause the overall release workflow to fail.
+    continue-on-error: true
+    uses: ./.github/workflows/generate-llms.yml
+    with:
+      llm_mode: changed
+      base: ''
+      head: ''
