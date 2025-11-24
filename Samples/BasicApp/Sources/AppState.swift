@@ -4,7 +4,6 @@ import Combine
 class AppState: ObservableObject {
   static let shared = AppState()
 
-  @Published var isClixInitialized: Bool = false
   @Published var deviceId: String = "Loading..."
   @Published var fcmToken: String = "Loading..."
 
