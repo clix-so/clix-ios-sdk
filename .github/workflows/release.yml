@@ -56,3 +56,10 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: pod trunk push --allow-warnings Clix.podspec
+
+  generate-llms:
+    needs: release
+    uses: ./.github/workflows/generate-llms.yml
+    with:
+      llm_mode: changed
+    secrets: inherit

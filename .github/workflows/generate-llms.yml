@@ -16,6 +16,20 @@ on:
         description: 'Head ref/tag/sha for compare (optional)'
         type: string
         required: false
+  workflow_call:
+    inputs:
+      llm_mode:
+        description: 'Generation mode'
+        type: string
+        default: changed
+      base:
+        description: 'Base ref/tag/sha for compare (optional)'
+        type: string
+        required: false
+      head:
+        description: 'Head ref/tag/sha for compare (optional)'
+        type: string
+        required: false
   release:
     types: [ published ]
 
