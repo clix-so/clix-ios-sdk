@@ -74,7 +74,10 @@ public final class Clix {
   static let shared = Clix()
 
   /// Provides access to notification-related functionality in the Clix SDK
+  /// Not available in app extensions
+  #if !APPLICATION_EXTENSION_API_ONLY
   public static let Notification = ClixNotification.shared
+  #endif
 
   // MARK: - Storage Keys
   private static let configKey = "clix_config"
