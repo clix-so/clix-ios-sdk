@@ -449,8 +449,28 @@ if [[ -n "${BASE_REF:-}" && -n "${HEAD_REF:-}" ]]; then
     ' 2>/dev/null | sed '/^$/d; s#^./##' | sort -u >> "$CHANGED_SET"
   else
     git fetch --no-tags --depth=1 origin "${BASE_REF}" "${HEAD_REF}" >/dev/null 2>&1 || true
-    git diff --name-only "${BASE_REF}...${HEAD_REF}" 2>/dev/null | sed 's#^./##' | sort -u >> "$CHANGED_SET" || true
+    # First try the usual triple-dot diff (needs a merge-base).
+    echo "git diff --name-only ${BASE_REF}...${HEAD_REF} (local):" >&2
+    DIFF_TMP="${SECTION_TMP_DIR}/git_diff_paths.txt"
+    if git diff --name-only "${BASE_REF}...${HEAD_REF}" >"$DIFF_TMP" 2>/dev/null; then
+      :
+    else
+      # Fallback for unrelated histories (no merge base): use two-dot diff.
+      echo "git diff with '...' failed (likely no merge base); falling back to 'git diff ${BASE_REF} ${HEAD_REF}'" >&2
+      git diff --name-only "${BASE_REF}" "${HEAD_REF}" >"$DIFF_TMP" 2>/dev/null || true
+    fi
+    sed 's#^./##' "$DIFF_TMP" | sort -u | tee "$CHANGED_SET" >&2 >/dev/null
   fi
+fi
+
+# Debug: print the raw CHANGED_SET so we can see exactly which paths the compare
+# produced (before any filtering by path_is_target). This goes to stderr so it
+# doesn't pollute stdout / llms.txt contents.
+if [[ -s "$CHANGED_SET" ]]; then
+  echo "Changed paths from compare range (${BASE_REF:-?}...${HEAD_REF:-?}):" >&2
+  cat "$CHANGED_SET" >&2
+else
+  echo "Changed paths set is empty for compare range (${BASE_REF:-?}...${HEAD_REF:-?})" >&2
 fi
 
 # If we have an existing LLMS and a changed set, do TEXT-MODE update (surgical)
@@ -466,26 +486,15 @@ if [[ -f "$EXISTING_LLMS_PATH" && -s "$CHANGED_SET" ]]; then
     abs_file="${REPO_ROOT}/${rel}"
     raw_url="$(rel_to_url "$rel")"
     dir_rel="$(dirname "$rel")"; dir_rel="${dir_rel:-.}"
-    # If the line already exists and LLM is not requested, keep it verbatim
-    if grep -F -q "](${raw_url}):" "$OUTFILE" >/dev/null 2>&1; then
-      if [[ "$USE_LLM" != "true" ]]; then
-        continue
-      fi
-    fi
     if [[ -f "$abs_file" ]]; then
       title="$(titleize "$(basename "$abs_file")")"
-      # Default to existing description if present
-      existing_line="$(awk -F '\t' -v u="$raw_url" '$1==u{print $0; exit}' "$EXISTING_MAP" 2>/dev/null || true)"
-      desc="$(printf "%s" "$existing_line" | cut -f2- || true)"
-      if [[ -z "$desc" ]]; then
-        # Generate quickly (may call LLM if enabled)
-        f_desc="$(first_comment_line "$abs_file" || true)"
-        [[ -z "$f_desc" ]] && f_desc="Source file for ${title}"
-        if [[ "$USE_LLM" == "true" ]]; then
-          llm_desc="$(llm_describe_file "$rel" "$abs_file" "$raw_url" "$dir_rel" "$REPO_SLUG" || true)"
-          [[ -n "$llm_desc" ]] && f_desc="$llm_desc"
-        fi
-        desc="$f_desc"
+      # For changed files, ALWAYS recompute the description from current source
+      # (do not reuse the old llms.txt text), then optionally enrich via LLM.
+      desc="$(first_comment_line "$abs_file" || true)"
+      [[ -z "$desc" ]] && desc="Source file for ${title}"
+      if [[ "$USE_LLM" == "true" ]]; then
+        llm_desc="$(llm_describe_file "$rel" "$abs_file" "$raw_url" "$dir_rel" "$REPO_SLUG" || true)"
+        [[ -n "$llm_desc" ]] && desc="$llm_desc"
       fi
       newline="- [${title}](${raw_url}): ${desc}"
       replace_or_append_line "$rel" "$raw_url" "$newline" "$dir_rel"
@@ -494,8 +503,10 @@ if [[ -f "$EXISTING_LLMS_PATH" && -s "$CHANGED_SET" ]]; then
       remove_line_by_url "$raw_url"
     fi
   done < "$CHANGED_SET"
-  # Update header commit and timestamp
-  update_header_in_place "$HEAD_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  # Update header commit and timestamp unless explicitly preserved for local/manual runs
+  if [[ "${PRESERVE_LLMS_HEADER:-false}" != "true" ]]; then
+    update_header_in_place "$HEAD_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  fi
   # Finalize output
   if [[ -n "${OUTPUT_PATH}" && -n "${OUTPUT_SINK:-}" ]]; then
     mv "$OUTFILE" "$OUTPUT_PATH"
