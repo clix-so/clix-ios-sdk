@@ -30,6 +30,9 @@ on:
         description: 'Head ref/tag/sha for compare (optional)'
         type: string
         required: false
+    secrets:
+      OPENAI_API_KEY:
+        required: true
   release:
     types: [ published ]
 
