@@ -1,5 +1,5 @@
 import Clix
-import Firebase
+import FirebaseCore
 import FirebaseMessaging
 import UIKit
 import UserNotifications
