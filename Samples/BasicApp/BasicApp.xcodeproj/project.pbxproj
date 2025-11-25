@@ -213,7 +213,7 @@
 			mainGroup = 48F08EBC2DDF90CC003D26D4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../../clix-ios-sdk" */,
+				481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 48F08EC62DDF90CC003D26D4 /* Products */;
@@ -539,9 +539,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../../clix-ios-sdk" */ = {
+		481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../clix-ios-sdk";
+			relativePath = ../../;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -552,7 +552,7 @@
 		};
 		88C976B72DE7426200D410F8 /* Clix */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../../clix-ios-sdk" */;
+			package = 481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */;
 			productName = Clix;
 		};
 /* End XCSwiftPackageProductDependency section */

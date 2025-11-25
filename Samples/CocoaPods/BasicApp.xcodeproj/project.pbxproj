@@ -37,13 +37,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        48533B3D2DE436D80060D148 /* BasicApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BasicApp.entitlements; sourceTree = "<group>"; };
+        48533B3E2DE437020060D148 /* BasicApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "BasicApp-Info.plist"; sourceTree = "<group>"; };
+        48F08EC52DDF90CC003D26D4 /* BasicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BasicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClixNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D413950ED9C0DEF347BD28D /* Pods_ClixNotificationExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ClixNotificationExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		48533B3D2DE436D80060D148 /* BasicApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BasicApp.entitlements; sourceTree = "<group>"; };
-		48533B3E2DE437020060D148 /* BasicApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "BasicApp-Info.plist"; sourceTree = "<group>"; };
-		48F08EC52DDF90CC003D26D4 /* BasicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BasicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78132FB84E87E0EDE5CA0BA1 /* Pods-BasicApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BasicApp.release.xcconfig"; path = "Target Support Files/Pods-BasicApp/Pods-BasicApp.release.xcconfig"; sourceTree = "<group>"; };
 		8887552539D6353303A75397 /* Pods-ClixNotificationExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClixNotificationExtension.debug.xcconfig"; path = "Target Support Files/Pods-ClixNotificationExtension/Pods-ClixNotificationExtension.debug.xcconfig"; sourceTree = "<group>"; };
-		88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClixNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		89D8DB377ED2CC77B04F9355 /* Pods-BasicApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BasicApp.debug.xcconfig"; path = "Target Support Files/Pods-BasicApp/Pods-BasicApp.debug.xcconfig"; sourceTree = "<group>"; };
 		C994067871B4F399F2F0AD6A /* Pods_BasicApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BasicApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D970721AB5D7B0EFC402B1B2 /* Pods-ClixNotificationExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClixNotificationExtension.release.xcconfig"; path = "Target Support Files/Pods-ClixNotificationExtension/Pods-ClixNotificationExtension.release.xcconfig"; sourceTree = "<group>"; };
@@ -69,8 +69,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		489A1DF02DF6B864005D66F7 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
@@ -120,7 +118,6 @@
 				8887552539D6353303A75397 /* Pods-ClixNotificationExtension.debug.xcconfig */,
 				D970721AB5D7B0EFC402B1B2 /* Pods-ClixNotificationExtension.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -291,9 +288,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BasicApp/Pods-BasicApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BasicApp/Pods-BasicApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
