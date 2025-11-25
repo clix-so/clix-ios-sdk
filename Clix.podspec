@@ -17,4 +17,5 @@ Clix iOS SDK provides push notification and analytics capabilities for iOS apps.
   spec.dependency 'FirebaseCore', '>= 10.0.0', '< 20.0.0'
   spec.dependency 'FirebaseMessaging', '>= 10.0.0', '< 20.0.0'
   spec.dependency 'MMKV', '>= 1.3.0', '< 3.0.0'
+  spec.pod_target_xcconfig = { 'APPLICATION_EXTENSION_API_ONLY' => 'NO' }
 end
