@@ -1,28 +1,42 @@
 import Foundation
 import Clix
 
-enum ClixConfiguration {
-  static let config: ClixConfig = {
+public final class ClixConfiguration {
+  public static let shared = ClixConfiguration()
+
+  private init() {
+    self.cached = Self.load()
+  }
+
+  private static func load() -> [String: Any] {
     guard let url = Bundle.main.url(forResource: "ClixConfig", withExtension: "json"),
-          let data = try? Data(contentsOf: url),
-          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-      fatalError("Failed to load ClixConfig.json. Please ensure the file exists in Resources and contains valid JSON.")
+      let data = try? Data(contentsOf: url),
+      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else {
+      fatalError("Failed to load ClixConfig.json")
     }
+    return json
+  }
 
-    guard let projectId = json["projectId"] as? String,
-          let apiKey = json["apiKey"] as? String,
-          let endpoint = json["endpoint"] as? String else {
-      fatalError("ClixConfig.json is missing required fields: projectId, apiKey, or endpoint")
-    }
+  private let cached: [String: Any]
 
-    let extraHeaders = json["extraHeaders"] as? [String: String] ?? [:]
+  public lazy var projectId: String = cached["projectId"] as? String ?? ""
 
-    return ClixConfig(
+  public lazy var apiKey: String = cached["apiKey"] as? String ?? ""
+
+  public lazy var endpoint: String = cached["endpoint"] as? String ?? ""
+
+  public lazy var logLevel: ClixLogLevel = .debug
+
+  public lazy var extraHeaders: [String: String] = cached["extraHeaders"] as? [String: String] ?? [:]
+
+  public var config: ClixConfig {
+    ClixConfig(
       projectId: projectId,
       apiKey: apiKey,
       endpoint: endpoint,
-      logLevel: .debug,
+      logLevel: logLevel,
       extraHeaders: extraHeaders
     )
-  }()
+  }
 }

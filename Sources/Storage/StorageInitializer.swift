@@ -18,18 +18,17 @@ struct StorageInitializer {
     let bundleId = BundleIdentifier.main
     let appGroupConfig = determineAppGroup(projectId: projectId, bundleId: bundleId)
 
-    if appGroupConfig.type == .bundleId {
-      return await initializeWithBundleIdAppGroup(
-        projectId: projectId,
-        bundleId: bundleId,
-        config: appGroupConfig
-      )
-    } else {
+    guard appGroupConfig.type == .bundleId else {
       return await initializeWithProjectIdOrDefault(
         projectId: projectId,
         config: appGroupConfig
       )
     }
+    return await initializeWithBundleIdAppGroup(
+      projectId: projectId,
+      bundleId: bundleId,
+      config: appGroupConfig
+    )
   }
 
   private static func determineAppGroup(

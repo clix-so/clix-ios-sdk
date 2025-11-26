@@ -41,7 +41,8 @@ actor MmkvStorage: Storage {
         self.mmkv = defaultInstance
       } else {
         ClixLogger.error("Critical: All MMKV initialization failed, using temporary fallback")
-        self.mmkv = MMKV(mmapID: "clix.temporary.\(UUID().uuidString)", mode: .singleProcess)
+        self.mmkv =
+          MMKV(mmapID: "clix.temporary.\(UUID().uuidString)", mode: .singleProcess)
           ?? MMKV.default()!
       }
     }
