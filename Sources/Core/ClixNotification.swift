@@ -9,6 +9,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   public static let shared = ClixNotification()
 
   // MARK: - State
+  private var isInitialized = false
   private var pendingURL: URL?
   private var autoHandleLandingURL: Bool = true
   private var processedTappedEvents: Set<String> = []
@@ -28,24 +29,29 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
   deinit { NotificationCenter.default.removeObserver(self) }
 
   // MARK: - Configuration
-  /// Configure push notification handling with optional settings.
-  public func configure(
-    autoRequestPermission: Bool = false,
-    autoHandleLandingURL: Bool = true
-  ) {
+  internal func initialize() {
+    guard !isInitialized else { return }
+
     Messaging.messaging().delegate = self
     if UNUserNotificationCenter.current().delegate == nil {
       UNUserNotificationCenter.current().delegate = self
     }
 
-    self.autoHandleLandingURL = autoHandleLandingURL
-
     DispatchQueue.main.async {
       UIApplication.shared.registerForRemoteNotifications()
     }
 
-    if autoRequestPermission { requestPermission() }
     setupAppStateNotifications()
+    isInitialized = true
+  }
+
+  public func configure(
+    autoRequestPermission: Bool = false,
+    autoHandleLandingURL: Bool = true
+  ) {
+    self.autoHandleLandingURL = autoHandleLandingURL
+    initialize()
+    if autoRequestPermission { requestPermission() }
   }
 
   public func handleLaunchOptions(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {

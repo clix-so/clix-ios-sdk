@@ -73,8 +73,6 @@ public final class Clix {
   static let version = ClixVersion.current
   static let shared = Clix()
 
-  /// Provides access to notification-related functionality in the Clix SDK
-  /// Not available in app extensions
   #if !APPLICATION_EXTENSION_API_ONLY
     public static let Notification = ClixNotification.shared
   #endif
@@ -165,6 +163,10 @@ public final class Clix {
       try await shared.get(\.deviceService).upsertDevice(device)
 
       ClixLogger.debug("Clix SDK initialized with environment: \(environment.toString())")
+
+      #if !APPLICATION_EXTENSION_API_ONLY
+        ClixNotification.shared.initialize()
+      #endif
 
       await shared.initCoordinator.completeInitialization()
     } catch {
