@@ -35,9 +35,10 @@ import Foundation
 open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
   var contentHandler: ((UNNotificationContent) -> Void)?
   var bestAttemptContent: UNMutableNotificationContent?
+  private var initializationTask: Task<Void, Error>?
 
   open func register(projectId: String) {
-    Task {
+    initializationTask = Task {
       try await Clix.initialize(projectId: projectId)
       ClixLogger.info("Registered with project ID: \(projectId)")
     }
@@ -57,6 +58,11 @@ open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
 
     Task {
       do {
+        if let initTask = initializationTask {
+          ClixLogger.debug("Waiting for SDK initialization to complete...")
+          _ = try await initTask.value
+        }
+
         let notificationService = try await Clix.shared.getWithWait(\.notificationService)
         notificationService.handlePushReceived(userInfo: bestAttemptContent.userInfo)
         notificationService.processNotificationWithImage(
@@ -64,7 +70,7 @@ open class ClixNotificationServiceExtension: UNNotificationServiceExtension {
           completion: contentHandler
         )
       } catch {
-        ClixLogger.error("NotificationService not initialized: \(error)")
+        ClixLogger.error("Failed to process notification: \(error)")
         contentHandler(bestAttemptContent)
       }
     }
