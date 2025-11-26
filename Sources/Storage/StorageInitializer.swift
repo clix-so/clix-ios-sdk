@@ -139,9 +139,11 @@ struct StorageInitializer {
   ) async {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
 
-    guard FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: projectIdAppGroupId
-    ) != nil else {
+    guard
+      FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: projectIdAppGroupId
+      ) != nil
+    else {
       ClixLogger.debug("ProjectId-based App Group not available, skipping MMKV migration")
       return
     }
@@ -165,9 +167,11 @@ struct StorageInitializer {
   ) async {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
 
-    guard FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: projectIdAppGroupId
-    ) != nil else {
+    guard
+      FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: projectIdAppGroupId
+      ) != nil
+    else {
       ClixLogger.debug("ProjectId-based App Group not available, skipping UserDefaults migration")
       return
     }
