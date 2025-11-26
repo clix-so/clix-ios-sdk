@@ -190,8 +190,8 @@ struct StorageInitializer {
     var migratedCount = 0
 
     for key in StorageMigrator.knownStorageKeys {
-      if let data: Data = await source.get(key) {
-        await destination.set(key, data)
+      if let data = await source.getRawData(key) {
+        await destination.setRawData(key, data)
         await source.remove(key)
         migratedCount += 1
         ClixLogger.debug("Migrated and deleted key from \(sourceName): \(key)")

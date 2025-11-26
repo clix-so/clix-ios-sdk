@@ -34,6 +34,14 @@ actor UserDefaultsStorage: Storage {
     return try? decoder.decode(T.self, from: data)
   }
 
+  func getRawData(_ key: String) -> Data? {
+    userDefaults.data(forKey: key)
+  }
+
+  func setRawData(_ key: String, _ data: Data) {
+    userDefaults.set(data, forKey: key)
+  }
+
   func getWithRetry<T: Codable>(_ key: String, fallbackValue: T, retryDelayMs: UInt64 = 50) async -> T {
     var value: T? = get(key)
 
