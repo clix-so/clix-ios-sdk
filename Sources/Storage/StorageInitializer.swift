@@ -127,6 +127,10 @@ struct StorageInitializer {
       bundleIdAppGroupId: bundleIdAppGroupId,
       destinationStorage: destinationStorage
     )
+
+    await migrateFromStandardUserDefaults(
+      destinationStorage: destinationStorage
+    )
   }
 
   private static func migrateFromProjectIdMmkv(
@@ -134,6 +138,14 @@ struct StorageInitializer {
     destinationStorage: MmkvStorage
   ) async {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
+
+    guard FileManager.default.containerURL(
+      forSecurityApplicationGroupIdentifier: projectIdAppGroupId
+    ) != nil else {
+      ClixLogger.debug("ProjectId-based App Group not available, skipping MMKV migration")
+      return
+    }
+
     let projectIdStorage = MmkvStorage(projectId: projectId, appGroupId: projectIdAppGroupId)
 
     let migratedCount = await migrateAndDeleteFromSource(
@@ -152,6 +164,14 @@ struct StorageInitializer {
     destinationStorage: MmkvStorage
   ) async {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
+
+    guard FileManager.default.containerURL(
+      forSecurityApplicationGroupIdentifier: projectIdAppGroupId
+    ) != nil else {
+      ClixLogger.debug("ProjectId-based App Group not available, skipping UserDefaults migration")
+      return
+    }
+
     let projectIdUserDefaults = UserDefaultsStorage(appGroupId: projectIdAppGroupId)
 
     let migratedCount = await migrateAndDeleteFromSource(
@@ -182,6 +202,22 @@ struct StorageInitializer {
     }
   }
 
+  private static func migrateFromStandardUserDefaults(
+    destinationStorage: MmkvStorage
+  ) async {
+    let standardUserDefaults = UserDefaultsStorage(appGroupId: nil)
+
+    let migratedCount = await migrateAndDeleteFromSource(
+      from: standardUserDefaults,
+      to: destinationStorage,
+      sourceName: "standard UserDefaults"
+    )
+
+    if migratedCount > 0 {
+      ClixLogger.info("Migrated \(migratedCount) keys from standard UserDefaults")
+    }
+  }
+
   private static func migrateAndDeleteFromSource(
     from source: any Storage,
     to destination: any Storage,
@@ -189,18 +225,24 @@ struct StorageInitializer {
   ) async -> Int {
     var migratedCount = 0
 
+    ClixLogger.debug("Attempting migration from \(sourceName)...")
     for key in StorageMigrator.knownStorageKeys {
       if let data = await source.getRawData(key) {
         await destination.setRawData(key, data)
         await source.remove(key)
         migratedCount += 1
-        ClixLogger.debug("Migrated and deleted key from \(sourceName): \(key)")
+        ClixLogger.debug("Migrated and deleted key from \(sourceName): \(key) (\(data.count) bytes)")
+      } else {
+        ClixLogger.debug("No data found for key in \(sourceName): \(key)")
       }
     }
 
     if migratedCount > 0 {
       await source.synchronize()
       await destination.synchronize()
+      ClixLogger.info("Successfully migrated \(migratedCount) keys from \(sourceName)")
+    } else {
+      ClixLogger.debug("No data to migrate from \(sourceName)")
     }
 
     return migratedCount
