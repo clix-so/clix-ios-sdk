@@ -15,29 +15,34 @@ actor MmkvStorage: Storage {
       )?.path
     }
 
+    let hasAppGroup = appGroupDir != nil
+    let mmkvMode: MMKVMode = hasAppGroup ? .multiProcess : .singleProcess
+
     if let appGroupDir = appGroupDir, let appGroupId = appGroupId {
       ClixLogger.debug("Initializing MMKV with app group: \(appGroupId)")
       MMKV.initialize(rootDir: nil, groupDir: appGroupDir, logLevel: .info)
     } else {
-      ClixLogger.debug("Initializing MMKV with default directory")
+      ClixLogger.debug("Initializing MMKV with default directory (singleProcess mode)")
       MMKV.initialize(rootDir: nil)
     }
 
-    if let instance = MMKV(mmapID: mmapID, mode: .multiProcess) {
-      ClixLogger.debug("Successfully initialized MMKV instance: \(mmapID)")
+    if let instance = MMKV(mmapID: mmapID, mode: mmkvMode) {
+      ClixLogger.debug("Successfully initialized MMKV instance: \(mmapID) (mode: \(mmkvMode.rawValue))")
       self.mmkv = instance
     } else {
-      ClixLogger.error("Failed to initialize MMKV instance with mmapID: \(mmapID), attempting fallback with different mmapID")
+      ClixLogger.error("Failed to initialize MMKV with mmapID: \(mmapID), attempting fallback")
+
       let fallbackMmapID = "clix.fallback.\(projectId)"
       if let fallbackInstance = MMKV(mmapID: fallbackMmapID, mode: .singleProcess) {
         ClixLogger.warn("Using fallback MMKV instance: \(fallbackMmapID)")
         self.mmkv = fallbackInstance
       } else if let defaultInstance = MMKV.default() {
-        ClixLogger.error("Using MMKV.default() - data may mix with other apps")
+        ClixLogger.error("Using MMKV.default() - data isolation may be compromised")
         self.mmkv = defaultInstance
       } else {
-        ClixLogger.error("Critical: All MMKV initialization attempts failed")
-        fatalError("Unable to initialize any MMKV storage. Please check MMKV library installation.")
+        ClixLogger.error("Critical: All MMKV initialization failed, using temporary fallback")
+        self.mmkv = MMKV(mmapID: "clix.temporary.\(UUID().uuidString)", mode: .singleProcess)
+          ?? MMKV.default()!
       }
     }
   }

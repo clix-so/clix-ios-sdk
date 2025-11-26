@@ -137,7 +137,7 @@ struct StorageInitializer {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
     let projectIdStorage = MmkvStorage(projectId: projectId, appGroupId: projectIdAppGroupId)
 
-    let migratedCount = await migrateDataBetweenStorages(
+    let migratedCount = await migrateAndDeleteFromSource(
       from: projectIdStorage,
       to: destinationStorage,
       sourceName: "projectId-based MMKV"
@@ -155,7 +155,7 @@ struct StorageInitializer {
     let projectIdAppGroupId = BundleIdentifier.projectIdBasedAppGroupId(projectId: projectId)
     let projectIdUserDefaults = UserDefaultsStorage(appGroupId: projectIdAppGroupId)
 
-    let migratedCount = await migrateDataBetweenStorages(
+    let migratedCount = await migrateAndDeleteFromSource(
       from: projectIdUserDefaults,
       to: destinationStorage,
       sourceName: "projectId-based UserDefaults"
@@ -172,7 +172,7 @@ struct StorageInitializer {
   ) async {
     let bundleIdUserDefaults = UserDefaultsStorage(appGroupId: bundleIdAppGroupId)
 
-    let migratedCount = await migrateDataBetweenStorages(
+    let migratedCount = await migrateAndDeleteFromSource(
       from: bundleIdUserDefaults,
       to: destinationStorage,
       sourceName: "bundleId-based UserDefaults"
@@ -183,7 +183,7 @@ struct StorageInitializer {
     }
   }
 
-  private static func migrateDataBetweenStorages(
+  private static func migrateAndDeleteFromSource(
     from source: any Storage,
     to destination: any Storage,
     sourceName: String
@@ -193,8 +193,9 @@ struct StorageInitializer {
     for key in StorageMigrator.knownStorageKeys {
       if let data: Data = await source.get(key) {
         await destination.set(key, data)
+        await source.remove(key)
         migratedCount += 1
-        ClixLogger.debug("Migrated key from \(sourceName): \(key)")
+        ClixLogger.debug("Migrated and deleted key from \(sourceName): \(key)")
       }
     }
 
