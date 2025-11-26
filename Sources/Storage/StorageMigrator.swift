@@ -12,7 +12,7 @@ struct StorageMigrator {
     "clix_current_push_token",
     "clix_push_tokens",
     "clix_notification_settings",
-    "clix_last_received_message_id"
+    "clix_last_received_message_id",
   ]
 
   static func migrateKeys<Source, Destination>(

@@ -7,7 +7,8 @@ actor UserDefaultsStorage: Storage {
 
   init(appGroupId: String?) {
     if let appGroupId = appGroupId,
-       let sharedDefaults = UserDefaults(suiteName: appGroupId) {
+      let sharedDefaults = UserDefaults(suiteName: appGroupId)
+    {
       ClixLogger.debug("Initialized UserDefaults with app group: \(appGroupId)")
       self.userDefaults = sharedDefaults
     } else {

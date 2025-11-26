@@ -33,11 +33,11 @@ struct ContentView: View {
         VStack(spacing: 0) {
           InfoTextRow(
             label: NSLocalizedString("project_id", comment: ""),
-            value: ClixConfiguration.projectId
+            value: ClixConfiguration.shared.projectId
           )
           InfoTextRow(
             label: NSLocalizedString("api_key", comment: ""),
-            value: ClixConfiguration.apiKey
+            value: ClixConfiguration.shared.apiKey
           )
           InfoTextRow(
             label: NSLocalizedString("device_id", comment: ""),

@@ -44,6 +44,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4841A3192ED6D8E90012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ClixConfig.json,
+			);
+			target = 88C976A72DE72BA500D410F8 /* ClixNotificationExtension */;
+		};
 		488227102DFA764A0072376D /* Exceptions for "Sources" folder in "ClixNotificationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -63,6 +70,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		489A1DF02DF6B864005D66F7 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4841A3192ED6D8E90012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */,
+			);
 			path = Resources;
 			sourceTree = "<group>";
 		};

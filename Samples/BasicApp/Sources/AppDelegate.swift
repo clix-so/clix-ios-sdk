@@ -13,7 +13,7 @@ class AppDelegate: ClixAppDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
-    Clix.initialize(config: ClixConfiguration.config)
+    Clix.initialize(config: ClixConfiguration.shared.config)
     updateClixValues()
 
     if let savedUserId = UserDefaults.standard.string(forKey: "user_id"), !savedUserId.isEmpty {
