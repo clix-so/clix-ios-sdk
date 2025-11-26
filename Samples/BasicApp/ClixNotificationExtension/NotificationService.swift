@@ -6,7 +6,7 @@ import UserNotifications
 class NotificationService: ClixNotificationServiceExtension {
   override init() {
     super.init()
-    register(projectId: ClixConfiguration.projectId)
+    register(projectId: ClixConfiguration.config.projectId)
 
     NSLog("[NotificationService] Notification service initialized")
   }
