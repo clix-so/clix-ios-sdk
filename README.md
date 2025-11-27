@@ -600,6 +600,25 @@ If push notifications aren't working, verify:
 7. ✅ Testing on a real device (push notifications don't work on iOS 26 simulator)
 8. ✅ Debug logs show "FCM registration token received" message
 
+### iOS 26 Simulator Known Issue
+
+⚠️ **APNs Token Registration Not Working on iOS 26 Simulator**
+
+The `didRegisterForRemoteNotificationsWithDeviceToken` method is not called on iOS 26 simulators (particularly iPhone 17 + iOS 26 combination), preventing push token collection during development. This is a confirmed Apple simulator bug affecting multiple push notification SDKs including Firebase and OneSignal.
+
+**Status**:
+- This issue persists as of iOS 26.1/Xcode 26.1.1
+- Multiple SDK providers have confirmed this as an Apple simulator-specific limitation
+- Real iOS 26 devices work correctly
+
+**Workaround**: Always test push notification features on real physical devices. This simulator limitation does not affect production apps.
+
+**Related Community Reports**:
+- [Firebase iOS SDK #15327](https://github.com/firebase/firebase-ios-sdk/issues/15327) - Messaging.messaging().token returns error in iOS 26 Simulator
+- [Firebase iOS SDK #15315](https://github.com/firebase/firebase-ios-sdk/issues/15315) - didRegisterForRemoteNotificationsWithDeviceToken not called on iPhone 17 + iOS 26 simulator
+
+**Note for UISceneDelegate Users**: If migrating to UISceneDelegate, AppDelegate must still be maintained for remote notification handling as there's no scene delegate equivalent for APNs token registration methods.
+
 ### Getting Help
 
 If you continue to experience issues:

@@ -113,16 +113,21 @@ class AppDelegate: ClixAppDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Configure Firebase BEFORE calling super
+    // IMPORTANT: Configure Firebase BEFORE calling super
     FirebaseApp.configure()
 
-    // Initialize Clix SDK with config loaded from JSON
+    // Initialize Clix SDK - this automatically sets up notifications
     Clix.initialize(config: ClixConfiguration.config)
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
 ```
+
+**Key Points:**
+- `FirebaseApp.configure()` **must** be called before `super.application()` to ensure FCM tokens are collected
+- `Clix.initialize()` automatically initializes notification handling - no additional setup needed
+- `ClixAppDelegate` provides automatic notification delegate setup and event tracking
 
 ### Configuration Loading
 
@@ -189,8 +194,10 @@ class NotificationService: ClixNotificationServiceExtension {
 ### Firebase token not collected
 
 - Verify `GoogleService-Info.plist` is in `Resources/` directory
-- Ensure `FirebaseApp.configure()` is called BEFORE `super.application()` in AppDelegate
+- **Critical:** Ensure `FirebaseApp.configure()` is called BEFORE `super.application()` in AppDelegate
+- Verify `Clix.initialize()` is called before `super.application()`
 - Check that APNs is properly configured in Firebase Console
+- Review device logs for initialization sequence
 
 ### Notifications not appearing
 
