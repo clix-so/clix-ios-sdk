@@ -51,6 +51,7 @@ jobs:
           tag: ${{ github.event.inputs.version }}
           name: ${{ github.event.inputs.version }}
           body: ${{ steps.read_changelog.outputs.changes }}
+          commit: ${{ github.sha }}
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
