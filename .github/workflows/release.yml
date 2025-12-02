@@ -62,4 +62,5 @@ jobs:
     uses: ./.github/workflows/generate-llms.yml
     with:
       llm_mode: changed
+      head: ${{ github.sha }}
     secrets: inherit

@@ -150,6 +150,63 @@ jobs:
           git commit -m "chore: update llms index [skip ci]"
           git push origin "HEAD:${BRANCH}"
 
+      - name: Validate llms.txt links
+        if: env.NO_CHANGES != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f "llms.txt" ]]; then
+            echo "llms.txt not found; skipping link check." >&2
+            echo "LLMS_LINK_STATUS=llms.txt not found; link check skipped" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          if ! command -v curl >/dev/null 2>&1; then
+            echo "curl not available; skipping link check." >&2
+            echo "LLMS_LINK_STATUS=curl missing; link check skipped" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          PASSED=0
+          FAILED=0
+          FAIL_LINES=""
+
+          while IFS= read -r line; do
+            case "$line" in
+              -*\[*\]\(http*://*\)*)
+                url="$(printf '%s\n' "$line" | sed -nE 's/.*\]\((https?:[^)]*)\).*/\1/p')"
+                title="$(printf '%s\n' "$line" | sed -nE 's/^[[:space:]]*-[[:space:]]*\[([^]]+)\].*/\1/p')"
+                if [[ -n "$url" ]]; then
+                  code="$(curl -o /dev/null -s -w "%{http_code}" --max-time 10 "$url" || echo "000")"
+                  if [[ "$code" =~ ^2[0-9][0-9]$ ]]; then
+                    PASSED=$((PASSED + 1))
+                  else
+                    FAILED=$((FAILED + 1))
+                    FAIL_LINES="${FAIL_LINES}"$'\n'"  - ${title} -> ${url} (HTTP ${code})"
+                  fi
+                fi
+                ;;
+            esac
+          done < llms.txt
+
+          STATUS="Link check: ${PASSED} OK, ${FAILED} failed"
+          echo "LLMS_LINK_STATUS=${STATUS}" >> "$GITHUB_ENV"
+
+          if (( FAILED > 0 )); then
+            {
+              echo "LLMS_LINK_DETAILS<<'EOF'"
+              printf '%s\n' "${FAIL_LINES#"$'\n'"}"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+          else
+            echo "LLMS_LINK_DETAILS=" >> "$GITHUB_ENV"
+          fi
+
+          echo "${STATUS}"
+          if (( FAILED > 0 )); then
+            echo "Some llms.txt links failed; see PR description for details." >&2
+          fi
+
       - name: Create pull request
         if: env.NO_CHANGES != 'true'
         uses: actions/github-script@v7
@@ -158,12 +215,21 @@ jobs:
             const defaultBranch = context.payload.repository.default_branch;
             const head = process.env.BRANCH;
             const title = 'chore: update llms.txt';
-            const body = [
+            const linkStatus = process.env.LLMS_LINK_STATUS || 'not run';
+            const linkDetails = process.env.LLMS_LINK_DETAILS || '';
+            const bodyLines = [
               'This PR updates the generated SDK llms.txt file.',
               '',
               `- Triggered by: ${context.eventName}`,
-              `- Range: ${process.env.COMPARE || '(none / full)'}`
-            ].join('\n');
+              `- Range: ${process.env.COMPARE || '(none / full)'}`,
+              `- Link check: ${linkStatus}`
+            ];
+            if (linkDetails.trim().length > 0) {
+              bodyLines.push('');
+              bodyLines.push('Link check details:');
+              bodyLines.push(linkDetails);
+            }
+            const body = bodyLines.join('\n');
             try {
               const { data: pr } = await github.rest.pulls.create({
                 owner: context.repo.owner,
