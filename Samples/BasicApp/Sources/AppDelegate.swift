@@ -1,5 +1,5 @@
 import Clix
-import Firebase
+import FirebaseCore
 import FirebaseMessaging
 import UIKit
 import UserNotifications
@@ -13,14 +13,7 @@ class AppDelegate: ClixAppDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
-    Clix.initialize(
-      config: ClixConfig(
-        projectId: ClixConfiguration.projectId,
-        apiKey: ClixConfiguration.apiKey,
-        logLevel: .debug
-      )
-    )
-    AppState.shared.isClixInitialized = true
+    Clix.initialize(config: ClixConfiguration.shared.config)
     updateClixValues()
 
     if let savedUserId = UserDefaults.standard.string(forKey: "user_id"), !savedUserId.isEmpty {
@@ -62,13 +55,7 @@ class AppDelegate: ClixAppDelegate {
     updateClixValues()
   }
 
-  override func application(
-    _ application: UIApplication,
-    didFailToRegisterForRemoteNotificationsWithError error: Error
-  ) {
-    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
-    print("❌ Failed to register for remote notifications: \(error)")
-  }
+  
 
   private func updateClixValues() {
     Task {

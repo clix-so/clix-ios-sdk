@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		481BED572DDF9B7E00C3637B /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 481BED562DDF9B7E00C3637B /* Clix */; };
+		3E8211B2AF2E16DAB073913F /* Pods_ClixNotificationExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D413950ED9C0DEF347BD28D /* Pods_ClixNotificationExtension.framework */; };
 		88C976AF2DE72BA500D410F8 /* ClixNotificationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		88C976B82DE7426200D410F8 /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 88C976B72DE7426200D410F8 /* Clix */; };
+		EF315F11D159F3D6B647440B /* Pods_BasicApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C994067871B4F399F2F0AD6A /* Pods_BasicApp.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,14 +37,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0D413950ED9C0DEF347BD28D /* Pods_ClixNotificationExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ClixNotificationExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		48533B3D2DE436D80060D148 /* BasicApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BasicApp.entitlements; sourceTree = "<group>"; };
 		48533B3E2DE437020060D148 /* BasicApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "BasicApp-Info.plist"; sourceTree = "<group>"; };
 		48F08EC52DDF90CC003D26D4 /* BasicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BasicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		78132FB84E87E0EDE5CA0BA1 /* Pods-BasicApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BasicApp.release.xcconfig"; path = "Target Support Files/Pods-BasicApp/Pods-BasicApp.release.xcconfig"; sourceTree = "<group>"; };
+		8887552539D6353303A75397 /* Pods-ClixNotificationExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClixNotificationExtension.debug.xcconfig"; path = "Target Support Files/Pods-ClixNotificationExtension/Pods-ClixNotificationExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClixNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		89D8DB377ED2CC77B04F9355 /* Pods-BasicApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BasicApp.debug.xcconfig"; path = "Target Support Files/Pods-BasicApp/Pods-BasicApp.debug.xcconfig"; sourceTree = "<group>"; };
+		C994067871B4F399F2F0AD6A /* Pods_BasicApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BasicApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D970721AB5D7B0EFC402B1B2 /* Pods-ClixNotificationExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClixNotificationExtension.release.xcconfig"; path = "Target Support Files/Pods-ClixNotificationExtension/Pods-ClixNotificationExtension.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4841A3192ED6D8E90012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */ = {
+		4841A3372ED6D97E0012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ClixConfig.json,
@@ -71,7 +77,7 @@
 		489A1DF02DF6B864005D66F7 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4841A3192ED6D8E90012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */,
+				4841A3372ED6D97E0012881F /* Exceptions for "Resources" folder in "ClixNotificationExtension" target */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -99,7 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				481BED572DDF9B7E00C3637B /* Clix in Frameworks */,
+				EF315F11D159F3D6B647440B /* Pods_BasicApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,13 +113,24 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				88C976B82DE7426200D410F8 /* Clix in Frameworks */,
+				3E8211B2AF2E16DAB073913F /* Pods_ClixNotificationExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3D800D0813EC851604811B44 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				89D8DB377ED2CC77B04F9355 /* Pods-BasicApp.debug.xcconfig */,
+				78132FB84E87E0EDE5CA0BA1 /* Pods-BasicApp.release.xcconfig */,
+				8887552539D6353303A75397 /* Pods-ClixNotificationExtension.debug.xcconfig */,
+				D970721AB5D7B0EFC402B1B2 /* Pods-ClixNotificationExtension.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		48F08EBC2DDF90CC003D26D4 = {
 			isa = PBXGroup;
 			children = (
@@ -124,6 +141,7 @@
 				88C976A92DE72BA500D410F8 /* ClixNotificationExtension */,
 				48F08EC62DDF90CC003D26D4 /* Products */,
 				88C976B62DE7426200D410F8 /* Frameworks */,
+				3D800D0813EC851604811B44 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -139,6 +157,8 @@
 		88C976B62DE7426200D410F8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C994067871B4F399F2F0AD6A /* Pods_BasicApp.framework */,
+				0D413950ED9C0DEF347BD28D /* Pods_ClixNotificationExtension.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -150,10 +170,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 48F08ED02DDF90CD003D26D4 /* Build configuration list for PBXNativeTarget "BasicApp" */;
 			buildPhases = (
+				D7E7B40C36BD830119581329 /* [CP] Check Pods Manifest.lock */,
 				48F08EC12DDF90CC003D26D4 /* Sources */,
 				48F08EC22DDF90CC003D26D4 /* Frameworks */,
 				48F08EC32DDF90CC003D26D4 /* Resources */,
 				88C976B02DE72BA500D410F8 /* Embed Foundation Extensions */,
+				782B2C6A108BF52F95AD69C1 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -165,9 +187,6 @@
 				48F08EC72DDF90CC003D26D4 /* Sources */,
 			);
 			name = BasicApp;
-			packageProductDependencies = (
-				481BED562DDF9B7E00C3637B /* Clix */,
-			);
 			productName = BasicApp;
 			productReference = 48F08EC52DDF90CC003D26D4 /* BasicApp.app */;
 			productType = "com.apple.product-type.application";
@@ -176,6 +195,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 88C976B42DE72BA500D410F8 /* Build configuration list for PBXNativeTarget "ClixNotificationExtension" */;
 			buildPhases = (
+				625B779E84ADCAF044E60879 /* [CP] Check Pods Manifest.lock */,
 				88C976A42DE72BA500D410F8 /* Sources */,
 				88C976A52DE72BA500D410F8 /* Frameworks */,
 				88C976A62DE72BA500D410F8 /* Resources */,
@@ -188,9 +208,6 @@
 				88C976A92DE72BA500D410F8 /* ClixNotificationExtension */,
 			);
 			name = ClixNotificationExtension;
-			packageProductDependencies = (
-				88C976B72DE7426200D410F8 /* Clix */,
-			);
 			productName = ClixNotificationExtension;
 			productReference = 88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -222,9 +239,6 @@
 			);
 			mainGroup = 48F08EBC2DDF90CC003D26D4;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 48F08EC62DDF90CC003D26D4 /* Products */;
 			projectDirPath = "";
@@ -252,6 +266,74 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		625B779E84ADCAF044E60879 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ClixNotificationExtension-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		782B2C6A108BF52F95AD69C1 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BasicApp/Pods-BasicApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BasicApp/Pods-BasicApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BasicApp/Pods-BasicApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D7E7B40C36BD830119581329 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-BasicApp-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		48F08EC12DDF90CC003D26D4 /* Sources */ = {
@@ -317,7 +399,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -381,7 +463,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -402,6 +484,7 @@
 		};
 		48F08ED12DDF90CD003D26D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 89D8DB377ED2CC77B04F9355 /* Pods-BasicApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -434,6 +517,7 @@
 		};
 		48F08ED22DDF90CD003D26D4 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 78132FB84E87E0EDE5CA0BA1 /* Pods-BasicApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -466,6 +550,7 @@
 		};
 		88C976B12DE72BA500D410F8 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8887552539D6353303A75397 /* Pods-ClixNotificationExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ClixNotificationExtension/ClixNotificationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -492,6 +577,7 @@
 		};
 		88C976B22DE72BA500D410F8 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D970721AB5D7B0EFC402B1B2 /* Pods-ClixNotificationExtension.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ClixNotificationExtension/ClixNotificationExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -547,25 +633,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		481BED562DDF9B7E00C3637B /* Clix */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Clix;
-		};
-		88C976B72DE7426200D410F8 /* Clix */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 481BED552DDF9B7E00C3637B /* XCLocalSwiftPackageReference "../../" */;
-			productName = Clix;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 48F08EBD2DDF90CC003D26D4 /* Project object */;
 }
