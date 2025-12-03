@@ -194,7 +194,8 @@ jobs:
 
           if (( FAILED > 0 )); then
             {
-              echo "LLMS_LINK_DETAILS<<'EOF'"
+              # Use unquoted EOF delimiter to satisfy GitHub Actions file command parser
+              echo "LLMS_LINK_DETAILS<<EOF"
               printf '%s\n' "${FAIL_LINES#"$'\n'"}"
               echo "EOF"
             } >> "$GITHUB_ENV"
