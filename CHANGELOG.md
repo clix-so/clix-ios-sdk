@@ -4,14 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0-beta.2] - 2025-11-26
+## [1.6.0] - 2025-12-03
 
 ### Added
 
 - **Storage**
-  - Added automatic migration from standard UserDefaults to MMKV with automatic cleanup
+  - Integrated MMKV for high-performance storage (~30x faster than UserDefaults)
+  - Added automatic migration from UserDefaults to MMKV with automatic cleanup
+  - Added App Group migration from projectId-based to bundleId-based
 
 ### Changed
+
+- **Storage**
+  - Refactored storage layer with `Storage` protocol abstraction
+  - Updated App Group identifier format: `group.clix.{projectId}` → `group.clix.{bundleId}`
 
 - **App Extension Compatibility**
   - `Clix.Notification` is now unavailable in app extensions (use SDK initialization directly in extensions)
@@ -23,21 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Storage**
   - Improved storage migration and initialization stability to prevent crashes
-
-## [1.6.0-beta.1] - 2025-11-24
-
-### Added
-
-- **Storage**
-  - Integrated MMKV for high-performance storage (~30x faster than UserDefaults)
-  - Added automatic migration from UserDefaults to MMKV
-  - Added App Group migration from projectId-based to bundleId-based
-
-### Changed
-
-- **Storage**
-  - Refactored storage layer with `Storage` protocol abstraction
-  - Updated App Group identifier format: `group.clix.{projectId}` → `group.clix.{bundleId}`
 
 ## [1.5.3] - 2025-11-20
 

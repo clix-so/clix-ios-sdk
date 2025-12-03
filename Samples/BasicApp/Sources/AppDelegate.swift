@@ -55,13 +55,7 @@ class AppDelegate: ClixAppDelegate {
     updateClixValues()
   }
 
-  override func application(
-    _ application: UIApplication,
-    didFailToRegisterForRemoteNotificationsWithError error: Error
-  ) {
-    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
-    print("❌ Failed to register for remote notifications: \(error)")
-  }
+  
 
   private func updateClixValues() {
     Task {
