@@ -67,7 +67,6 @@ struct ContentView: View {
             Button(
               action: {
                 if !userIdInput.isEmpty {
-                  // Save user_id to UserDefaults
                   UserDefaults.standard.set(userIdInput, forKey: "user_id")
                   Clix.setUserId(userIdInput)
                   alertMessage = "User ID set!"
@@ -128,7 +127,6 @@ struct ContentView: View {
                 alertMessage = "User property '\(userPropertyKeyInput): \(userPropertyValueInput)' set successfully"
                 showAlert = true
 
-                // Clear inputs after successful set
                 userPropertyKeyInput = ""
                 userPropertyValueInput = ""
               },
@@ -220,6 +218,12 @@ struct ContentView: View {
             .background(AppTheme.buttonBackground)
             .cornerRadius(12)
           }
+
+          Spacer().frame(height: 32)
+
+          if #available(iOS 16.2, *) {
+            LiveActivitySection()
+          }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 32)
@@ -232,6 +236,59 @@ struct ContentView: View {
     .background(AppTheme.background.ignoresSafeArea())
     .alert(isPresented: $showAlert) {
       Alert(title: Text(alertMessage))
+    }
+  }
+}
+
+@available(iOS 16.2, *)
+struct LiveActivitySection: View {
+  @ObservedObject private var manager = LiveActivityManager.shared
+  @State private var deliveryStatus: String = "Preparing"
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("Live Activity")
+        .font(.headline)
+        .foregroundColor(AppTheme.text)
+
+      if !manager.isActive {
+        Button(action: { manager.start() }) {
+          Text("Start Live Activity")
+            .fontWeight(.bold)
+            .foregroundColor(AppTheme.buttonText)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+        }
+        .background(AppTheme.buttonBackground)
+        .cornerRadius(12)
+      } else {
+        Picker("Status", selection: $deliveryStatus) {
+          Text("Preparing").tag("Preparing")
+          Text("On the way").tag("On the way")
+          Text("Delivered").tag("Delivered")
+        }
+        .pickerStyle(SegmentedPickerStyle())
+
+        Button(action: { manager.update(status: deliveryStatus) }) {
+          Text("Update Status")
+            .fontWeight(.bold)
+            .foregroundColor(AppTheme.buttonText)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+        }
+        .background(AppTheme.buttonBackground)
+        .cornerRadius(12)
+
+        Button(action: { manager.end() }) {
+          Text("End Live Activity")
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+        }
+        .background(Color.red)
+        .cornerRadius(12)
+      }
     }
   }
 }
