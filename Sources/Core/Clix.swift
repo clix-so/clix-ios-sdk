@@ -75,6 +75,9 @@ public final class Clix {
 
   #if !APPLICATION_EXTENSION_API_ONLY
     public static let Notification = ClixNotification.shared
+
+    @available(iOS 16.1, *)
+    public static let LiveActivity = ClixLiveActivity.shared
   #endif
 
   // MARK: - Storage Keys
