@@ -1,7 +1,7 @@
 import Foundation
 
 class LiveActivityAPIService: ClixAPIClient {
-  func setPushToStartToken(
+  func registerLiveActivityStartToken(
     deviceId: String,
     activityType: String,
     token: String

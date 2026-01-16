@@ -49,7 +49,7 @@ actor LiveActivityService {
       let environment = try Clix.shared.get(\.environment)
       let deviceId = environment.getDevice().id
 
-      try await apiService.setPushToStartToken(
+      try await apiService.registerLiveActivityStartToken(
         deviceId: deviceId,
         activityType: activityType,
         token: token
