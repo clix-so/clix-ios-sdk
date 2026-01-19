@@ -39,7 +39,7 @@ jobs:
 
       - name: Read Changelog
         id: read_changelog
-        if: ${{ !endsWith(github.event.inputs.version, 'SNAPSHOT') }}
+        if: ${{ !contains(github.event.inputs.version, 'beta') && !endsWith(github.event.inputs.version, 'SNAPSHOT') }}
         uses: mindsers/changelog-reader-action@v2
         with:
           version: ${{ github.event.inputs.version }}

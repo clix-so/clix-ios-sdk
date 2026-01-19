@@ -1,3 +1,4 @@
+import ActivityKit
 import Clix
 import FirebaseCore
 import FirebaseMessaging
@@ -14,6 +15,9 @@ class AppDelegate: ClixAppDelegate {
   ) -> Bool {
     FirebaseApp.configure()
     Clix.initialize(config: ClixConfiguration.shared.config)
+    if #available(iOS 16.1, *) {
+        Clix.LiveActivity.setup(DeliveryActivityAttributes.self)
+    }
     updateClixValues()
 
     if let savedUserId = UserDefaults.standard.string(forKey: "user_id"), !savedUserId.isEmpty {
@@ -54,8 +58,6 @@ class AppDelegate: ClixAppDelegate {
     print("🔄 APNS Token received and processed")
     updateClixValues()
   }
-
-  
 
   private func updateClixValues() {
     Task {
