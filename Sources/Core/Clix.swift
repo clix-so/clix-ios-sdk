@@ -153,6 +153,11 @@ public final class Clix {
   /// - Note: For backwards compatibility, a synchronous version is also available,
   ///         but this async version is recommended for better initialization control.
   public static func initialize(config: ClixConfig) async {
+    let task = await shared.initCoordinator.initializationTask(for: config)
+    await task.value
+  }
+
+  private static func runInitialization(config: ClixConfig) async {
     do {
       ClixLogger.setLogLevel(config.logLevel)
       await shared.setConfig(config)
@@ -170,11 +175,10 @@ public final class Clix {
       #if !APPLICATION_EXTENSION_API_ONLY
         ClixNotification.shared.initialize()
       #endif
-
-      await shared.initCoordinator.completeInitialization()
     } catch {
       ClixLogger.error("Failed to initialize Clix SDK: \(error)")
     }
+    await shared.initCoordinator.completeInitialization()
   }
 
   /// Initialize the Clix SDK (synchronous version)
@@ -491,6 +495,27 @@ public final class Clix {
   internal actor InitCoordinator {
     private var isInitialized = false
     private var pendingContinuations: [CheckedContinuation<Void, Never>] = []
+    private var runningInitializationTask: Task<Void, Never>?
+
+    internal func initializationTask(for config: ClixConfig) -> Task<Void, Never> {
+      acquireInitializationTask {
+        await Clix.runInitialization(config: config)
+      }
+    }
+
+    internal func acquireInitializationTask(_ operation: @escaping @Sendable () async -> Void) -> Task<Void, Never> {
+      if let runningInitializationTask {
+        return runningInitializationTask
+      }
+
+      isInitialized = false
+      let task = Task {
+        await operation()
+        clearInitializationTask()
+      }
+      runningInitializationTask = task
+      return task
+    }
 
     internal func waitForInitialization() async {
       if isInitialized {
@@ -510,6 +535,10 @@ public final class Clix {
       for continuation in continuations {
         continuation.resume()
       }
+    }
+
+    private func clearInitializationTask() {
+      runningInitializationTask = nil
     }
 
     nonisolated internal func waitAndGet<T>(_ getter: @escaping () -> T?) -> T? {
