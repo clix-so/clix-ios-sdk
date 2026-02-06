@@ -12,3 +12,5 @@ Package.resolved
 GoogleService-Info.plist
 ClixConfig.json
 Pods
+# Local sample environment configs
+ClixConfig.*.json
