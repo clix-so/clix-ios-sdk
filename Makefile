@@ -1,7 +1,7 @@
 # Makefile for Swift code formatting and linting
 
 # Define phony targets to avoid conflicts with files named format or lint
-.PHONY: build clean format lint lint-fix all
+.PHONY: build test clean format lint lint-fix all
 
 # Target to build the Swift package for iOS devices
 build:
@@ -12,6 +12,18 @@ build:
         -Xswiftc $(shell xcrun --sdk iphoneos --show-sdk-path) \
         -Xcc -isysroot \
         -Xcc $(shell xcrun --sdk iphoneos --show-sdk-path)
+
+# Detect first available iPhone Simulator UDID
+SIMULATOR_UDID := $(shell xcrun simctl list devices available | grep iPhone | head -1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+
+# Target to run tests on iOS Simulator
+test:
+	@echo "Running tests on iOS Simulator ($(SIMULATOR_UDID))..."
+	@xcodebuild test \
+        -workspace .swiftpm/xcode/package.xcworkspace \
+        -scheme Clix \
+        -destination 'id=$(SIMULATOR_UDID)' \
+        -quiet
 
 # Clean build artifacts and caches
 clean:
