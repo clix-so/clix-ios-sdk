@@ -90,6 +90,7 @@ public final class Clix {
   var eventService: EventService?
   var deviceService: DeviceService?
   var notificationService: NotificationService?
+  var sessionService: SessionService?
 
   // MARK: - Initialization Coordinator
   internal let initCoordinator = InitCoordinator()
@@ -118,6 +119,11 @@ public final class Clix {
 
     self.deviceService = DeviceService(storageService: storageService, tokenService: tokenService)
     self.notificationService = NotificationService(storageService: storageService, eventService: eventService)
+    self.sessionService = SessionService(
+      storageService: storageService,
+      eventService: eventService,
+      sessionTimeoutMs: config.sessionTimeoutMs
+    )
   }
 
   // MARK: - Internal Methods
@@ -169,8 +175,10 @@ public final class Clix {
 
       #if !APPLICATION_EXTENSION_API_ONLY
         ClixNotification.shared.initialize()
+        shared.sessionService?.setupLifecycleObservers()
       #endif
 
+      await shared.sessionService?.start()
       await shared.initCoordinator.completeInitialization()
     } catch {
       ClixLogger.error("Failed to initialize Clix SDK: \(error)")
