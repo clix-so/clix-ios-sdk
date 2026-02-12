@@ -91,6 +91,7 @@ public final class Clix {
   var deviceService: DeviceService?
   var notificationService: NotificationService?
   var sessionService: SessionService?
+  var pendingLaunchMessageId: String?
 
   // MARK: - Initialization Coordinator
   internal let initCoordinator = InitCoordinator()
@@ -176,6 +177,10 @@ public final class Clix {
       #if !APPLICATION_EXTENSION_API_ONLY
         ClixNotification.shared.initialize()
         shared.sessionService?.setupLifecycleObservers()
+        if let messageId = shared.pendingLaunchMessageId {
+          shared.sessionService?.setPendingMessageId(messageId)
+          shared.pendingLaunchMessageId = nil
+        }
         await shared.sessionService?.start()
       #endif
       await shared.initCoordinator.completeInitialization()

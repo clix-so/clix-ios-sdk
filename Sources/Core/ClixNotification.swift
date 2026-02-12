@@ -61,7 +61,7 @@ public class ClixNotification: NSObject, UNUserNotificationCenterDelegate, Messa
       let messageId = extractMessageId(from: payload)
       if let messageId = messageId {
         processedTappedEvents.insert(messageId)
-        Clix.shared.sessionService?.setPendingMessageId(messageId)
+        Clix.shared.pendingLaunchMessageId = messageId
       }
 
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
