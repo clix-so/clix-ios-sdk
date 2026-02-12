@@ -176,9 +176,8 @@ public final class Clix {
       #if !APPLICATION_EXTENSION_API_ONLY
         ClixNotification.shared.initialize()
         shared.sessionService?.setupLifecycleObservers()
+        await shared.sessionService?.start()
       #endif
-
-      await shared.sessionService?.start()
       await shared.initCoordinator.completeInitialization()
     } catch {
       ClixLogger.error("Failed to initialize Clix SDK: \(error)")
