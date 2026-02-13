@@ -13,7 +13,8 @@ class EventService {
     properties: [String: Any?] = [:],
     messageId: String? = nil,
     userJourneyId: String? = nil,
-    userJourneyNodeId: String? = nil
+    userJourneyNodeId: String? = nil,
+    sourceType: String? = nil
   ) async throws {
     do {
       let environment = try Clix.shared.get(\.environment)
@@ -41,7 +42,8 @@ class EventService {
         properties: eventProperties,
         messageId: messageId,
         userJourneyId: userJourneyId,
-        userJourneyNodeId: userJourneyNodeId
+        userJourneyNodeId: userJourneyNodeId,
+        sourceType: sourceType
       )
     } catch {
       ClixLogger.error("Failed to track event '\(name)': \(error). Make sure Clix.initialize() has been called.")

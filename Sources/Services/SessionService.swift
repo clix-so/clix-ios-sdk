@@ -79,7 +79,8 @@ class SessionService {
     do {
       try await eventService.trackEvent(
         name: SessionEvent.sessionStart.rawValue,
-        messageId: messageId
+        messageId: messageId,
+        sourceType: "CLIX"
       )
       ClixLogger.debug("\(SessionEvent.sessionStart.rawValue) tracked")
     } catch {

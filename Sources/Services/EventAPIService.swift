@@ -3,6 +3,7 @@ import Foundation
 struct EventRequestBody: Codable {
   let deviceId: String
   let name: String
+  let sourceType: String?
   let properties: [String: AnyCodable]  // expects ["custom_properties": ...]
 }
 
@@ -24,13 +25,15 @@ class EventAPIService: ClixAPIClient {
     properties: [String: AnyCodable]? = nil,
     messageId: String? = nil,
     userJourneyId: String? = nil,
-    userJourneyNodeId: String? = nil
+    userJourneyNodeId: String? = nil,
+    sourceType: String? = nil
   )
     async throws
   {
     let event = EventRequestBody(
       deviceId: deviceId,
       name: name,
+      sourceType: sourceType,
       properties: [
         "custom_properties": AnyCodable(properties ?? [:]), "message_id": AnyCodable(messageId),
         "user_journey_id": AnyCodable(userJourneyId), "user_journey_node_id": AnyCodable(userJourneyNodeId),
