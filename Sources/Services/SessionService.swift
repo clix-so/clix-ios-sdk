@@ -26,6 +26,7 @@ class SessionService {
     if let lastActivity {
       let elapsed = Date().timeIntervalSince1970 * 1000 - lastActivity
       if elapsed <= Double(sessionTimeoutMs) {
+        pendingMessageId = nil
         await updateLastActivity()
         ClixLogger.debug("Continuing existing session")
         return
@@ -62,6 +63,7 @@ class SessionService {
     if let lastActivity {
       let elapsed = Date().timeIntervalSince1970 * 1000 - lastActivity
       if elapsed <= Double(sessionTimeoutMs) {
+        pendingMessageId = nil
         await updateLastActivity()
         return
       }
