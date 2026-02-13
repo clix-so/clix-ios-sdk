@@ -44,7 +44,8 @@ class NotificationService {
           name: NotificationEvent.pushNotificationReceived.rawValue,
           messageId: payload.messageId,
           userJourneyId: payload.userJourneyId,
-          userJourneyNodeId: payload.userJourneyNodeId
+          userJourneyNodeId: payload.userJourneyNodeId,
+          sourceType: "CLIX"
         )
       } catch {
         await recoverReceivedMessageId(messageId: payload.messageId)
@@ -65,7 +66,8 @@ class NotificationService {
           name: NotificationEvent.pushNotificationTapped.rawValue,
           messageId: payload.messageId,
           userJourneyId: payload.userJourneyId,
-          userJourneyNodeId: payload.userJourneyNodeId
+          userJourneyNodeId: payload.userJourneyNodeId,
+          sourceType: "CLIX"
         )
       } catch {
         ClixLogger.error("Failed to track \(NotificationEvent.pushNotificationTapped.rawValue)", error: error)

@@ -12,7 +12,6 @@
 		7FADBC0C2F15FA9C0065D721 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FADBC0B2F15FA9C0065D721 /* SwiftUI.framework */; };
 		7FADBC1B2F15FA9D0065D721 /* DeliveryLiveActivityWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FADBC082F15FA9B0065D721 /* DeliveryLiveActivityWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7FADBC262F15FD6A0065D721 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7FADBC252F15FD6A0065D721 /* GoogleService-Info.plist */; };
-		7FADBC282F15FD790065D721 /* ClixConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FADBC272F15FD790065D721 /* ClixConfig.json */; };
 		88C976AF2DE72BA500D410F8 /* ClixNotificationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		88C976B82DE7426200D410F8 /* Clix in Frameworks */ = {isa = PBXBuildFile; productRef = 88C976B72DE7426200D410F8 /* Clix */; };
 /* End PBXBuildFile section */
@@ -57,7 +56,6 @@
 		7FADBC092F15FA9B0065D721 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		7FADBC0B2F15FA9C0065D721 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		7FADBC252F15FD6A0065D721 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		7FADBC272F15FD790065D721 /* ClixConfig.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ClixConfig.json; sourceTree = "<group>"; };
 		88C976A82DE72BA500D410F8 /* ClixNotificationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClixNotificationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -157,7 +155,6 @@
 		48F08EBC2DDF90CC003D26D4 = {
 			isa = PBXGroup;
 			children = (
-				7FADBC272F15FD790065D721 /* ClixConfig.json */,
 				7FADBC252F15FD6A0065D721 /* GoogleService-Info.plist */,
 				489A1DF02DF6B864005D66F7 /* Resources */,
 				48533B3E2DE437020060D148 /* BasicApp-Info.plist */,
@@ -315,7 +312,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7FADBC262F15FD6A0065D721 /* GoogleService-Info.plist in Resources */,
-				7FADBC282F15FD790065D721 /* ClixConfig.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
