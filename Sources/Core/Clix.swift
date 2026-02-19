@@ -242,30 +242,46 @@ public final class Clix {
     }
   }
 
-  /// Removes the user ID (async version - recommended)
-  ///
-  /// This async version ensures the operation completes before returning.
-  /// Use this when you can await the operation in an async context.
-  ///
-  /// - Throws: ClixError if the operation fails
+  /// Removes the user ID (async version)
+  @available(*, deprecated, message: "Use reset() instead")
   public static func removeUserId() async throws {
     await shared.initCoordinator.waitForInitialization()
     try await shared.get(\.deviceService).removeProjectUserId()
   }
 
   /// Removes the user ID (synchronous version)
-  ///
-  /// This synchronous version returns immediately while the operation continues in the background.
-  /// Consider using the async version for guaranteed operation completion.
-  ///
-  /// - Note: An async version is available that ensures the operation completes before returning.
-  ///         Use `try await Clix.removeUserId()` for better control over operation timing.
+  @available(*, deprecated, message: "Use reset() instead")
   public static func removeUserId() {
     Task.detached(priority: .userInitiated) {
       do {
         try await removeUserId()
       } catch {
         ClixLogger.error("Failed to remove userId: \(error)")
+      }
+    }
+  }
+
+  /// Resets all local SDK state including device ID.
+  ///
+  /// After calling this method, you must call `initialize()` again before using the SDK.
+  /// Use this when a user logs out and you want to start fresh with a new device identity.
+  public static func reset() async throws {
+    await shared.initCoordinator.waitForInitialization()
+    let notificationService = try shared.get(\.notificationService)
+    let storageService = try shared.get(\.storageService)
+    await notificationService.reset()
+    await storageService.remove("clix_device_id")
+    await storageService.remove("clix_session_last_activity")
+    await shared.initCoordinator.reset()
+  }
+
+  /// Resets all local SDK state including device ID (synchronous version)
+  public static func reset() {
+    Task.detached(priority: .userInitiated) {
+      do {
+        try await reset()
+      } catch {
+        ClixLogger.error("Failed to reset: \(error)")
       }
     }
   }
@@ -522,6 +538,10 @@ public final class Clix {
       for continuation in continuations {
         continuation.resume()
       }
+    }
+
+    internal func reset() {
+      isInitialized = false
     }
 
     nonisolated internal func waitAndGet<T>(_ getter: @escaping () -> T?) -> T? {
