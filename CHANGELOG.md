@@ -10,13 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `reset()` method to clear all local SDK state including device ID
 
-### Changed
-
-- `setUserId()` now accepts nil to remove the user ID
-
 ### Deprecated
 
-- `removeUserId()` — use `setUserId(nil)` instead
+- `removeUserId()` — use `reset()` instead
 
 ## [1.8.1] - 2026-02-13
 
