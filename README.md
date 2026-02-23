@@ -77,10 +77,17 @@ try await Clix.setUserProperties([
 // Remove user properties
 try await Clix.removeUserProperty("name")
 try await Clix.removeUserProperties(["age", "premium"])
-
-// Remove user ID
-try await Clix.removeUserId()
 ```
+
+### Reset
+
+Use `reset()` when you need a completely fresh device identity (e.g., shared device scenarios). This generates a new device ID, removes the user ID, and clears session data.
+
+```swift
+try await Clix.reset()
+```
+
+> **Note:** After calling `reset()`, you must call `initialize()` again before using the SDK.
 
 ### Event Tracking
 
@@ -104,7 +111,7 @@ try await Clix.trackEvent(
 let deviceId = await Clix.getDeviceId()
 
 // Get push token
-let pushToken = await Clix.getPushToken()
+let pushToken = await Clix.Notification.getToken()
 ```
 
 ### Logging
