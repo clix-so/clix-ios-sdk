@@ -1,12 +1,12 @@
 <!-- repo: clix-so/clix-ios-sdk -->
 <!-- ref: main -->
-<!-- commit: fe96a209185c16843bd9bbc7255aa7353528c013 -->
-<!-- generated_at: 2025-12-03T04:54:09Z -->
+<!-- commit: c892731b1e80bf2ccc64410fe7902853d3159a0d -->
+<!-- generated_at: 2026-01-14T04:25:07Z -->
 # Platform: iOS
 
 ## /
 - [Package](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Package.swift): Swift Package manifest configuring the Clix SPM library (iOS 15+), exposing target "Clix" (Sources) with SPM dependencies FirebaseMessaging and MMKV (version ranges), build settings defining DEBUG/RELEASE flags, and a ClixTests test target.
-- [Readme](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/README.md): README documents Clix iOS SDK integration: initialize via Clix.initialize(ClixConfig), user/event APIs (setUserId, setUserProperty, trackEvent), push flows (ClixAppDelegate or Clix.
+- [Readme](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/README.md): README documents Clix iOS SDK setup and usage: installation, Clix.initialize(ClixConfig), async/sync APIs (setUserId, setUserProperty(s), trackEvent, getDeviceId/getPushToken, setLogLevel), push integration via ClixAppDelegate or Clix.
 
 ## Samples/BasicApp/ClixNotificationExtension
 - [Notificationservice](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/ClixNotificationExtension/NotificationService.swift): NotificationService.swift defines NotificationService, a UNNotificationServiceExtension subclass that registers ClixConfiguration.
@@ -16,16 +16,16 @@
 - [Appstate](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/AppState.swift): Singleton ObservableObject (AppState.shared) exposing @Published deviceId and fcmToken (initial "Loading.
 - [Basicapp](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/BasicApp.swift): Defines the BasicApp SwiftUI entry point, wiring the UIKit-based `AppDelegate` via `@UIApplicationDelegateAdaptor`, configuring global `UITextView` appearance, and presenting `ContentView` within the main `WindowGroup` scene.
 - [Clixconfiguration](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/ClixConfiguration.swift): Singleton that loads ClixConfig.json from the app bundle (fatalError on failure), caches its contents, and exposes lazy properties (projectId, apiKey, endpoint, extraHeaders, logLevel defaulting to.
-- [Appdelegate](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/AppDelegate.swift): Sample AppDelegate subclass of ClixAppDelegate that initializes FirebaseCore/FirebaseMessaging and Clix (Clix.initialize), auto-handles permissions/landing URLs, listens for FCM token refresh, overrides APNS registration to fetch FCM token, set userId, and update AppState via Clix.
-- [Contentview](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/ContentView.swift): ContentView.swift provides a SwiftUI sample (ContentView, InfoTextRow) that displays ClixConfiguration/AppState info and lets developers set userId (saved to UserDefaults → Clix.
+- [Appdelegate](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/AppDelegate.swift): AppDelegate subclass that initializes Firebase and Clix (using ClixConfiguration.shared), auto-enables permissions/landing URL handling, sets stored user_id, observes FCM token refreshes, handles APNS/FCM registration in application(_:didFinishLaunchingWithOptions:) and didRegisterForRemoteNotificationsWithDeviceToken(_:), and updates AppState with Clix.
+- [Contentview](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Samples/BasicApp/Sources/ContentView.swift): SwiftUI sample ContentView for the BasicApp demonstrating Clix SDK flows: displays config/device info via AppState/ClixConfiguration, lets developers set UserDefaults-backed user_id, setUserProperty, and trackEvent (parses JSON properties), using Clix public APIs.
 
 ## Sources/Core
 - [Clixnotification](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixNotification.swift): Singleton bridging Firebase Messaging and UNUserNotificationCenter to register for remote notifications, handle FCM tokens, foreground/background delivery, taps (auto-open landing URLs), image attachment fetching, and server sync via Clix services; public APIs: configure, onMessage/onBackgroundMessage/onNotificationOpened, getToken, deleteToken, setApnsToken, requestPermission, handleLaunchOptions.
 - [Clixconfig](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixConfig.swift): Defines the `ClixConfig` `Codable` struct used to initialize and configure the Clix SDK, encapsulating project ID, API key, API endpoint, log level, and extra HTTP headers with sensible defaults for network and logging behavior.
-- [Clix](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/Clix.swift): Singleton SDK entrypoint that initializes Storage/Token/Event/Device/Notification services, manages environment/device/token, and exposes thread‑safe async/sync APIs (Clix.initialize, setUserId/setUserProperty/removeUserProperty, trackEvent, getDeviceId) with InitCoordinator-based init synchronization.
+- [Clix](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/Clix.swift): Clix is the SDK singleton entry point that initializes and wires StorageService/TokenService/EventService/DeviceService/NotificationService (async/sync), coordinates init via InitCoordinator, persists ClixConfig, uses UserNotifications/ClixLogger, and exposes initialize, user/property, event, and device APIs.
 - [Clixappdelegate](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixAppDelegate.swift): ClixAppDelegate is an open UIApplicationDelegate/UNUserNotificationCenterDelegate base class that wires UNUserNotificationCenter, forwards APNs token, launch/foreground/background notifications and responses to Clix.Notification, configurable via overridable properties; depends on FirebaseCore/FirebaseMessaging.
 - [Clixenvironment](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixEnvironment.swift): Defines `ClixEnvironment`, a lightweight container for `ClixConfig` and mutable `ClixDevice` state, exposing `getDevice()`, `setDevice(_:)`, and a string representation used to describe the current SDK runtime environment.
-- [Clixversion](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixVersion.swift): Internal ClixVersion struct exposing a static current version string ("1.6.
+- [Clixversion](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Core/ClixVersion.swift): Internal ClixVersion struct exposing static current string (auto-updated by scripts/update-version.sh) that represents the SDK semantic version; no runtime side-effects, depends only on Foundation and is referenced by other components to read the SDK version.
 
 ## Sources/Models
 - [Clixdevice](https://raw.githubusercontent.com/clix-so/clix-ios-sdk/main/Sources/Models/ClixDevice.swift): Defines the `ClixDevice` `Codable` model encapsulating device, OS, locale, app, SDK, advertising ID, and push-notification metadata used for serialization and transmission to Clix backend APIs.
